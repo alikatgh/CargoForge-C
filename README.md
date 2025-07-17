@@ -94,14 +94,6 @@ Total Execution Time: 0.12ms
 
 ## Contributing
 
-Contributions are welcome and are the best way to make this project grow\! Check for issues labeled `good first issue`.
-
-1.  Fork the repository.
-2.  Create your feature branch (`git checkout -b feature/new-algorithm`).
-3.  Commit your changes (`git commit -m "feat: Add Dijkstra route optimizer"`).
-4.  Push to the branch (`git push origin feature/new-algorithm`).
-5.  Open a Pull Request.
-
 Please see `CONTRIBUTING.md` for detailed guidelines (coming soon).
 
 ## Roadmap
