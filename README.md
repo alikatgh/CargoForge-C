@@ -12,20 +12,6 @@ A **pure C simulator** for maritime logistics, designed for maximum speed and ha
 
 -----
 
-## Table of Contents
-
-  - [Why CargoForge-C?](https://www.google.com/search?q=%23why-cargoforge-c)
-  - [Features](https://www.google.com/search?q=%23features)
-  - [Tech Stack](https://www.google.com/search?q=%23tech-stack)
-  - [Getting Started](https://www.google.com/search?q=%23getting-started)
-  - [Usage](https://www.google.com/search?q=%23usage)
-  - [Contributing](https://www.google.com/search?q=%23contributing)
-  - [Roadmap](https://www.google.com/search?q=%23roadmap)
-  - [Community](https://www.google.com/search?q=%23community)
-  - [License](https://www.google.com/search?q=%23license)
-
------
-
 ## Why CargoForge-C?
 
 This project addresses a critical need in global shipping: **90% of world trade moves by sea**, and inefficient loading costs millions in fuel and introduces safety risks. This tool aims to simulate and optimize that process.
@@ -35,7 +21,7 @@ This project addresses a critical need in global shipping: **90% of world trade 
   - **Performance & Portability**: No external libraries—everything is built from scratch. It runs on any platform with a C compiler, from desktops to embedded boards.
   - **Open for Growth**: Designed with a modular architecture to welcome contributors. Help add new features like hardware sensor integration or advanced optimization algorithms.
 
-## Features
+## Initial features
 
   - **Cargo Loading Simulator**: Input ship specifications and a cargo manifest to receive an optimized cargo placement plan.
   - **Ship Stability Calculations**: Computes the vessel's **center of gravity ($C\_g$)** to ensure a safe and stable load.
@@ -43,7 +29,7 @@ This project addresses a critical need in global shipping: **90% of world trade 
   - **Performance-Oriented**: Optimized for speed using inline functions, fixed-size arrays, and bitwise operations where appropriate.
   - **Planned Extensions**: Future versions will include hardware interfaces (e.g., serial ports) and genetic algorithms.
 
-## Tech Stack
+## Stack
 
   - **Language**: **C (C99)**
   - **Compiler**: Built and tested with **GCC** and **Clang**.
@@ -80,7 +66,7 @@ Run the simulator from the command line with ship and cargo configuration files.
 ./cargoforge examples/sample_ship.cfg examples/sample_cargo.txt
 ```
 
-#### Example Output
+#### Example(s)
 
 ```
 Optimal Placement Plan:
@@ -103,13 +89,6 @@ Please see `CONTRIBUTING.md` for detailed guidelines (coming soon).
   - [ ] **v0.3**: Comprehensive stability and hull stress calculations. (Target: Q1 2026)
   - [ ] **v1.0**: Full documentation, hardware integration extensions, and stable API. (Target: Q2 2026)
 
-## Community
-
-Have questions or ideas? Join the discussion\!
-
-  - **GitHub Discussions**: [Start a conversation](https://www.google.com/search?q=https://github.com/alikatgh/CargoForge-C/discussions)
-  - **Discord/Slack**: (Link to be added)
-
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](https://www.google.com/search?q=LICENSE) file for details.
+MIT
