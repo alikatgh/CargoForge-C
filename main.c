@@ -58,6 +58,13 @@ void optimize_cargo(Ship *ship);  // Stub for now
 void print_optimized_plan(const Ship *ship);
 void usage(const char *prog_name);
 
+// Comparator for qsort (must be defined at file scope in standard C)
+static int cargo_cmp(const void *a, const void *b) {
+    const Cargo *ca = (const Cargo *)a;
+    const Cargo *cb = (const Cargo *)b;
+    return (ca->weight > cb->weight) ? -1 : ((ca->weight < cb->weight) ? 1 : 0);  // Descending order
+}
+
 // Main function: Entry point (learning: argc/argv for CLI args)
 int main(int argc, char *argv[]) {
     if (argc != 3) {
@@ -130,11 +137,13 @@ int parse_cargo_list(const char *filename, Ship *ship) {
     char line[MAX_LINE_LENGTH];
     ship->cargo_count = 0;  // Reset count
 
+    int line_num = 0;
     while (fgets(line, sizeof(line), file)) {
+        line_num++;
         if (line[0] == '#' || line[0] == '\n') continue;
 
-        // Assuming space-separated: ID weight dimLxdimWxdimH type
-        char *token = strtok(line, " ");
+        // Assuming space/tab-separated: ID weight dimLxdimWxdimH type
+        char *token = strtok(line, " \t");
         if (!token) continue;
 
         if (ship->cargo_count >= MAX_CARGO_ITEMS) {
@@ -145,21 +154,56 @@ int parse_cargo_list(const char *filename, Ship *ship) {
 
         Cargo *c = &ship->cargo[ship->cargo_count];  // Pointer to current slot
 
+        // ID
         strncpy(c->id, token, sizeof(c->id) - 1);
+        c->id[sizeof(c->id) - 1] = '\0';  // Ensure null-termination
 
-        token = strtok(NULL, " ");
+        // Weight
+        token = strtok(NULL, " \t");
+        if (!token) {
+            fprintf(stderr, "Missing weight on line %d\n", line_num);
+            fclose(file);
+            return -1;
+        }
         c->weight = atof(token);
 
-        // Parse dimensions (e.g., "6x2.5x2.5")
-        token = strtok(NULL, " ");
-        char *dim = strtok(token, "x");
-        for (int i = 0; i < MAX_DIMENSION && dim; i++) {
-            c->dimensions[i] = atof(dim);
-            dim = strtok(NULL, "x");
+        // Dimensions
+        token = strtok(NULL, " \t");
+        if (!token) {
+            fprintf(stderr, "Missing dimensions on line %d\n", line_num);
+            fclose(file);
+            return -1;
+        }
+        
+        // ✅ CORRECTED BLOCK: Use strtok_r for nested parsing
+        char *saveptr_dim; // Save pointer for the dimension tokenizer
+        char *dim = strtok_r(token, "x", &saveptr_dim); // Initial call with string
+        int dim_count = 0;
+        while (dim && dim_count < MAX_DIMENSION) {
+            c->dimensions[dim_count++] = atof(dim);
+            dim = strtok_r(NULL, "x", &saveptr_dim); // Subsequent calls use NULL
         }
 
-        token = strtok(NULL, "\n");
+        if (dim_count < MAX_DIMENSION) {
+            fprintf(stderr, "Incomplete dimensions on line %d (got %d, expected %d)\n", line_num, dim_count, MAX_DIMENSION);
+            // Set remaining to 0
+            while (dim_count < MAX_DIMENSION) c->dimensions[dim_count++] = 0.0;
+        }
+
+        // Type
+        token = strtok(NULL, " \t"); // This will now work correctly
+        if (!token) {
+            fprintf(stderr, "Missing type on line %d\n", line_num);
+            fclose(file);
+            return -1;
+        }
+        // Strip trailing newline if present
+        size_t len = strlen(token);
+        if (len > 0 && token[len - 1] == '\n') {
+            token[len - 1] = '\0';
+        }
         strncpy(c->type, token, sizeof(c->type) - 1);
+        c->type[sizeof(c->type) - 1] = '\0';
 
         ship->cargo_count++;
     }
@@ -171,13 +215,7 @@ int parse_cargo_list(const char *filename, Ship *ship) {
 // Stub for optimization (expand later with algorithms)
 void optimize_cargo(Ship *ship) {
     // For now, just sort by weight (learning: qsort from stdlib)
-    // Define comparator
-    int cmp(const void *a, const void *b) {
-        Cargo *ca = (Cargo *)a;
-        Cargo *cb = (Cargo *)b;
-        return (ca->weight > cb->weight) ? -1 : 1;  // Descending
-    }
-    qsort(ship->cargo, ship->cargo_count, sizeof(Cargo), cmp);
+    qsort(ship->cargo, ship->cargo_count, sizeof(Cargo), cargo_cmp);
     // TODO: Real placement logic, stability calc
 }
 
