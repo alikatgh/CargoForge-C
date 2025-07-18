@@ -8,7 +8,7 @@
 > **Project Status: Alpha**
 > This project is in active development. Expect breaking changes until the v1.0 release.
 
-A tidy, beginner-friendly teaching prototype, but not yet a credible cargo-optimizer. The code is clean, fast, and dependency-free, yet it silently makes physics and safety assumptions that would fail in the real world. So let's fix it while learning C!
+A lightweight, dependency-free maritime cargo simulator written in pure C99.
 
 -----
 
