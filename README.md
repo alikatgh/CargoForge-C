@@ -14,7 +14,7 @@ A tidy, beginner-friendly teaching prototype, but not yet a credible cargo-optim
 
 ## Why CargoForge-C?
 
-This project addresses a critical need in global shipping: **90% of world trade moves by sea**, and inefficient loading costs millions in fuel and introduces safety risks. This tool aims to simulate and optimize that process.
+This project should and will address a critical need in global shipping: **90% of world trade moves by sea**, and inefficient loading costs millions in fuel and introduces safety risks. This tool aims to simulate and optimize that process.
 
   - **Learn and Contribute**: Perfect for C enthusiasts to practice low-level programming while tackling practical, high-impact logistics problems.
   - **Maritime Focus**: Optimizes cargo loading on large vessels, considering weight distribution and stability to reduce fuel costs and safety hazards.
