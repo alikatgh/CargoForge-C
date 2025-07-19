@@ -2,7 +2,7 @@
 
 # Compiler and flags
 CC = gcc
-CFLAGS = -O3 -Wall -Wextra -std=c99
+CFLAGS = -O3 -Wall -Wextra -std=c99 -D_POSIX_C_SOURCE=200809L
 LDFLAGS = -lm # -lm for math library if needed in the future
 
 # Source files and object files
