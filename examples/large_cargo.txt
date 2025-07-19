@@ -1,0 +1,13 @@
+# Cargo_ID Weight_Tonnes Dimensions(LxWxH)_meters Type
+ContainerA 20 6x2.5x2.5 standard
+ContainerB 25 6x2.5x2.5 hazardous
+ContainerC 15 5x2x2 reefer
+ContainerD 30 7x3x3 bulk
+ContainerE 10 4x2x2 fragile
+ContainerF 40 8x3.5x3.5 heavy
+ContainerG 18 5.5x2.2x2.2 standard
+ContainerH 22 6.5x2.8x2.8 hazardous
+ContainerI 12 4.5x1.8x1.8 reefer
+ContainerJ 35 7.5x3.2x3.2 bulk
+ContainerK 8 3.5x1.5x1.5 fragile
+ContainerL 45 9x4x4 heavy
