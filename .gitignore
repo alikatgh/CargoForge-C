@@ -1,0 +1,6 @@
+# Ignore C build artifacts
+*.o
+*.out
+
+# Ignore the final executable
+cargoforge
