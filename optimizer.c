@@ -5,11 +5,8 @@
 
 // Static comparator function for qsort. Sorts cargo by weight descending.
 static int cargo_cmp_by_weight_desc(const void *a, const void *b) {
-    const Cargo *ca = (const Cargo *)a;
-    const Cargo *cb = (const Cargo *)b;
-    if (ca->weight < cb->weight) return 1;
-    if (ca->weight > cb->weight) return -1;
-    return 0;
+    const Cargo *ca = (const Cargo *)a; const Cargo *cb = (const Cargo *)b;
+    if (ca->weight < cb->weight) return 1; if (ca->weight > cb->weight) return -1; return 0;
 }
 
 // Places cargo onto the ship deck using a 2D guillotine bin packing heuristic.

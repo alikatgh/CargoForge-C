@@ -26,21 +26,20 @@ typedef struct {
 
 // Represents a single cargo item
 typedef struct {
-    char id[32];                // Cargo ID
-    float weight;               // Weight in tonnes
-    float dimensions[MAX_DIMENSION]; // L, W, H in meters
-    char type[16];              // Cargo type (e.g., "standard")
-    float pos_x, pos_y;         // Final placed position (X, Y) on the ship deck
+    char id[32];
+    float weight;
+    float dimensions[MAX_DIMENSION];
+    char type[16];
+    float pos_x, pos_y, pos_z;
 } Cargo;
 
 // Represents the ship and its cargo manifest
 typedef struct {
-    float length;               // Ship length in meters
-    float width;                // Ship width in meters
-    float max_weight;           // Max cargo weight in tonnes
-    int cargo_count;            // Number of loaded cargo items
-    int cargo_capacity;         // Number of items the cargo array can hold
-    Cargo *cargo;               // Dynamically allocated array of cargo items
+    float length, width, max_weight;
+    int cargo_count, cargo_capacity;
+    Cargo *cargo;
+    float lightship_weight;
+    float lightship_kg;
 } Ship;
 
 // Represents the calculated Center of Gravity (CG)
@@ -49,6 +48,11 @@ typedef struct {
     float perc_y; // CG as a percentage along the ship's width
 } CG;
 
+// New struct for stability results
+typedef struct {
+    CG cg;
+    float gm; // Metacentric Height
+} StabilityResult;
 
 // --- Function Prototypes ---
 
@@ -61,6 +65,8 @@ void optimize_cargo_placement(Ship *ship);
 
 // analysis.c
 CG calculate_center_of_gravity(const Ship *ship);
+
+StabilityResult calculate_stability(const Ship *ship);
 
 // main.c
 void print_loading_plan(const Ship *ship, double exec_time);

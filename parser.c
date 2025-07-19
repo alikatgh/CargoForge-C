@@ -22,6 +22,8 @@ int parse_ship_config(const char *filename, Ship *ship) {
             if (strcmp(key, "length_m") == 0) ship->length = atof(value);
             else if (strcmp(key, "width_m") == 0) ship->width = atof(value);
             else if (strcmp(key, "max_weight_tonnes") == 0) ship->max_weight = atof(value);
+            else if (strcmp(key, "lightship_weight_tonnes") == 0) ship->lightship_weight = atof(value);
+            else if (strcmp(key, "lightship_kg_m") == 0) ship->lightship_kg = atof(value);
         }
     }
     fclose(file);

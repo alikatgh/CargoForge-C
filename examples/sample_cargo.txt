@@ -1,3 +1,7 @@
-# Cargo_ID Weight_Tonnes Dimensions(LxWxH)_meters Type
-ContainerA 20 6x2.5x2.5 standard
-ContainerB 25 6x2.5x2.5 hazardous
+# Cargo Manifest
+# ID              Weight(t) Dimensions(LxWxH)   Type
+HeavyMachinery    550       20x5x3              standard
+SteelBeams        400       18x2x2              bulk
+ContainerA        250       12.2x2.4x2.6        reefer
+ContainerB        250       12.2x2.4x2.6        reefer
+SmallCrate        50        2x2x2               general
