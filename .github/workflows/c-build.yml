@@ -1,0 +1,28 @@
+# .github/workflows/c-build.yml
+
+name: C/C++ CI
+
+# This workflow runs on pushes and pull requests to the main branch
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    # Use the latest version of Ubuntu to run the job
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Check out your repository code
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      # Step 2: Compile the project using your Makefile
+      - name: Compile the project
+        run: make
+
+      # Step 3: Run a basic test to ensure the executable works
+      - name: Run a basic test
+        run: ./cargoforge examples/sample_ship.cfg examples/sample_cargo.txt
