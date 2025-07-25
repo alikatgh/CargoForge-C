@@ -196,14 +196,6 @@ typedef struct {
     float gm; /**< Metacentric height (metres) */
 } StabilityResult;
 
-// THIS IS THE MISSING STRUCT DEFINITION
-typedef struct {
-    CG    cg;
-    float gm;
-    float total_cargo_weight_kg;
-    int   placed_item_count;
-} AnalysisResult;
-
 /* ------------------------------------------------------------------ */
 /*  FUNCTION PROTOTYPES                                               */
 /* ------------------------------------------------------------------ */
@@ -282,8 +274,7 @@ StabilityResult calculate_stability(const Ship *ship);
  *
  * Thread-safety: Performs I/O, therefore not thread-safe.
  */
-AnalysisResult perform_analysis(const Ship *ship);
-void print_loading_plan(const Ship *ship);
+void print_loading_plan(const Ship *ship, double exec_time);
 
 /**
  * usage() – Emit help text and exit(1).

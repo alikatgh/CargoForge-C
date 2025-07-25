@@ -3,7 +3,7 @@
  */
 #include "cargoforge.h"
 
-// Parses ship configuration from a simple key=value file.
+// Parses ship configuration, converting weights from tonnes to kg.
 int parse_ship_config(const char *filename, Ship *ship) {
     FILE *file = fopen(filename, "r");
     if (!file) {
@@ -21,8 +21,9 @@ int parse_ship_config(const char *filename, Ship *ship) {
         if (key && value) {
             if (strcmp(key, "length_m") == 0) ship->length = atof(value);
             else if (strcmp(key, "width_m") == 0) ship->width = atof(value);
-            else if (strcmp(key, "max_weight_tonnes") == 0) ship->max_weight = atof(value);
-            else if (strcmp(key, "lightship_weight_tonnes") == 0) ship->lightship_weight = atof(value);
+            // Convert from tonnes to kg
+            else if (strcmp(key, "max_weight_tonnes") == 0) ship->max_weight = atof(value) * 1000.0f;
+            else if (strcmp(key, "lightship_weight_tonnes") == 0) ship->lightship_weight = atof(value) * 1000.0f;
             else if (strcmp(key, "lightship_kg_m") == 0) ship->lightship_kg = atof(value);
         }
     }
@@ -31,8 +32,7 @@ int parse_ship_config(const char *filename, Ship *ship) {
 }
 
 
-// Parses a cargo list, dynamically allocating memory for the items.
-// Returns 0 on success, -1 on failure.
+// Parses a cargo list, converting weights from tonnes to kg.
 int parse_cargo_list(const char *filename, Ship *ship) {
     FILE *file = fopen(filename, "r");
     if (!file) {
@@ -43,14 +43,12 @@ int parse_cargo_list(const char *filename, Ship *ship) {
     char line[MAX_LINE_LENGTH];
     int count = 0;
 
-    // First pass: count the number of valid cargo entries to allocate memory
     while (fgets(line, sizeof(line), file)) {
         if (line[0] != '#' && line[0] != '\n') {
             count++;
         }
     }
 
-    // Allocate exact memory required
     ship->cargo = malloc(count * sizeof(Cargo));
     if (!ship->cargo) {
         fprintf(stderr, "Error: Failed to allocate memory for cargo.\n");
@@ -60,7 +58,6 @@ int parse_cargo_list(const char *filename, Ship *ship) {
     ship->cargo_capacity = count;
     ship->cargo_count = 0;
 
-    // Second pass: rewind and parse data into the allocated structs
     rewind(file);
     int line_num = 0;
     while (fgets(line, sizeof(line), file) && ship->cargo_count < ship->cargo_capacity) {
@@ -70,25 +67,22 @@ int parse_cargo_list(const char *filename, Ship *ship) {
         Cargo *c = &ship->cargo[ship->cargo_count];
         char *saveptr;
 
-        // Tokenize the line: ID Weight L_x_W_x_H Type
         char *id = strtok_r(line, " \t", &saveptr);
-        char *weight = strtok_r(NULL, " \t", &saveptr);
+        char *weight_str = strtok_r(NULL, " \t", &saveptr);
         char *dims = strtok_r(NULL, " \t", &saveptr);
         char *type = strtok_r(NULL, " \t\n", &saveptr);
 
-        if (!id || !weight || !dims || !type) {
+        if (!id || !weight_str || !dims || !type) {
             fprintf(stderr, "Warning: Skipping malformed cargo data on line %d.\n", line_num);
-            continue; // Skip this line
+            continue;
         }
 
-        // Populate the struct
         strncpy(c->id, id, sizeof(c->id) - 1);
         c->id[sizeof(c->id) - 1] = '\0';
-        c->weight = atof(weight);
+        c->weight = atof(weight_str) * 1000.0f; // Convert from tonnes to kg
         strncpy(c->type, type, sizeof(c->type) - 1);
         c->type[sizeof(c->type) - 1] = '\0';
 
-        // Parse dimensions (e.g., "12.2x2.4x2.6")
         char *dim_saveptr;
         char *dim_token = strtok_r(dims, "x", &dim_saveptr);
         int i = 0;

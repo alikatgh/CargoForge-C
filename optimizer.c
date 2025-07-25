@@ -52,6 +52,7 @@ void optimize_cargo_placement(Ship *ship) {
             fprintf(stderr, "Warning: Could not place cargo %s (dims %.2fm x %.2fm).\n", c->id, cw, ch);
             c->pos_x = -1.0f; // Mark as unplaced
             c->pos_y = -1.0f;
+            c->pos_z = -1.0f; // Also mark z as unplaced
         }
     }
 }
