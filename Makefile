@@ -29,3 +29,10 @@ clean:
 
 # Phony targets
 .PHONY: all clean
+
+# ---- unit-test target ----
+test: $(TARGET) tests/test_parser
+	./tests/test_parser
+
+tests/test_parser: tests/test_parser.c cargoforge.h parser.o
+	$(CC) $(CFLAGS) -o $@ tests/test_parser.c parser.o -lm
