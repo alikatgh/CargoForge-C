@@ -1,39 +1,18 @@
 #ifndef PLACEMENT_2D_H
 #define PLACEMENT_2D_H
 
-// Represents a storage area (a hold or the deck)
-typedef struct {
-    char name[32];
-    int width;
-    int height;
-    // Internal state, managed by the placement function
-    int used_height;
-    void* shelves; // Opaque pointer to internal shelf data
-    int shelf_count;
-} Bin;
-
-// Represents a single cargo item
-typedef struct {
-    char name[32];
-    int width;
-    int height;
-    int weight;
-    char placed_in[32]; // Output: Populated by the placement function
-} CargoItem;
+#include "cargoforge.h"
 
 /**
- * @brief Places cargo items into bins using a 2D first-fit decreasing heuristic.
+ * @brief Places cargo items using a 2D FFD heuristic across multiple bins.
  *
- * This function sorts items by weight (descending) and attempts to place them
- * into the first available bin that can accommodate them, trying both original
- * and rotated orientations. It modifies the 'items' array in-place, updating
- * the 'placed_in' field for each item.
+ * This function sorts a ship's cargo by weight (descending) and attempts to
+ * place each item into hardcoded holds or the deck. It tries both original
+ * and rotated orientations for a better fit. The function modifies the
+ * ship's cargo array in-place, updating the pos_x, pos_y, and pos_z fields.
  *
- * @param bins An array of Bin structures representing ship storage areas.
- * @param bin_count The number of bins.
- * @param items An array of CargoItem structures to be placed.
- * @param item_count The number of items.
+ * @param ship A pointer to the Ship struct, which contains the cargo to be placed.
  */
-void place_cargo_2d(Bin bins[], int bin_count, CargoItem items[], int item_count);
+void place_cargo_2d(Ship *ship);
 
 #endif // PLACEMENT_2D_H

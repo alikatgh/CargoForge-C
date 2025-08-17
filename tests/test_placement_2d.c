@@ -4,13 +4,12 @@
 #include <string.h>
 #include <assert.h>
 
-// Include the headers for the modules we are testing
-#include "../placement_2d.h" // Note the path to the header
+#include "../cargoforge.h"
+#include "../placement_2d.h"
 
-// A helper function to find a cargo item by its name
-static CargoItem* find_item(const char* name, CargoItem items[], int count) {
+static Cargo* find_item(const char* name, Cargo items[], int count) {
     for (int i = 0; i < count; i++) {
-        if (strcmp(items[i].name, name) == 0) {
+        if (strcmp(items[i].id, name) == 0) {
             return &items[i];
         }
     }
@@ -21,49 +20,42 @@ int main() {
     printf("Running test: test_placement_2d...\n");
 
     // --- 1. Setup Test Data ---
-    Bin bins[2] = {
-        {"SmallHold", 10, 5, 0, NULL, 0}, // A 10x5 hold
-        {"Deck", 20, 3, 0, NULL, 0}       // A 20x3 deck area
-    };
-    int bin_count = 2;
+    Ship test_ship = {0};
+    test_ship.length = 20.0f; // Hold1: x=[0,10), Hold2: x=[10,20)
+    test_ship.width = 8.0f;   // This is the "height" of a bin's 2D space
 
-    CargoItem items[] = {
-        // This item is heavy and large, should go to SmallHold first
-        {"HeavyBox", 8, 4, 1000, ""},
-        // This item is too tall for SmallHold (5), but will fit on Deck if rotated
-        {"TallBox", 2, 6, 500, ""},
-        // This small item should fit on a new shelf in SmallHold
-        {"SmallCrate", 3, 1, 100, ""}
+    Cargo items[] = {
+        {"HeavyBox", 1000.0f, {8.0f, 4.0f, 2.0f}, "general", -1, -1, -1},
+        {"MediumBox", 500.0f, {7.0f, 5.0f, 2.0f}, "general", -1, -1, -1},
+        {"SmallCrate", 100.0f, {2.0f, 2.0f, 1.0f}, "general", -1, -1, -1}
     };
-    int item_count = sizeof(items) / sizeof(CargoItem);
+    
+    test_ship.cargo = items;
+    test_ship.cargo_count = sizeof(items) / sizeof(Cargo);
 
     // --- 2. Run the Function to Test ---
-    place_cargo_2d(bins, bin_count, items, item_count);
+    place_cargo_2d(&test_ship);
 
     // --- 3. Assert the Results ---
-    // Find each item to check its placement
-    CargoItem* heavy_box = find_item("HeavyBox", items, item_count);
-    CargoItem* tall_box = find_item("TallBox", items, item_count);
-    CargoItem* small_crate = find_item("SmallCrate", items, item_count);
+    Cargo* heavy_box = find_item("HeavyBox", test_ship.cargo, test_ship.cargo_count);
+    Cargo* medium_box = find_item("MediumBox", test_ship.cargo, test_ship.cargo_count);
+    Cargo* small_crate = find_item("SmallCrate", test_ship.cargo, test_ship.cargo_count);
 
-    // Check that none are NULL (i.e., they were found)
-    assert(heavy_box != NULL);
-    assert(tall_box != NULL);
-    assert(small_crate != NULL);
+    assert(heavy_box != NULL && heavy_box->pos_x >= 0);
+    assert(medium_box != NULL && medium_box->pos_x >= 0);
+    assert(small_crate != NULL && small_crate->pos_x >= 0);
 
-    // Assert that each item was placed in the expected bin
-    // HeavyBox is heaviest, so it gets placed first in the first available bin.
-    assert(strcmp(heavy_box->placed_in, "SmallHold") == 0);
+    // HeavyBox is heaviest, goes to Hold1. pos_x should be 0.
+    assert(heavy_box->pos_x < 10.0f && heavy_box->pos_z < 0);
+    
+    // MediumBox is next. It's too tall to fit on a new shelf in Hold1 (4+5 > 8).
+    // So it MUST be placed in Hold2. Its pos_x should be 10.
+    assert(medium_box->pos_x >= 10.0f && medium_box->pos_z < 0);
 
-    // TallBox is next heaviest. It's too tall (6) for SmallHold (height 5),
-    // but it can be rotated to (6x2) to fit on the Deck (width 20).
-    // Our logic tries bins in order, so it fails SmallHold then succeeds on Deck.
-    assert(strcmp(tall_box->placed_in, "Deck") == 0);
+    // SmallCrate is last. It should fit on the same shelf as HeavyBox in Hold1.
+    assert(small_crate->pos_x < 10.0f && small_crate->pos_z < 0 && small_crate->pos_x > 0);
 
-    // SmallCrate is placed last. It fits easily in SmallHold on a new shelf.
-    assert(strcmp(small_crate->placed_in, "SmallHold") == 0);
-
-    printf("Test passed!\n");
+    printf("✅ Test passed!\n");
 
     return 0;
 }
