@@ -288,6 +288,21 @@
         .diff-beginner { background: #51cf66; color: white; }
         .diff-intermediate { background: #ffd43b; color: #333; }
         .diff-advanced { background: #ff6b6b; color: white; }
+
+        .cargo-draggable {
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .cargo-draggable:hover {
+            background: #d0d0d0 !important;
+            transform: translateX(5px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        #viewport {
+            position: relative;
+        }
     </style>
 </head>
 <body>
@@ -330,8 +345,16 @@
                     </div>
 
                     <button onclick="addCargo()" class="secondary">+ Add Cargo</button>
-                    <button onclick="runOptimization()" class="success">▶ Optimize Placement</button>
                     <button onclick="loadExample()">📋 Load Example</button>
+
+                    <h3 style="margin-top: 20px; margin-bottom: 10px;">Sea State</h3>
+                    <input type="range" id="sea-state" min="0" max="6" value="0" style="width: 100%; margin-bottom: 5px;">
+                    <div id="sea-state-value" style="text-align: center; font-size: 14px; color: #666; margin-bottom: 15px;">Calm (0)</div>
+
+                    <button id="start-interactive-btn" onclick="startInteractiveMode()" class="success">🎮 START INTERACTIVE MODE</button>
+                    <button id="reset-btn" onclick="resetGame()" class="secondary" style="display: none;">🔄 Reset</button>
+
+                    <div id="game-status" style="margin-top: 15px; padding: 10px; background: #f0f0f0; border-radius: 5px; font-size: 14px; text-align: center;"></div>
                 </div>
 
                 <div class="panel">
@@ -386,6 +409,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="physics.js"></script>
     <script src="visualizer.js"></script>
     <script src="app.js"></script>
 </body>
