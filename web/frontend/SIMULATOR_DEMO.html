@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CargoForge-C - INTERACTIVE PHYSICS SIMULATOR</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 20px;
+        }
+
+        .panel {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .panel h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        #viewport {
+            height: 700px;
+            background: #1a1a2e;
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        button.secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .cargo-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+        }
+
+        .cargo-item {
+            background: #f5f5f5;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .cargo-draggable {
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .cargo-draggable:hover {
+            background: #d0d0d0 !important;
+            transform: translateX(5px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .cargo-badge {
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 600;
+            color: white;
+            margin-left: 8px;
+        }
+
+        .badge-standard { background: #667eea; }
+        .badge-hazardous { background: #ff6b6b; }
+        .badge-reefer { background: #4dabf7; }
+        .badge-fragile { background: #ffd43b; color: #333; }
+        .badge-heavy { background: #495057; }
+        .badge-bulk { background: #8c7ae6; }
+        .badge-general { background: #20bf6b; }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background: #f9f9f9;
+            margin-bottom: 8px;
+            border-radius: 5px;
+        }
+
+        .metric-label {
+            font-weight: 600;
+            color: #555;
+        }
+
+        .metric-value {
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .status-optimal { color: #51cf66; }
+        .status-warning { color: #ffa500; }
+        .status-critical { color: #ff6b6b; }
+
+        #game-status {
+            padding: 12px;
+            background: #f0f0f0;
+            border-radius: 5px;
+            font-size: 14px;
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .info-banner {
+            background: #4dabf7;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚢 CargoForge-C - INTERACTIVE SIMULATOR</h1>
+            <p class="subtitle">Real Physics • Manual Placement • Live Tilting</p>
+        </header>
+
+        <div class="info-banner">
+            ⚡ NEW: Click cargo items then place them on the ship. Watch it TILT IN REAL-TIME!
+        </div>
+
+        <div class="main-grid">
+            <div class="panel">
+                <h2>Ship Configuration</h2>
+
+                <div class="form-group">
+                    <label>Ship Length (m)</label>
+                    <input type="number" id="ship-length" value="150" min="10">
+                </div>
+
+                <div class="form-group">
+                    <label>Ship Width (m)</label>
+                    <input type="number" id="ship-width" value="25" min="5">
+                </div>
+
+                <div class="form-group">
+                    <label>Max Weight (kg)</label>
+                    <input type="number" id="ship-max-weight" value="50000000" min="1000">
+                </div>
+
+                <h3 style="margin-top: 20px; margin-bottom: 10px;">Cargo Items</h3>
+                <div class="cargo-list" id="cargo-list"></div>
+
+                <h3 style="margin-top: 20px; margin-bottom: 10px;">Sea State</h3>
+                <input type="range" id="sea-state" min="0" max="6" value="0" style="margin-bottom: 5px;">
+                <div id="sea-state-value" style="text-align: center; font-size: 14px; color: #666; margin-bottom: 15px;">Calm (0)</div>
+
+                <button id="start-interactive-btn" onclick="startInteractiveMode()">🎮 START INTERACTIVE MODE</button>
+                <button id="reset-btn" onclick="resetGame()" class="secondary" style="display: none;">🔄 Reset</button>
+
+                <div id="game-status"></div>
+            </div>
+
+            <div class="panel">
+                <h2>3D Physics Visualization</h2>
+                <div id="viewport"></div>
+
+                <div id="results" style="margin-top: 20px; display: none;">
+                    <h3 style="margin-bottom: 15px;">Real-Time Stability</h3>
+                    <div id="metrics"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="physics.js"></script>
+    <script src="visualizer.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
