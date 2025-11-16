@@ -6,9 +6,9 @@ CFLAGS = -O3 -Wall -Wextra -std=c99 -D_POSIX_C_SOURCE=200809L
 LDFLAGS = -lm # -lm for math library if needed in the future
 
 # Source files, object files, and header files
-SRCS = main.c parser.c optimizer.c analysis.c placement_2d.c placement_3d.c constraints.c visualization.c
+SRCS = main.c parser.c optimizer.c analysis.c placement_2d.c placement_3d.c constraints.c visualization.c json_output.c
 OBJS = $(SRCS:.c=.o)
-HDRS = cargoforge.h placement_2d.h placement_3d.h constraints.h visualization.h
+HDRS = cargoforge.h placement_2d.h placement_3d.h constraints.h visualization.h json_output.h
 
 # Executable name
 TARGET = cargoforge

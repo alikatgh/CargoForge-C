@@ -6,14 +6,15 @@
  */
 #include "cargoforge.h"
 #include "visualization.h"
+#include "json_output.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
 // The main function controls the program flow.
 int main(int argc, char *argv[]) {
-    // 1. Check for correct command-line arguments.
-    if (argc != 3) {
+    // 1. Check for minimum command-line arguments (ship config + cargo list)
+    if (argc < 3) {
         usage(argv[0]);
         return EXIT_FAILURE;
     }
@@ -35,23 +36,36 @@ int main(int argc, char *argv[]) {
 
     // 4. Run the optimization and analysis.
     optimize_cargo_placement(&ship);
-    print_loading_plan(&ship);
 
-    // 5. Optional visualization
+    // 5. Check output format
+    int json_mode = 0;
     int show_viz = 1;
+
     for (int i = 1; i < argc; i++) {
-        if (strcmp(argv[i], "--no-viz") == 0) {
+        if (strcmp(argv[i], "--json") == 0) {
+            json_mode = 1;
+            show_viz = 0;  // JSON mode overrides visualization
+        } else if (strcmp(argv[i], "--no-viz") == 0) {
             show_viz = 0;
-            break;
         }
     }
 
-    if (show_viz) {
-        print_cargo_layout_ascii(&ship);
-        print_cargo_summary(&ship);
+    // 6. Output results
+    if (json_mode) {
+        // JSON output for API/web interface
+        AnalysisResult result = perform_analysis(&ship);
+        print_json_output(&ship, &result);
+    } else {
+        // Human-readable output
+        print_loading_plan(&ship);
+
+        if (show_viz) {
+            print_cargo_layout_ascii(&ship);
+            print_cargo_summary(&ship);
+        }
     }
 
-    // 6. Clean up allocated memory.
+    // 7. Clean up allocated memory.
     free(ship.cargo);
     ship.cargo = NULL;
 
@@ -65,6 +79,7 @@ void usage(const char *prog_name) {
     fprintf(stderr, "  ship_config.cfg: Ship specifications file\n");
     fprintf(stderr, "  cargo_list.txt:  Cargo manifest file\n");
     fprintf(stderr, "\nOptions:\n");
+    fprintf(stderr, "  --json:          Output results in JSON format (for API/web)\n");
     fprintf(stderr, "  --no-viz:        Disable ASCII visualization output\n");
     fprintf(stderr, "\nExamples:\n");
     fprintf(stderr, "  %s examples/sample_ship.cfg examples/sample_cargo.txt\n", prog_name);
