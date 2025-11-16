@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - DATABASE_URL=postgresql://cargoforge:password@db:5432/cargoforge
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./:/app
+    command: gunicorn -w 4 -b 0.0.0.0:5000 "web.backend.app_prod:app"
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=cargoforge
+      - POSTGRES_USER=cargoforge
+      - POSTGRES_PASSWORD=password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - web
+
+volumes:
+  postgres_data:
+  redis_data:

@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CargoForge - Professional Maritime Cargo Loading Simulator</title>
+    <meta name="description" content="Professional maritime cargo loading simulator with 3D visualization, training challenges, and real naval architecture principles.">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 100px 20px;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 3.5em;
+            margin-bottom: 20px;
+            animation: fadeInUp 1s;
+        }
+
+        .hero p {
+            font-size: 1.5em;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 15px 40px;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: white;
+            color: #667eea;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-secondary:hover {
+            background: white;
+            color: #667eea;
+        }
+
+        /* Features Section */
+        .features {
+            padding: 80px 20px;
+            background: #f8f9fa;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 60px;
+            color: #667eea;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .feature-icon {
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+
+        .feature-card h3 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+
+        /* Pricing Section */
+        .pricing {
+            padding: 80px 20px;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .pricing-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .pricing-card.featured {
+            border-color: #667eea;
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .pricing-card:hover {
+            border-color: #667eea;
+        }
+
+        .pricing-tier {
+            font-size: 1.5em;
+            color: #667eea;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .pricing-price {
+            font-size: 3em;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .pricing-period {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .pricing-features {
+            list-style: none;
+            margin-bottom: 30px;
+        }
+
+        .pricing-features li {
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .pricing-features li:before {
+            content: "✓ ";
+            color: #51cf66;
+            font-weight: bold;
+        }
+
+        /* Screenshots */
+        .screenshots {
+            padding: 80px 20px;
+            background: #f8f9fa;
+        }
+
+        .screenshot-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+        }
+
+        .screenshot {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .screenshot img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .screenshot-caption {
+            padding: 20px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        /* Footer */
+        .footer {
+            background: #2c3e50;
+            color: white;
+            padding: 60px 20px 20px;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            max-width: 1200px;
+            margin: 0 auto 40px;
+        }
+
+        .footer h4 {
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+
+        .footer ul {
+            list-style: none;
+        }
+
+        .footer a {
+            color: #ecf0f1;
+            text-decoration: none;
+            display: block;
+            padding: 5px 0;
+            transition: color 0.3s;
+        }
+
+        .footer a:hover {
+            color: #667eea;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #34495e;
+            color: #95a5a6;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2em;
+            }
+
+            .hero p {
+                font-size: 1.2em;
+            }
+
+            .section-title {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <section class="hero">
+        <h1>🚢 CargoForge</h1>
+        <p>Professional Maritime Cargo Loading Simulator</p>
+        <p style="font-size: 1.2em; margin-top: -20px;">Optimize cargo placement with real naval architecture principles</p>
+
+        <div class="cta-buttons">
+            <a href="/app" class="btn btn-primary">Try Free Demo →</a>
+            <a href="#pricing" class="btn btn-secondary">View Pricing</a>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+        <div class="container">
+            <h2 class="section-title">Why CargoForge?</h2>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3>3D Bin-Packing</h3>
+                    <p>Advanced guillotine algorithm optimizes cargo placement in 3D space with 6 orientation options per item.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">⚖️</div>
+                    <h3>Real Stability Analysis</h3>
+                    <p>Calculates metacentric height (GM), center of gravity, and stability using IMO-compliant formulas.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🎨</div>
+                    <h3>Interactive 3D Viz</h3>
+                    <p>Stunning Three.js visualization with orbit controls, color-coded cargo types, and real-time rendering.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🎓</div>
+                    <h3>Training Challenges</h3>
+                    <p>Progressive difficulty levels teach cargo loading principles from beginner to expert.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">⚠️</div>
+                    <h3>Safety Constraints</h3>
+                    <p>Enforces hazmat separation, weight distribution limits, and cargo type-specific rules.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Lightning Fast</h3>
+                    <p>Pure C99 backend optimizes thousands of cargo items in milliseconds with zero memory leaks.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Export Reports</h3>
+                    <p>Generate professional PDF loading plans with stability analysis and cargo manifests.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🔗</div>
+                    <h3>API Access</h3>
+                    <p>RESTful API for integration with existing logistics systems. Enterprise-grade rate limits.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">💾</div>
+                    <h3>Save & Share</h3>
+                    <p>Save scenarios to cloud, share with colleagues, and maintain version history.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section class="pricing" id="pricing">
+        <div class="container">
+            <h2 class="section-title">Simple, Transparent Pricing</h2>
+
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <div class="pricing-tier">Free</div>
+                    <div class="pricing-price">$0</div>
+                    <div class="pricing-period">forever</div>
+
+                    <ul class="pricing-features">
+                        <li>10 optimizations/day</li>
+                        <li>3D visualization</li>
+                        <li>Training challenges</li>
+                        <li>Basic scenarios</li>
+                        <li>Community support</li>
+                    </ul>
+
+                    <a href="/app" class="btn btn-secondary">Get Started</a>
+                </div>
+
+                <div class="pricing-card featured">
+                    <div class="pricing-tier">Pro</div>
+                    <div class="pricing-price">$29</div>
+                    <div class="pricing-period">per month</div>
+
+                    <ul class="pricing-features">
+                        <li>1,000 optimizations/day</li>
+                        <li>Save unlimited scenarios</li>
+                        <li>PDF export</li>
+                        <li>Share scenarios</li>
+                        <li>API access</li>
+                        <li>Priority support</li>
+                        <li>Advanced analytics</li>
+                    </ul>
+
+                    <a href="/app" class="btn btn-primary">Start Pro Trial</a>
+                </div>
+
+                <div class="pricing-card">
+                    <div class="pricing-tier">Enterprise</div>
+                    <div class="pricing-price">Custom</div>
+                    <div class="pricing-period">contact sales</div>
+
+                    <ul class="pricing-features">
+                        <li>Unlimited optimizations</li>
+                        <li>Multi-user accounts</li>
+                        <li>Custom integrations</li>
+                        <li>On-premise deployment</li>
+                        <li>SLA guarantee</li>
+                        <li>Dedicated support</li>
+                        <li>Training & onboarding</li>
+                    </ul>
+
+                    <a href="mailto:sales@cargoforge.com" class="btn btn-secondary">Contact Sales</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Use Cases -->
+    <section class="features">
+        <div class="container">
+            <h2 class="section-title">Who Uses CargoForge?</h2>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3>🏫 Maritime Schools</h3>
+                    <p>Interactive training platform for teaching cargo loading, stability principles, and safety regulations to maritime students.</p>
+                </div>
+
+                <div class="feature-card">
+                    <h3>🚢 Shipping Companies</h3>
+                    <p>Optimize cargo placement, ensure regulatory compliance, and reduce fuel costs through better weight distribution.</p>
+                </div>
+
+                <div class="feature-card">
+                    <h3>📦 Logistics Firms</h3>
+                    <p>Plan complex cargo operations, validate loading configurations, and generate professional loading plans for clients.</p>
+                </div>
+
+                <div class="feature-card">
+                    <h3>🔬 Researchers</h3>
+                    <p>Test optimization algorithms, validate naval architecture principles, and publish research on cargo loading.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-grid">
+            <div>
+                <h4>CargoForge</h4>
+                <p>Professional maritime cargo loading simulator built on real naval architecture principles.</p>
+            </div>
+
+            <div>
+                <h4>Product</h4>
+                <ul>
+                    <li><a href="/app">Try Demo</a></li>
+                    <li><a href="#pricing">Pricing</a></li>
+                    <li><a href="/docs">Documentation</a></li>
+                    <li><a href="/api">API Reference</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h4>Company</h4>
+                <ul>
+                    <li><a href="/about">About Us</a></li>
+                    <li><a href="/contact">Contact</a></li>
+                    <li><a href="/terms">Terms of Service</a></li>
+                    <li><a href="/privacy">Privacy Policy</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h4>Resources</h4>
+                <ul>
+                    <li><a href="https://github.com/alikatgh/CargoForge-C">GitHub</a></li>
+                    <li><a href="/blog">Blog</a></li>
+                    <li><a href="/support">Support</a></li>
+                    <li><a href="/changelog">Changelog</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2025 CargoForge. All rights reserved. | Built with ❤️ for the maritime industry</p>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
