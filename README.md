@@ -44,6 +44,7 @@ This project should and will address a critical need in global shipping: **90% o
   - **Compiler**: Built and tested with **GCC** and **Clang**.
   - **Dependencies**: **None.** The project is intentionally self-contained for maximum portability.
   - **Build Systems**: Makefile and CMake supported
+  - **Interfaces**: CLI + Interactive Web UI
 
 ## Getting Started
 
@@ -53,9 +54,13 @@ This project should and will address a critical need in global shipping: **90% o
   - **Build Tools**:
     - `make` (for Makefile builds)
     - `cmake` (optional, version 3.10+)
+  - **For Web Interface**:
+    - Python 3.8+ with pip
+    - Flask and flask-cors (`pip install -r web/backend/requirements.txt`)
   - **Optional Tools**:
     - `doxygen` (for API documentation)
     - `valgrind` (for memory leak detection)
+    - Docker (for containerized deployment)
   - **OS Compatibility**: Tested on Linux and macOS. Should compile on Windows via MinGW/MSYS2.
 
 ### Installation
@@ -77,6 +82,29 @@ mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j4
 ```
+
+### Quick Start: Web Interface 🌐
+
+The fastest way to try CargoForge-C is through the interactive web interface:
+
+```bash
+# Build the C binary
+make
+
+# Start the web server
+cd web && ./START.sh
+
+# Open browser to http://localhost:5000
+```
+
+**Web Features:**
+- 🎮 Interactive 3D cargo visualization with Three.js
+- 📊 Real-time stability analysis dashboard
+- 🎯 Progressive training challenges (beginner → advanced)
+- 🎨 Drag-and-drop cargo editor
+- 📱 Mobile-friendly responsive design
+
+See [web/README.md](web/README.md) for API documentation.
 
 ### Testing
 

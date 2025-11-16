@@ -1,0 +1,22 @@
+# Build artifacts
+*.o
+*.a
+build/
+docs/
+
+# Git
+.git/
+.gitignore
+
+# Python
+__pycache__/
+*.pyc
+venv/
+
+# IDE
+.vscode/
+.idea/
+
+# Misc
+*.bak
+.DS_Store
