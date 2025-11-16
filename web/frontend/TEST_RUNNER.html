@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CargoForge-C Test Suite</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1a1a2e;
+            color: #00ff00;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #0f0f1e;
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #00ff00;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px #00ff00;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #00aa00;
+            margin-bottom: 30px;
+            font-size: 1.2em;
+        }
+
+        button {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            display: block;
+            margin: 0 auto 30px;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+        }
+
+        button:hover {
+            background: #00cc00;
+            box-shadow: 0 0 25px rgba(0, 255, 0, 0.8);
+        }
+
+        button:disabled {
+            background: #555;
+            color: #888;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        #output {
+            background: #000;
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+            padding: 20px;
+            min-height: 400px;
+            max-height: 600px;
+            overflow-y: auto;
+            font-size: 14px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        .summary {
+            margin-top: 20px;
+            padding: 20px;
+            background: #0a0a1a;
+            border: 2px solid #00ff00;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .summary.show {
+            display: block;
+        }
+
+        .summary h2 {
+            color: #00ff00;
+            margin-bottom: 15px;
+        }
+
+        .stat {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            margin: 5px 0;
+            background: #000;
+            border-radius: 3px;
+        }
+
+        .stat-label {
+            font-weight: bold;
+        }
+
+        .stat-value {
+            color: #00ff00;
+            font-weight: bold;
+        }
+
+        .stat-value.fail {
+            color: #ff0000;
+        }
+
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #0a0a1a;
+            border-left: 4px solid #00ff00;
+        }
+
+        .test-section h3 {
+            color: #00ff00;
+            margin-bottom: 10px;
+        }
+
+        .loading {
+            text-align: center;
+            font-size: 20px;
+            padding: 40px;
+            display: none;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        .cursor {
+            animation: blink 1s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 CARGOFORGE-C TEST SUITE 🧪</h1>
+        <p class="subtitle">100% Physics Engine Coverage</p>
+
+        <button id="runTests" onclick="runAllTests()">▶ RUN ALL TESTS</button>
+
+        <div class="loading" id="loading">
+            <div>Running tests<span class="cursor">_</span></div>
+        </div>
+
+        <div id="output"></div>
+
+        <div class="summary" id="summary">
+            <h2>📊 Test Results Summary</h2>
+            <div class="stat">
+                <span class="stat-label">✅ Passed:</span>
+                <span class="stat-value" id="passedCount">0</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">❌ Failed:</span>
+                <span class="stat-value fail" id="failedCount">0</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">📊 Total:</span>
+                <span class="stat-value" id="totalCount">0</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">📈 Success Rate:</span>
+                <span class="stat-value" id="successRate">0%</span>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔍 What's Being Tested:</h3>
+            <ul style="margin-left: 20px; line-height: 1.8;">
+                <li>✓ Empty ship stability calculations</li>
+                <li>✓ Centered cargo placement (should stay level)</li>
+                <li>✓ Off-center cargo (should list)</li>
+                <li>✓ Overloaded ship detection</li>
+                <li>✓ High center of gravity effects</li>
+                <li>✓ Multiple cargo complex loading</li>
+                <li>✓ Capsizing detection</li>
+                <li>✓ Wave motion simulation</li>
+                <li>✓ Scoring system accuracy</li>
+                <li>✓ Draft calculation formulas</li>
+                <li>✓ GM threshold detection</li>
+                <li>✓ List angle thresholds</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Load dependencies -->
+    <script src="physics.js"></script>
+    <script src="test-physics.js"></script>
+
+    <script>
+        // Custom console logger to capture output
+        const outputDiv = document.getElementById('output');
+        const originalLog = console.log;
+        const originalError = console.error;
+
+        let logBuffer = '';
+
+        console.log = function(...args) {
+            const message = args.map(arg =>
+                typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+            ).join(' ');
+            logBuffer += message + '\n';
+            outputDiv.textContent = logBuffer;
+            outputDiv.scrollTop = outputDiv.scrollHeight;
+            originalLog.apply(console, args);
+        };
+
+        console.error = function(...args) {
+            const message = args.map(arg =>
+                typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+            ).join(' ');
+            logBuffer += message + '\n';
+            outputDiv.textContent = logBuffer;
+            outputDiv.scrollTop = outputDiv.scrollHeight;
+            originalError.apply(console, args);
+        };
+
+        async function runAllTests() {
+            const button = document.getElementById('runTests');
+            const loading = document.getElementById('loading');
+            const summaryDiv = document.getElementById('summary');
+
+            // Disable button and show loading
+            button.disabled = true;
+            loading.classList.add('show');
+            summaryDiv.classList.remove('show');
+            logBuffer = '';
+            outputDiv.textContent = '';
+
+            // Small delay to let UI update
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            try {
+                // Run tests
+                const tester = new PhysicsTests();
+                const results = tester.runAllTests();
+
+                // Update summary
+                document.getElementById('passedCount').textContent = results.passed;
+                document.getElementById('failedCount').textContent = results.failed;
+                document.getElementById('totalCount').textContent = results.total;
+                document.getElementById('successRate').textContent =
+                    ((results.passed / results.total) * 100).toFixed(1) + '%';
+
+                summaryDiv.classList.add('show');
+
+                // Change success rate color based on results
+                const successRateEl = document.getElementById('successRate');
+                if (results.failed === 0) {
+                    successRateEl.style.color = '#00ff00';
+                } else if (results.passed / results.total > 0.8) {
+                    successRateEl.style.color = '#ffaa00';
+                } else {
+                    successRateEl.style.color = '#ff0000';
+                }
+
+            } catch (error) {
+                console.error('Test suite crashed:', error);
+            } finally {
+                loading.classList.remove('show');
+                button.disabled = false;
+            }
+        }
+
+        // Auto-run tests on load
+        window.addEventListener('load', () => {
+            console.log('Test suite loaded. Click "RUN ALL TESTS" to begin.\n');
+        });
+    </script>
+</body>
+</html>

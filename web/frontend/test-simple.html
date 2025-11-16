@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quick Physics Test</title>
+    <style>
+        body {
+            font-family: monospace;
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 20px;
+        }
+        .test { margin: 10px 0; padding: 10px; background: #000; border-left: 4px solid #00ff00; }
+        .pass { border-color: #00ff00; }
+        .fail { border-color: #ff0000; color: #ff0000; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Quick Physics Engine Test</h1>
+    <div id="output"></div>
+
+    <script src="physics.js"></script>
+    <script>
+        const output = document.getElementById('output');
+        let passed = 0, failed = 0;
+
+        function test(name, fn) {
+            try {
+                fn();
+                output.innerHTML += `<div class="test pass">✅ ${name}</div>`;
+                passed++;
+            } catch (e) {
+                output.innerHTML += `<div class="test fail">❌ ${name}: ${e.message}</div>`;
+                failed++;
+            }
+        }
+
+        // Run tests
+        const physics = new MaritimePhysics();
+
+        test('Physics engine loads', () => {
+            if (!physics) throw new Error('Physics not loaded');
+        });
+
+        test('Empty ship stability', () => {
+            const ship = {length: 150, width: 25, max_weight: 50000000, lightship_weight: 15000000, lightship_kg: 5.0};
+            const stability = physics.calculateStability(ship, []);
+            if (stability.gm <= 0) throw new Error('GM should be positive');
+            if (stability.isCapsized) throw new Error('Empty ship should not be capsized');
+        });
+
+        test('Centered cargo stays level', () => {
+            const ship = {length: 150, width: 25, max_weight: 50000000, lightship_weight: 15000000, lightship_kg: 5.0};
+            const cargo = [{id: 'C1', weight: 250000, dimensions: [12,2.4,2.6],
+                           position: {x: 69, y: 11.3, z: -8}}];
+            const stability = physics.calculateStability(ship, cargo);
+            if (Math.abs(stability.listAngle) > 2) throw new Error(`List too high: ${stability.listAngle}°`);
+        });
+
+        test('Off-center cargo lists', () => {
+            const ship = {length: 150, width: 25, max_weight: 50000000, lightship_weight: 15000000, lightship_kg: 5.0};
+            const cargo = [{id: 'C1', weight: 500000, dimensions: [12,2.4,2.6],
+                           position: {x: 75, y: 20, z: -8}}]; // Far starboard
+            const stability = physics.calculateStability(ship, cargo);
+            if (Math.abs(stability.listAngle) < 0.5) throw new Error('Should have noticeable list');
+        });
+
+        test('Wave motion calculation', () => {
+            const ship = {length: 150, width: 25, max_weight: 50000000, lightship_weight: 15000000, lightship_kg: 5.0};
+            const stability = physics.calculateStability(ship, []);
+            physics.setSeaState(3);
+            const motion = physics.calculateWaveMotion(stability, 1.0);
+            if (typeof motion.roll !== 'number') throw new Error('Roll should be a number');
+            if (typeof motion.pitch !== 'number') throw new Error('Pitch should be a number');
+        });
+
+        test('Scoring system', () => {
+            const ship = {length: 150, width: 25, max_weight: 50000000, lightship_weight: 15000000, lightship_kg: 5.0};
+            const stability = physics.calculateStability(ship, []);
+            const score = physics.calculateScore(stability, 5, 5, 30);
+            if (score.total < 0 || score.total > 100) throw new Error('Score out of range');
+        });
+
+        test('Capsized ship scores 0', () => {
+            const stability = {isCapsized: true};
+            const score = physics.calculateScore(stability, 1, 1, 30);
+            if (score.total !== 0) throw new Error('Capsized ship should score 0');
+        });
+
+        test('Draft increases with weight', () => {
+            const ship = {length: 150, width: 25, max_weight: 50000000, lightship_weight: 15000000, lightship_kg: 5.0};
+            const empty = physics.calculateStability(ship, []);
+            const cargo = [{id: 'C1', weight: 5000000, dimensions: [12,2.4,2.6], position: {x:75,y:12.5,z:-8}}];
+            const loaded = physics.calculateStability(ship, cargo);
+            if (loaded.draft <= empty.draft) throw new Error('Draft should increase with weight');
+        });
+
+        test('GM thresholds correct', () => {
+            const warnings = physics.generateWarnings(0.2, 0, 0, 15000000, 50000000);
+            if (!warnings.some(w => w.includes('CRITICAL') && w.includes('GM')))
+                throw new Error('Should generate GM critical warning');
+        });
+
+        test('List thresholds correct', () => {
+            const warnings = physics.generateWarnings(1.5, 15, 0, 15000000, 50000000);
+            if (!warnings.some(w => w.includes('CRITICAL') && w.includes('list')))
+                throw new Error('Should generate list critical warning');
+        });
+
+        // Summary
+        output.innerHTML += `<div class="test" style="margin-top: 20px; border-color: #ffff00;">
+            <strong>📊 RESULTS:</strong><br>
+            ✅ Passed: ${passed}<br>
+            ❌ Failed: ${failed}<br>
+            📈 Success: ${((passed/(passed+failed))*100).toFixed(1)}%
+        </div>`;
+
+        if (failed === 0) {
+            output.innerHTML += `<div class="test pass" style="font-size: 20px;">🎉 ALL TESTS PASSED! 🎉</div>`;
+        }
+    </script>
+</body>
+</html>
