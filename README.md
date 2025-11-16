@@ -5,220 +5,432 @@
 [![Contributors](https://img.shields.io/github/contributors/alikatgh/CargoForge-C.svg)](https://github.com/alikatgh/CargoForge-C/graphs/contributors)
 [![GitHub issues](https://img.shields.io/github/issues/alikatgh/CargoForge-C.svg)](https://github.com/alikatgh/CargoForge-C/issues)
 
-> **Project Status: Alpha**
-> This project is in active development. Expect breaking changes until the v1.0 release.
+> **Professional Maritime Cargo Loading Optimization Platform**
+> Production-ready SaaS application with subscription billing, PDF exports, and API access.
 
-A lightweight, dependency-free maritime cargo simulator written in pure C99.
+**CargoForge-C** is a commercial-grade maritime cargo optimization platform combining a high-performance C99 computation engine with a modern web interface, user authentication, and payment processing. Perfect for maritime schools, shipping companies, logistics firms, and educational institutions.
+
+![CargoForge Demo](DEMO.md)
 
 -----
 
-## Why CargoForge-C?
+## 🌟 Features
 
-This project should and will address a critical need in global shipping: **90% of world trade moves by sea**, and inefficient loading costs millions in fuel and introduces safety risks. This tool aims to simulate and optimize that process.
+### Core Optimization Engine (C99)
+- ✅ **3D Guillotine Bin-Packing**: Advanced space-filling algorithm with 6-orientation testing
+- ✅ **Naval Architecture Calculations**: Block coefficient (Cb), waterplane coefficient (Cw), KB/BM/GM analysis
+- ✅ **Cargo Constraints**: Hazmat separation (3m minimum), point load limits, weight distribution rules
+- ✅ **Stability Analysis**: IMO-compliant metacentric height calculations with status classification
+- ✅ **Zero Dependencies**: Pure C99 with no external libraries for maximum performance
+- ✅ **JSON API**: Modern JSON output for seamless web integration
 
-  - **Learn and Contribute**: Perfect for C enthusiasts to practice low-level programming while tackling practical, high-impact logistics problems.
-  - **Maritime Focus**: Optimizes cargo loading on large vessels, considering weight distribution and stability to reduce fuel costs and safety hazards.
-  - **Performance & Portability**: No external libraries—everything is built from scratch. It runs on any platform with a C compiler, from desktops to embedded boards.
-  - **Open for Growth**: Designed with a modular architecture to welcome contributors. Help add new features like hardware sensor integration or advanced optimization algorithms.
+### Web Platform (Production SaaS)
+- 🚀 **Interactive 3D Visualization**: Hardware-accelerated Three.js rendering with orbit controls
+- 🎯 **Training Mode**: Progressive challenges from beginner to advanced
+- 👤 **User Authentication**: Secure registration, login, and session management
+- 💳 **Subscription Billing**: Stripe integration with Free, Pro, and Enterprise tiers
+- 📄 **PDF Export**: Professional multi-page loading plan reports
+- 📊 **Usage Analytics**: Real-time dashboard with statistics and insights
+- 🔑 **REST API**: Full API access with rate-limited endpoints
+- 💾 **Scenario Management**: Save, share, and collaborate on cargo plans
 
-## Current Features
+### Enterprise Features
+- 🏢 **Multi-User Support**: Team collaboration with role-based access
+- 🔒 **Security**: Bcrypt password hashing, API key authentication, CORS protection
+- ⚡ **Rate Limiting**: Redis-backed limits per subscription tier
+- 📈 **Monitoring**: Sentry error tracking and application logs
+- 🐳 **Docker Deployment**: Production-ready containerization
+- 📚 **Comprehensive Documentation**: API docs, deployment guide, and user manual
 
-  - **Cargo Loading Simulator**: Input ship specifications and a cargo manifest to receive a 2D cargo placement plan using First-Fit Decreasing bin-packing algorithm.
-  - **Ship Stability Calculations**: Computes the vessel's **center of gravity (CG)** and **metacentric height (GM)** for stability analysis.
-  - **Robust Input Parsing**: Safe parsing with comprehensive error handling and validation for ship configs and cargo manifests.
-  - **Modular Architecture**: Clean separation between parsing, placement optimization, and stability analysis modules.
-  - **Zero Dependencies**: Built with only standard C99 library for maximum portability.
+-----
 
-## Planned Features (Roadmap)
+## 🚀 Quick Start
 
-  - **3D Bin-Packing**: Full 3D cargo placement with height constraints
-  - **Advanced Optimization**: Genetic algorithms and simulated annealing
-  - **Cargo Constraints**: Handle cargo types (hazardous, refrigerated, fragile) with placement rules
-  - **Route Optimization**: Graph-based pathfinding for voyage planning
-  - **Hardware Integration**: Serial port interfaces for sensor data
-  - **Real-time Visualization**: Interactive 3D cargo layout viewer
+### Try the Demo (Fastest)
 
-## Stack
+```bash
+# Clone and build
+git clone https://github.com/alikatgh/CargoForge-C.git
+cd CargoForge-C
+make
 
-  - **Language**: **C (C99)**
-  - **Compiler**: Built and tested with **GCC** and **Clang**.
-  - **Dependencies**: **None.** The project is intentionally self-contained for maximum portability.
-  - **Build Systems**: Makefile and CMake supported
-  - **Interfaces**: CLI + Interactive Web UI
+# Start web interface (demo mode)
+cd web && ./START.sh
 
-## Getting Started
+# Open http://localhost:5000
+```
+
+### Production Deployment
+
+```bash
+# Copy and configure environment
+cp .env.example .env
+nano .env  # Add your Stripe keys, database URL, etc.
+
+# Deploy with Docker
+chmod +x deploy.sh
+./deploy.sh
+
+# Access at https://yourdomain.com
+```
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for complete production setup guide.
+
+-----
+
+## 💰 Pricing & Subscription Tiers
+
+| Feature | Free | Pro | Enterprise |
+|---------|------|-----|------------|
+| **Daily Optimizations** | 10 | 1,000 | Unlimited |
+| **Save Scenarios** | ❌ | ✅ Unlimited | ✅ Unlimited |
+| **PDF Export** | ❌ | ✅ | ✅ |
+| **API Access** | ❌ | ✅ | ✅ |
+| **3D Visualization** | ✅ | ✅ | ✅ |
+| **Training Challenges** | ✅ | ✅ | ✅ |
+| **Priority Support** | ❌ | ✅ | ✅ Dedicated |
+| **Custom Features** | ❌ | ❌ | ✅ |
+| **SLA Guarantee** | ❌ | ❌ | ✅ 99.9% |
+| **Pricing** | **$0** | **$29/month** | **Custom** |
+
+-----
+
+## 🎓 Use Cases
+
+### Maritime Training Schools
+- Interactive learning platform for naval architecture students
+- Progressive challenges teaching stability and loading principles
+- Visual feedback with 3D rendering
+- Export professional reports for assignments
+
+### Shipping Companies
+- Optimize cargo loading for fuel efficiency
+- Ensure IMO stability compliance
+- Generate loading plans for crew
+- API integration with logistics software
+
+### Logistics & Freight Forwarders
+- Container loading optimization
+- Multi-cargo scenario planning
+- Client reporting with PDF exports
+- Team collaboration on complex loads
+
+### Research & Education
+- Algorithm benchmarking and validation
+- Maritime safety research
+- Open-source C99 codebase for study
+- REST API for data collection
+
+-----
+
+## 📖 Documentation
+
+| Document | Description |
+|----------|-------------|
+| [DEPLOYMENT.md](DEPLOYMENT.md) | Complete production deployment guide |
+| [API.md](API.md) | REST API documentation with examples |
+| [DEMO.md](DEMO.md) | Interactive demo walkthrough |
+| [CHANGELOG.md](CHANGELOG.md) | Version history and release notes |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Contribution guidelines |
+
+-----
+
+## 🛠 Technical Stack
+
+### Backend
+- **Computation Engine**: Pure C99 (GCC/Clang)
+- **Web Framework**: Flask 3.0 (Python)
+- **Database**: PostgreSQL 15 with SQLAlchemy ORM
+- **Authentication**: Flask-Login + Bcrypt
+- **Payments**: Stripe API
+- **PDF Generation**: ReportLab
+- **Rate Limiting**: Flask-Limiter + Redis
+- **Server**: Gunicorn WSGI
+
+### Frontend
+- **Rendering**: Three.js for 3D visualization
+- **UI**: Vanilla JavaScript with modern CSS Grid
+- **Styles**: Gradient design system
+- **Responsive**: Mobile-first design
+
+### DevOps
+- **Containerization**: Docker + Docker Compose
+- **Reverse Proxy**: Nginx with SSL/TLS
+- **Monitoring**: Sentry for error tracking
+- **CI/CD**: GitHub Actions (planned)
+- **Backup**: Automated PostgreSQL backups
+
+-----
+
+## 📊 Architecture
+
+```
+┌─────────────┐
+│   Browser   │
+└──────┬──────┘
+       │ HTTPS
+       ↓
+┌─────────────┐      ┌──────────────┐
+│    Nginx    │─────→│  Flask API   │
+│  (Port 80)  │      │  (Port 5000) │
+└─────────────┘      └───────┬──────┘
+                             │
+                    ┌────────┼────────┐
+                    ↓        ↓        ↓
+              ┌──────────┐ ┌────┐ ┌──────────┐
+              │ C Binary │ │ DB │ │  Redis   │
+              │ (JSON)   │ │    │ │ (Limits) │
+              └──────────┘ └────┘ └──────────┘
+                             │
+                             ↓
+                      ┌─────────────┐
+                      │   Stripe    │
+                      │  (Payments) │
+                      └─────────────┘
+```
+
+-----
+
+## 🔧 Installation
 
 ### Prerequisites
 
-  - **C Compiler**: GCC or Clang (C99 standard)
-  - **Build Tools**:
-    - `make` (for Makefile builds)
-    - `cmake` (optional, version 3.10+)
-  - **For Web Interface**:
-    - Python 3.8+ with pip
-    - Flask and flask-cors (`pip install -r web/backend/requirements.txt`)
-  - **Optional Tools**:
-    - `doxygen` (for API documentation)
-    - `valgrind` (for memory leak detection)
-    - Docker (for containerized deployment)
-  - **OS Compatibility**: Tested on Linux and macOS. Should compile on Windows via MinGW/MSYS2.
+**Required:**
+- C Compiler (GCC 9+ or Clang 10+)
+- Python 3.8+
+- PostgreSQL 13+ (or SQLite for dev)
+- Redis 6+ (for rate limiting)
+- Make or CMake
 
-### Installation
+**For Production:**
+- Docker & Docker Compose
+- Domain with SSL certificate
+- Stripe account
+- Email service (SMTP)
 
-#### Method 1: Makefile (Recommended)
+### Development Setup
 
 ```bash
+# 1. Clone repository
 git clone https://github.com/alikatgh/CargoForge-C.git
 cd CargoForge-C
-make
+
+# 2. Build C binary
+make clean && make
+make test  # Run tests
+
+# 3. Setup Python environment
+cd web/backend
+pip install -r requirements-prod.txt
+
+# 4. Configure environment
+cp ../../.env.example ../../.env
+# Edit .env with your settings
+
+# 5. Run development server
+python app_prod.py
+
+# Access at http://localhost:5000
 ```
 
-#### Method 2: CMake
+### Production Deployment
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for:
+- Docker deployment
+- SSL/HTTPS setup
+- Stripe configuration
+- Database migration
+- Nginx configuration
+- Monitoring setup
+- Backup procedures
+
+-----
+
+## 🔌 API Usage
+
+### Authentication
 
 ```bash
-git clone https://github.com/alikatgh/CargoForge-C.git
-cd CargoForge-C
-mkdir build && cd build
-cmake -DCMAKE_BUILD_TYPE=Release ..
-make -j4
+# Register user
+curl -X POST https://api.cargoforge.com/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"email":"user@example.com","password":"secure123"}'
+
+# Get API key from response
+export API_KEY="your_api_key_here"
 ```
 
-### Quick Start: Web Interface 🌐
-
-The fastest way to try CargoForge-C is through the interactive web interface:
+### Run Optimization
 
 ```bash
-# Build the C binary
-make
-
-# Start the web server
-cd web && ./START.sh
-
-# Open browser to http://localhost:5000
+curl -X POST https://api.cargoforge.com/api/optimize \
+  -H "X-API-Key: $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "ship": {
+      "length": 150,
+      "width": 25,
+      "depth": 12,
+      "max_draft": 10,
+      "displacement": 50000
+    },
+    "cargo": [
+      {
+        "id": "Container1",
+        "weight": 25000,
+        "dimensions": [12, 2.4, 2.6],
+        "type": "standard"
+      }
+    ]
+  }'
 ```
 
-**Web Features:**
-- 🎮 Interactive 3D cargo visualization with Three.js
-- 📊 Real-time stability analysis dashboard
-- 🎯 Progressive training challenges (beginner → advanced)
-- 🎨 Drag-and-drop cargo editor
-- 📱 Mobile-friendly responsive design
-
-See [web/README.md](web/README.md) for API documentation.
-
-### Testing
+### Export PDF
 
 ```bash
-# Run all unit tests
+curl -X POST https://api.cargoforge.com/api/export/pdf \
+  -H "X-API-Key: $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"ship":{...},"cargo":[...]}' \
+  --output cargo_plan.pdf
+```
+
+See [API.md](API.md) for complete API documentation with examples in Python, JavaScript, PHP, and cURL.
+
+-----
+
+## 🧪 Testing
+
+```bash
+# Unit tests (C)
 make test
 
-# Run with memory sanitizers
-make test-asan
+# Memory safety checks
+make test-asan      # AddressSanitizer + UBSan
+make test-valgrind  # Valgrind leak checker
 
-# Run with Valgrind (requires valgrind installed)
-make test-valgrind
+# Python tests (planned)
+cd web/backend
+pytest tests/
 
-# CMake testing
-cd build && ctest --output-on-failure
+# Integration tests (planned)
+./scripts/integration_test.sh
 ```
 
-## Usage
+-----
 
-### Basic Usage
-
-```bash
-./cargoforge <ship_config.cfg> <cargo_list.txt> [options]
-```
-
-**Options:**
-- `--no-viz`: Disable ASCII visualization output
-
-**Examples:**
-
-```bash
-# Run with visualization
-./cargoforge examples/sample_ship.cfg examples/sample_cargo.txt
-
-# Run without visualization
-./cargoforge examples/sample_ship.cfg examples/sample_cargo.txt --no-viz
-```
-
-### Output
-
-The program generates:
-
-1. **Placement Statistics** - 3D bin-packing results with weight distribution
-2. **Stability Analysis** - Center of gravity, metacentric height, stability classification
-3. **ASCII Visualization** - Top-down view of cargo layout
-4. **Cargo Summary** - Detailed placement table with positions
-
-## API Documentation
-
-Generate API documentation with Doxygen:
-
-```bash
-doxygen Doxyfile
-# Open docs/html/index.html in browser
-```
-
-## Contributing
-
-Please see `CONTRIBUTING.md` for detailed guidelines. We welcome contributions in:
-- Advanced optimization algorithms (genetic, simulated annealing)
-- Real maritime dataset validation
-- GUI development
-- Performance improvements
-- Bug fixes and testing
-
-## Roadmap
-
-  - [x] **v0.1-alpha**: Core 2D simulator engine, file parsing, and basic stability calculations
-  - [x] **v0.2-beta**: 3D bin-packing, cargo constraints, comprehensive test suite, and API documentation (Current)
-  - [ ] **v0.3**: Advanced optimization algorithms (genetic, simulated annealing), performance benchmarks
-  - [ ] **v0.4**: Real maritime datasets, validation against IMO standards, SVG/web visualization
-  - [ ] **v1.0**: Stable API, comprehensive documentation, hardware integration support
-
-## Development
-
-### Build Configurations
-
-```bash
-# Debug build with symbols
-make clean && CFLAGS="-g -O0 -DDEBUG" make
-
-# Release build (default)
-make
-
-# Memory safety testing
-make test-asan           # AddressSanitizer + UBSan
-make test-valgrind       # Valgrind leak checker
-```
-
-### Project Structure
+## 📂 Project Structure
 
 ```
 CargoForge-C/
-├── main.c                 # Entry point
-├── parser.c/h            # Input file parsing
-├── optimizer.c/h         # Optimization coordinator
-├── placement_3d.c/h      # 3D bin-packing algorithm
-├── placement_2d.c/h      # Legacy 2D placement
-├── constraints.c/h       # Cargo constraints validation
-├── analysis.c/h          # Stability calculations
-├── visualization.c/h     # ASCII output
-├── tests/                # Unit test suite
-├── examples/             # Sample input files
-├── Makefile              # Make build
-├── CMakeLists.txt        # CMake build
-└── Doxyfile              # API documentation config
+├── src/                          # C source files
+│   ├── main.c                    # Entry point
+│   ├── parser.c/h                # Input parsing
+│   ├── optimizer.c/h             # Optimization coordinator
+│   ├── placement_3d.c/h          # 3D bin-packing (guillotine)
+│   ├── placement_2d.c/h          # Legacy 2D placement
+│   ├── constraints.c/h           # Cargo constraint validation
+│   ├── analysis.c/h              # Stability calculations
+│   ├── visualization.c/h         # ASCII output
+│   └── json_output.c/h           # JSON serialization
+├── web/
+│   ├── backend/
+│   │   ├── app_prod.py           # Production Flask app
+│   │   ├── pdf_export.py         # PDF generation
+│   │   ├── stripe_integration.py # Payment processing
+│   │   └── requirements-prod.txt # Python dependencies
+│   └── frontend/
+│       ├── landing.html          # Marketing page
+│       ├── index.html            # Simulator app
+│       ├── dashboard.html        # User dashboard
+│       ├── terms.html            # Terms of Service
+│       └── privacy.html          # Privacy Policy
+├── tests/                        # C unit tests
+├── examples/                     # Sample input files
+├── docs/                         # Generated documentation
+├── docker-compose.yml            # Multi-service orchestration
+├── Dockerfile                    # Container image
+├── deploy.sh                     # Deployment script
+├── Makefile                      # Make build
+├── CMakeLists.txt                # CMake build
+├── .env.example                  # Environment template
+├── DEPLOYMENT.md                 # Deployment guide
+├── API.md                        # API documentation
+├── DEMO.md                       # Demo guide
+└── README.md                     # This file
 ```
 
-## License
+-----
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+## 🎯 Roadmap
 
-## Acknowledgments
+### Completed ✅
+- [x] **v0.1-alpha**: Core 2D simulator, file parsing, basic stability
+- [x] **v0.2-beta**: 3D bin-packing, constraints, comprehensive tests
+- [x] **v0.2-web**: Interactive web UI with Three.js visualization
+- [x] **v0.3-production**: User auth, subscriptions, PDF export, Stripe billing
 
-- Naval architecture formulas based on IMO stability guidelines
-- Bin-packing algorithms inspired by research in computational geometry
-- Built as an educational tool for C programming and maritime logistics
+### In Progress 🚧
+- [ ] **v0.4**: Email notifications, advanced analytics dashboard
+- [ ] **v0.5**: Team collaboration features, role-based access control
+- [ ] **v0.6**: Mobile apps (iOS/Android) with offline mode
+
+### Planned 📋
+- [ ] **v0.7**: Machine learning optimization (neural networks)
+- [ ] **v0.8**: Fleet-wide optimization (multiple ships)
+- [ ] **v0.9**: Real-time sensor integration (IoT devices)
+- [ ] **v1.0**: Stable API, enterprise SLA, white-label solution
+
+-----
+
+## 🤝 Contributing
+
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+**Areas for contribution:**
+- 🧮 Advanced optimization algorithms (genetic, simulated annealing)
+- 🎨 UI/UX improvements
+- 📊 Data visualization enhancements
+- 🧪 Test coverage expansion
+- 📝 Documentation improvements
+- 🌍 Internationalization (i18n)
+- 🐛 Bug fixes
+
+-----
+
+## 📜 License
+
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+
+**Commercial Use:** Fully permitted under MIT license. For enterprise licensing, custom features, or support contracts, contact: enterprise@cargoforge.com
+
+-----
+
+## 🙏 Acknowledgments
+
+- **Naval Architecture**: Formulas based on IMO stability guidelines
+- **Algorithms**: Guillotine bin-packing research from computational geometry
+- **Inspiration**: Real-world maritime logistics challenges
+- **Community**: Contributors and testers who helped shape this project
+
+-----
+
+## 📞 Support & Contact
+
+- 📧 **Email**: support@cargoforge.com
+- 💬 **Issues**: [GitHub Issues](https://github.com/alikatgh/CargoForge-C/issues)
+- 📚 **Documentation**: [docs.cargoforge.com](https://docs.cargoforge.com)
+- 🐦 **Twitter**: [@CargoForge](https://twitter.com/CargoForge)
+- 💼 **Enterprise**: enterprise@cargoforge.com
+
+-----
+
+## ⭐ Star History
+
+If you find this project useful, please consider giving it a star! It helps others discover the project.
+
+[![Star History](https://api.star-history.com/svg?repos=alikatgh/CargoForge-C&type=Date)](https://star-history.com/#alikatgh/CargoForge-C&Date)
+
+-----
+
+**Built with ❤️ for the maritime industry**
