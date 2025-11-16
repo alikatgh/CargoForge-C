@@ -5,7 +5,9 @@
  * for the maritime cargo logistics simulator.
  */
 #include "cargoforge.h"
+#include "visualization.h"
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 
 // The main function controls the program flow.
@@ -35,7 +37,21 @@ int main(int argc, char *argv[]) {
     optimize_cargo_placement(&ship);
     print_loading_plan(&ship);
 
-    // 5. Clean up allocated memory.
+    // 5. Optional visualization
+    int show_viz = 1;
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "--no-viz") == 0) {
+            show_viz = 0;
+            break;
+        }
+    }
+
+    if (show_viz) {
+        print_cargo_layout_ascii(&ship);
+        print_cargo_summary(&ship);
+    }
+
+    // 6. Clean up allocated memory.
     free(ship.cargo);
     ship.cargo = NULL;
 
@@ -44,6 +60,13 @@ int main(int argc, char *argv[]) {
 
 // Prints a usage message to the user.
 void usage(const char *prog_name) {
-    fprintf(stderr, "Usage: %s <ship_config_file> <cargo_list_file>\n", prog_name);
-    fprintf(stderr, "Example: %s examples/sample_ship.cfg examples/sample_cargo.txt\n", prog_name);
+    fprintf(stderr, "Usage: %s <ship_config.cfg> <cargo_list.txt> [options]\n", prog_name);
+    fprintf(stderr, "\nArguments:\n");
+    fprintf(stderr, "  ship_config.cfg: Ship specifications file\n");
+    fprintf(stderr, "  cargo_list.txt:  Cargo manifest file\n");
+    fprintf(stderr, "\nOptions:\n");
+    fprintf(stderr, "  --no-viz:        Disable ASCII visualization output\n");
+    fprintf(stderr, "\nExamples:\n");
+    fprintf(stderr, "  %s examples/sample_ship.cfg examples/sample_cargo.txt\n", prog_name);
+    fprintf(stderr, "  %s ship.cfg cargo.txt --no-viz\n", prog_name);
 }

@@ -21,74 +21,176 @@ This project should and will address a critical need in global shipping: **90% o
   - **Performance & Portability**: No external libraries—everything is built from scratch. It runs on any platform with a C compiler, from desktops to embedded boards.
   - **Open for Growth**: Designed with a modular architecture to welcome contributors. Help add new features like hardware sensor integration or advanced optimization algorithms.
 
-## Initial features
+## Current Features
 
-  - **Cargo Loading Simulator**: Input ship specifications and a cargo manifest to receive an optimized cargo placement plan.
-  - **Ship Stability Calculations**: Computes the vessel's **center of gravity ($C\_g$)** to ensure a safe and stable load.
-  - **Route Optimization**: Includes a basic graph-based pathfinding algorithm for efficient voyages.
-  - **Performance-Oriented**: Optimized for speed using inline functions, fixed-size arrays, and bitwise operations where appropriate.
-  - **Planned Extensions**: Future versions will include hardware interfaces (e.g., serial ports) and genetic algorithms.
+  - **Cargo Loading Simulator**: Input ship specifications and a cargo manifest to receive a 2D cargo placement plan using First-Fit Decreasing bin-packing algorithm.
+  - **Ship Stability Calculations**: Computes the vessel's **center of gravity (CG)** and **metacentric height (GM)** for stability analysis.
+  - **Robust Input Parsing**: Safe parsing with comprehensive error handling and validation for ship configs and cargo manifests.
+  - **Modular Architecture**: Clean separation between parsing, placement optimization, and stability analysis modules.
+  - **Zero Dependencies**: Built with only standard C99 library for maximum portability.
+
+## Planned Features (Roadmap)
+
+  - **3D Bin-Packing**: Full 3D cargo placement with height constraints
+  - **Advanced Optimization**: Genetic algorithms and simulated annealing
+  - **Cargo Constraints**: Handle cargo types (hazardous, refrigerated, fragile) with placement rules
+  - **Route Optimization**: Graph-based pathfinding for voyage planning
+  - **Hardware Integration**: Serial port interfaces for sensor data
+  - **Real-time Visualization**: Interactive 3D cargo layout viewer
 
 ## Stack
 
   - **Language**: **C (C99)**
   - **Compiler**: Built and tested with **GCC** and **Clang**.
   - **Dependencies**: **None.** The project is intentionally self-contained for maximum portability.
+  - **Build Systems**: Makefile and CMake supported
 
 ## Getting Started
 
-#### Prerequisites
+### Prerequisites
 
-  - A C compiler (GCC, Clang).
-  - `make` (for easy building via the provided `Makefile`).
+  - **C Compiler**: GCC or Clang (C99 standard)
+  - **Build Tools**:
+    - `make` (for Makefile builds)
+    - `cmake` (optional, version 3.10+)
+  - **Optional Tools**:
+    - `doxygen` (for API documentation)
+    - `valgrind` (for memory leak detection)
   - **OS Compatibility**: Tested on Linux and macOS. Should compile on Windows via MinGW/MSYS2.
 
-#### Installation
+### Installation
 
-1.  **Clone the repository:**
+#### Method 1: Makefile (Recommended)
 
-    ```bash
-    git clone https://github.com/alikatgh/CargoForge-C.git
-    cd CargoForge-C
-    ```
+```bash
+git clone https://github.com/alikatgh/CargoForge-C.git
+cd CargoForge-C
+make
+```
 
-2.  **Build the project:**
+#### Method 2: CMake
 
-    ```bash
-    make
-    ```
+```bash
+git clone https://github.com/alikatgh/CargoForge-C.git
+cd CargoForge-C
+mkdir build && cd build
+cmake -DCMAKE_BUILD_TYPE=Release ..
+make -j4
+```
+
+### Testing
+
+```bash
+# Run all unit tests
+make test
+
+# Run with memory sanitizers
+make test-asan
+
+# Run with Valgrind (requires valgrind installed)
+make test-valgrind
+
+# CMake testing
+cd build && ctest --output-on-failure
+```
 
 ## Usage
 
-Run the simulator from the command line with ship and cargo configuration files.
+### Basic Usage
 
 ```bash
+./cargoforge <ship_config.cfg> <cargo_list.txt> [options]
+```
+
+**Options:**
+- `--no-viz`: Disable ASCII visualization output
+
+**Examples:**
+
+```bash
+# Run with visualization
 ./cargoforge examples/sample_ship.cfg examples/sample_cargo.txt
+
+# Run without visualization
+./cargoforge examples/sample_ship.cfg examples/sample_cargo.txt --no-viz
 ```
 
-#### Example(s)
+### Output
 
-```
-Optimal Placement Plan:
-- Bow:       ContainerA (CG Stability: 45%)
-- Midship:   ContainerB
-...
-Total Execution Time: 0.12ms
-```
+The program generates:
 
-> **Note**: If input files are missing or incorrectly formatted, the program will print a usage guide to the console.
+1. **Placement Statistics** - 3D bin-packing results with weight distribution
+2. **Stability Analysis** - Center of gravity, metacentric height, stability classification
+3. **ASCII Visualization** - Top-down view of cargo layout
+4. **Cargo Summary** - Detailed placement table with positions
+
+## API Documentation
+
+Generate API documentation with Doxygen:
+
+```bash
+doxygen Doxyfile
+# Open docs/html/index.html in browser
+```
 
 ## Contributing
 
-Please see `CONTRIBUTING.md` for detailed guidelines (coming soon).
+Please see `CONTRIBUTING.md` for detailed guidelines. We welcome contributions in:
+- Advanced optimization algorithms (genetic, simulated annealing)
+- Real maritime dataset validation
+- GUI development
+- Performance improvements
+- Bug fixes and testing
 
 ## Roadmap
 
-  - [ ] **v0.1**: Core simulator engine and file parsing. (Target: Q3 2025)
-  - [ ] **v0.2**: Advanced optimization algorithms (genetic, simulated annealing). (Target: Q4 2025)
-  - [ ] **v0.3**: Comprehensive stability and hull stress calculations. (Target: Q1 2026)
-  - [ ] **v1.0**: Full documentation, hardware integration extensions, and stable API. (Target: Q2 2026)
+  - [x] **v0.1-alpha**: Core 2D simulator engine, file parsing, and basic stability calculations
+  - [x] **v0.2-beta**: 3D bin-packing, cargo constraints, comprehensive test suite, and API documentation (Current)
+  - [ ] **v0.3**: Advanced optimization algorithms (genetic, simulated annealing), performance benchmarks
+  - [ ] **v0.4**: Real maritime datasets, validation against IMO standards, SVG/web visualization
+  - [ ] **v1.0**: Stable API, comprehensive documentation, hardware integration support
+
+## Development
+
+### Build Configurations
+
+```bash
+# Debug build with symbols
+make clean && CFLAGS="-g -O0 -DDEBUG" make
+
+# Release build (default)
+make
+
+# Memory safety testing
+make test-asan           # AddressSanitizer + UBSan
+make test-valgrind       # Valgrind leak checker
+```
+
+### Project Structure
+
+```
+CargoForge-C/
+├── main.c                 # Entry point
+├── parser.c/h            # Input file parsing
+├── optimizer.c/h         # Optimization coordinator
+├── placement_3d.c/h      # 3D bin-packing algorithm
+├── placement_2d.c/h      # Legacy 2D placement
+├── constraints.c/h       # Cargo constraints validation
+├── analysis.c/h          # Stability calculations
+├── visualization.c/h     # ASCII output
+├── tests/                # Unit test suite
+├── examples/             # Sample input files
+├── Makefile              # Make build
+├── CMakeLists.txt        # CMake build
+└── Doxyfile              # API documentation config
+```
 
 ## License
 
-MIT
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- Naval architecture formulas based on IMO stability guidelines
+- Bin-packing algorithms inspired by research in computational geometry
+- Built as an educational tool for C programming and maritime logistics

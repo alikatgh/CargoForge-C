@@ -1,5 +1,4 @@
 /*
- * let's git and push all these changes with proper commit message 
  * analysis.c - Post-optimization analysis and reporting.
  *
  * This file contains the logic to analyze the final cargo layout,
@@ -9,9 +8,12 @@
 #include <stdbool.h> // For bool type
 #include "cargoforge.h"
 
-// Physical and regulatory constants.
-#define SEAWATER_DENSITY 1.025f // tonnes per cubic metre
-#define WATERPLANE_COEFFICIENT 0.8f   // Approximation for a typical ship hull vs. a perfect box
+// Physical and regulatory constants for naval architecture
+#define SEAWATER_DENSITY 1.025f  // tonnes per cubic metre at 15°C
+#define BLOCK_COEFFICIENT 0.75f  // Cb: ratio of underwater hull volume to bounding box (typical cargo ship)
+#define WATERPLANE_COEFFICIENT 0.85f  // Cw: ratio of waterplane area to L×B rectangle
+#define KB_FACTOR 0.53f          // KB ≈ 0.53 × T for typical cargo ships (vertical CG of buoyancy)
+#define MIDSHIP_COEFFICIENT 0.98f // Cm: fullness of midship section
 
 /**
  * @brief Performs all post-placement calculations in a single, efficient pass.
@@ -56,15 +58,29 @@ AnalysisResult perform_analysis(const Ship *ship) {
         result.cg.perc_y = (moment_y / result.total_cargo_weight_kg) / ship->width * 100.0f;
     }
 
+    // KG: Vertical center of gravity from keel
     float final_kg = vertical_moment / total_ship_weight_kg;
+
+    // Calculate realistic draft using block coefficient
+    // Volume = Displacement / density
+    // Volume = L × B × T × Cb (block coefficient accounts for hull shape)
     float displaced_volume = (total_ship_weight_kg / 1000.0f) / SEAWATER_DENSITY;
-    float draft = displaced_volume / (ship->length * ship->width);
-    float kb = draft / 2.0f;
-    
-    // FIX: Apply the waterplane coefficient for a more realistic moment of inertia.
-    float inertia_t = (ship->length * pow(ship->width, 3)) / 12.0f * WATERPLANE_COEFFICIENT;
+    float draft = displaced_volume / (ship->length * ship->width * BLOCK_COEFFICIENT);
+
+    // KB: Vertical center of buoyancy from keel (typically 0.53-0.67 of draft for cargo ships)
+    float kb = KB_FACTOR * draft;
+
+    // BM: Transverse metacentric radius (distance from B to M)
+    // IT = second moment of area of waterplane about centerline
+    // For rectangular waterplane: IT = L × B³ / 12
+    // Apply waterplane coefficient for realistic hull shape
+    float inertia_t = (ship->length * pow(ship->width, 3) / 12.0f) * WATERPLANE_COEFFICIENT;
     float bm = inertia_t / displaced_volume;
 
+    // GM: Metacentric height (positive = stable, negative = unstable)
+    // Typical range for cargo ships: 0.5m - 2.5m
+    // Too high (>3m) = stiff/uncomfortable rolling
+    // Too low (<0.3m) = tender/unstable
     result.gm = kb + bm - final_kg;
     return result;
 }
@@ -99,11 +115,28 @@ void print_loading_plan(const Ship *ship) {
         }
     }
 
-    // Use the correct constant for the DWT safety factor
-    const float DWT_SAFETY_FACTOR = 0.90f;
+    // Maritime safety margins
+    const float DWT_SAFETY_FACTOR = 0.90f;  // 90% utilization recommended
     const float usable_capacity_kg = ship->max_weight * DWT_SAFETY_FACTOR;
-    const char *cg_stability_str = (analysis.cg.perc_x >= 40 && analysis.cg.perc_x <= 60 && analysis.cg.perc_y >= 40 && analysis.cg.perc_y <= 60) ? "Good" : "Warning";
-    const char *gm_stability_str = (analysis.gm > 0.15f) ? "Stable" : "UNSTABLE";
+
+    // CG should be near midship (45-55% longitudinal, 40-60% transverse)
+    const char *cg_stability_str = (analysis.cg.perc_x >= 45 && analysis.cg.perc_x <= 55 &&
+                                    analysis.cg.perc_y >= 40 && analysis.cg.perc_y <= 60) ? "Good" : "Warning";
+
+    // GM stability ranges for cargo ships (IMO guidelines):
+    // GM < 0.3m: Unstable (dangerous)
+    // GM 0.5-2.5m: Optimal (safe and comfortable)
+    // GM > 3.0m: Over-stiff (excessive rolling acceleration)
+    const char *gm_stability_str;
+    if (analysis.gm < 0.3f) {
+        gm_stability_str = "CRITICAL - Too tender";
+    } else if (analysis.gm > 3.0f) {
+        gm_stability_str = "WARNING - Too stiff";
+    } else if (analysis.gm >= 0.5f && analysis.gm <= 2.5f) {
+        gm_stability_str = "Optimal";
+    } else {
+        gm_stability_str = "Acceptable";
+    }
     
     float total_ship_weight_kg = ship->lightship_weight + analysis.total_cargo_weight_kg;
 

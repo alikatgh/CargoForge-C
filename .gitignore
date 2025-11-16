@@ -1,6 +1,38 @@
-# Ignore C build artifacts
+# Build artifacts
 *.o
+*.a
+*.so
 *.out
-
-# Ignore the final executable
 cargoforge
+build/
+docs/
+
+# Test executables
+tests/test_parser
+tests/test_placement_2d
+tests/test_analysis
+
+# Backup files
+*.bak
+*~
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+CTestTestfile.cmake
+Testing/
+
+# Valgrind
+*.log
+vgcore.*

@@ -1,0 +1,59 @@
+# Doxyfile for CargoForge-C
+
+PROJECT_NAME           = "CargoForge-C"
+PROJECT_NUMBER         = 0.2.0
+PROJECT_BRIEF          = "Maritime cargo loading simulator and optimizer"
+OUTPUT_DIRECTORY       = docs
+CREATE_SUBDIRS         = NO
+
+# Input
+INPUT                  = . \
+                         cargoforge.h \
+                         placement_2d.h \
+                         placement_3d.h \
+                         constraints.h \
+                         parser.c \
+                         optimizer.c \
+                         analysis.c \
+                         placement_2d.c \
+                         placement_3d.c \
+                         constraints.c \
+                         main.c
+RECURSIVE              = NO
+FILE_PATTERNS          = *.c *.h
+EXCLUDE_PATTERNS       = */tests/* */build/* */examples/*
+
+# Output formats
+GENERATE_HTML          = YES
+GENERATE_LATEX         = NO
+HTML_OUTPUT            = html
+HTML_TIMESTAMP         = YES
+
+# Extraction
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = NO
+EXTRACT_STATIC         = YES
+EXTRACT_LOCAL_CLASSES  = YES
+
+# Documentation style
+JAVADOC_AUTOBRIEF      = YES
+QT_AUTOBRIEF           = NO
+MULTILINE_CPP_IS_BRIEF = NO
+
+# Warnings
+WARNINGS               = YES
+WARN_IF_UNDOCUMENTED   = YES
+WARN_IF_DOC_ERROR      = YES
+WARN_NO_PARAMDOC       = NO
+
+# Graphs and diagrams
+HAVE_DOT               = NO
+CLASS_DIAGRAMS         = YES
+CALL_GRAPH             = NO
+CALLER_GRAPH           = NO
+
+# Other options
+SOURCE_BROWSER         = YES
+INLINE_SOURCES         = NO
+REFERENCED_BY_RELATION = YES
+REFERENCES_RELATION    = YES

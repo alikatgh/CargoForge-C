@@ -2,17 +2,18 @@
  * optimizer.c - Cargo placement optimization logic.
  */
 #include "cargoforge.h"
-#include "placement_2d.h" // Include the new placement module header
+#include "placement_3d.h" // 3D bin-packing module
 
 /**
- * @brief Optimizes cargo placement by delegating to the 2D placement module.
+ * @brief Optimizes cargo placement using 3D bin-packing.
  *
  * This function acts as a high-level coordinator for the optimization phase.
- * The actual packing logic is now implemented in placement_2d.c.
+ * Uses guillotine-based 3D bin-packing for realistic cargo placement with
+ * proper volume utilization and weight distribution.
  *
  * @param ship A pointer to the ship struct containing the cargo to be placed.
  */
 void optimize_cargo_placement(Ship *ship) {
-    // Delegate the complex placement logic to the specialized module.
-    place_cargo_2d(ship);
+    // Delegate to 3D placement algorithm
+    place_cargo_3d(ship);
 }
