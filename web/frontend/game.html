@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CargoForge - Maritime Cargo Training Simulator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+            color: #fff;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* GAME CONTAINER - Full Screen */
+        #game-container {
+            width: 100vw;
+            height: 100vh;
+            display: grid;
+            grid-template-rows: 60px 1fr 180px;
+            grid-template-columns: 1fr;
+            gap: 0;
+        }
+
+        /* TOP HUD BAR */
+        #top-hud {
+            background: rgba(10, 14, 39, 0.95);
+            border-bottom: 2px solid rgba(52, 211, 153, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 30px;
+            backdrop-filter: blur(10px);
+            z-index: 100;
+        }
+
+        .hud-section {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .stat-box {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .stat-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #64748b;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #34d399;
+        }
+
+        .stat-value.warning { color: #fbbf24; }
+        .stat-value.danger { color: #f87171; }
+
+        /* MAIN 3D VIEWPORT */
+        #viewport-container {
+            position: relative;
+            background: linear-gradient(to bottom, #0f172a 0%, #1e293b 100%);
+        }
+
+        #viewport {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* OVERLAY INDICATORS */
+        .overlay-indicator {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px 25px;
+            border-radius: 10px;
+            border: 2px solid #34d399;
+            backdrop-filter: blur(10px);
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        #stability-indicator {
+            top: 20px;
+            right: 20px;
+            min-width: 200px;
+        }
+
+        .stability-meter {
+            width: 100%;
+            height: 8px;
+            background: #1f2937;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .stability-meter-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #34d399 0%, #10b981 100%);
+            transition: width 0.3s ease, background 0.3s ease;
+        }
+
+        .stability-meter-fill.warning {
+            background: linear-gradient(90deg, #fbbf24 0%, #f59e0b 100%);
+        }
+
+        .stability-meter-fill.danger {
+            background: linear-gradient(90deg, #f87171 0%, #ef4444 100%);
+        }
+
+        /* CARGO INVENTORY BAR (Bottom) */
+        #cargo-inventory {
+            background: rgba(10, 14, 39, 0.95);
+            border-top: 2px solid rgba(52, 211, 153, 0.3);
+            padding: 15px 30px;
+            backdrop-filter: blur(10px);
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
+
+        .inventory-header {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #64748b;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .cargo-grid {
+            display: flex;
+            gap: 15px;
+            padding: 10px 0;
+        }
+
+        .cargo-card {
+            min-width: 140px;
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border: 2px solid #475569;
+            border-radius: 12px;
+            padding: 12px;
+            cursor: grab;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .cargo-card:hover {
+            border-color: #34d399;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(52, 211, 153, 0.3);
+        }
+
+        .cargo-card:active {
+            cursor: grabbing;
+        }
+
+        .cargo-card.selected {
+            border-color: #34d399;
+            background: linear-gradient(135deg, #065f46 0%, #047857 100%);
+            box-shadow: 0 0 30px rgba(52, 211, 153, 0.5);
+        }
+
+        .cargo-card.placed {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .cargo-icon {
+            width: 100%;
+            height: 60px;
+            background: rgba(52, 211, 153, 0.1);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .cargo-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: #e2e8f0;
+            margin-bottom: 4px;
+        }
+
+        .cargo-specs {
+            font-size: 10px;
+            color: #94a3b8;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .cargo-type-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #34d399;
+            color: #000;
+            font-size: 9px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        .cargo-type-badge.reefer { background: #3b82f6; color: #fff; }
+        .cargo-type-badge.hazardous { background: #ef4444; color: #fff; }
+        .cargo-type-badge.heavy { background: #6b7280; color: #fff; }
+
+        /* NOTIFICATION SYSTEM */
+        .notification {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.95);
+            padding: 20px 40px;
+            border-radius: 12px;
+            border: 2px solid #34d399;
+            font-size: 16px;
+            font-weight: 600;
+            z-index: 1000;
+            animation: slideDown 0.3s ease, fadeOut 0.3s ease 2.7s;
+            pointer-events: none;
+        }
+
+        @keyframes slideDown {
+            from { transform: translate(-50%, -20px); opacity: 0; }
+            to { transform: translate(-50%, 0); opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            to { opacity: 0; }
+        }
+
+        .notification.success { border-color: #34d399; color: #34d399; }
+        .notification.warning { border-color: #fbbf24; color: #fbbf24; }
+        .notification.error { border-color: #f87171; color: #f87171; }
+
+        /* TUTORIAL OVERLAY */
+        #tutorial-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        #tutorial-overlay.active {
+            display: flex;
+        }
+
+        .tutorial-content {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border: 3px solid #34d399;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .tutorial-content h2 {
+            font-size: 32px;
+            margin-bottom: 20px;
+            color: #34d399;
+        }
+
+        .tutorial-content p {
+            font-size: 18px;
+            line-height: 1.6;
+            color: #cbd5e1;
+            margin-bottom: 30px;
+        }
+
+        .tutorial-button {
+            background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+            color: #000;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .tutorial-button:hover {
+            transform: scale(1.05);
+        }
+
+        /* LEVEL COMPLETE MODAL */
+        #level-complete {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        #level-complete.active {
+            display: flex;
+        }
+
+        .complete-content {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border: 3px solid #34d399;
+            border-radius: 20px;
+            padding: 50px;
+            text-align: center;
+            animation: scaleIn 0.5s ease;
+        }
+
+        @keyframes scaleIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .complete-content h2 {
+            font-size: 48px;
+            color: #34d399;
+            margin-bottom: 20px;
+        }
+
+        .score-display {
+            font-size: 72px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 20px 0;
+        }
+
+        .score-breakdown {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .score-item {
+            background: rgba(52, 211, 153, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .score-item-label {
+            font-size: 12px;
+            color: #64748b;
+            margin-bottom: 5px;
+        }
+
+        .score-item-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #34d399;
+        }
+
+        /* HELP BUTTON */
+        #help-button {
+            position: fixed;
+            bottom: 200px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            border: 2px solid #60a5fa;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 500;
+        }
+
+        #help-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.5);
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            #game-container {
+                grid-template-rows: 50px 1fr 150px;
+            }
+
+            #top-hud {
+                padding: 0 15px;
+            }
+
+            .hud-section {
+                gap: 15px;
+            }
+
+            .stat-value {
+                font-size: 14px;
+            }
+
+            .cargo-card {
+                min-width: 120px;
+            }
+        }
+
+        /* LOADING SCREEN */
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            transition: opacity 0.5s ease;
+        }
+
+        #loading-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-logo {
+            font-size: 48px;
+            margin-bottom: 30px;
+        }
+
+        .loading-text {
+            font-size: 24px;
+            color: #34d399;
+            margin-bottom: 20px;
+        }
+
+        .loading-bar {
+            width: 300px;
+            height: 6px;
+            background: #1f2937;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .loading-bar-fill {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #34d399 0%, #10b981 100%);
+            animation: loading 2s ease infinite;
+        }
+
+        @keyframes loading {
+            0% { width: 0%; }
+            50% { width: 70%; }
+            100% { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <!-- LOADING SCREEN -->
+    <div id="loading-screen">
+        <div class="loading-logo">🚢</div>
+        <div class="loading-text">Loading CargoForge...</div>
+        <div class="loading-bar">
+            <div class="loading-bar-fill"></div>
+        </div>
+    </div>
+
+    <!-- GAME CONTAINER -->
+    <div id="game-container">
+        <!-- TOP HUD BAR -->
+        <div id="top-hud">
+            <div class="hud-section">
+                <div style="font-size: 24px; font-weight: 700; color: #34d399;">
+                    🚢 CARGOFORGE
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Level</div>
+                    <div class="stat-value" id="level-display">1</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Score</div>
+                    <div class="stat-value" id="score-display">0</div>
+                </div>
+            </div>
+
+            <div class="hud-section">
+                <div class="stat-box">
+                    <div class="stat-label">Time</div>
+                    <div class="stat-value" id="time-display">0:00</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">GM</div>
+                    <div class="stat-value" id="gm-display">-</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">List</div>
+                    <div class="stat-value" id="list-display">0.0°</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Cargo</div>
+                    <div class="stat-value" id="cargo-display">0/5</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN 3D VIEWPORT -->
+        <div id="viewport-container">
+            <canvas id="viewport"></canvas>
+
+            <!-- STABILITY INDICATOR -->
+            <div id="stability-indicator" class="overlay-indicator">
+                <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: 8px;">
+                    Stability Status
+                </div>
+                <div style="font-size: 20px; font-weight: 700; color: #34d399;" id="stability-status">
+                    OPTIMAL
+                </div>
+                <div class="stability-meter">
+                    <div class="stability-meter-fill" id="stability-meter-fill" style="width: 100%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CARGO INVENTORY BAR -->
+        <div id="cargo-inventory">
+            <div class="inventory-header">
+                <span>📦 CARGO INVENTORY</span>
+                <span id="inventory-hint">Click cargo to select, then click ship to place</span>
+            </div>
+            <div class="cargo-grid" id="cargo-grid">
+                <!-- Cargo cards will be added here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- TUTORIAL OVERLAY -->
+    <div id="tutorial-overlay">
+        <div class="tutorial-content">
+            <h2>🎓 Welcome to CargoForge!</h2>
+            <p>
+                Load cargo containers onto the ship while maintaining stability.
+                <br><br>
+                <strong>Click</strong> a cargo item below, then <strong>click</strong> on the ship to place it.
+                <br><br>
+                Keep the ship stable: GM > 1.0m, List < 2°
+            </p>
+            <button class="tutorial-button" onclick="closeTutorial()">Let's Go! 🚀</button>
+        </div>
+    </div>
+
+    <!-- LEVEL COMPLETE MODAL -->
+    <div id="level-complete">
+        <div class="complete-content">
+            <h2>🎉 LEVEL COMPLETE!</h2>
+            <div class="score-display" id="final-score-display">0</div>
+            <div class="score-breakdown">
+                <div class="score-item">
+                    <div class="score-item-label">Placement</div>
+                    <div class="score-item-value" id="placement-score">0</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-item-label">Stability</div>
+                    <div class="score-item-value" id="stability-score">0</div>
+                </div>
+                <div class="score-item">
+                    <div class="score-item-label">Time Bonus</div>
+                    <div class="score-item-value" id="time-score">0</div>
+                </div>
+            </div>
+            <button class="tutorial-button" onclick="nextLevel()">Next Level 🚀</button>
+        </div>
+    </div>
+
+    <!-- HELP BUTTON -->
+    <div id="help-button" onclick="showTutorial()">?</div>
+
+    <!-- Load Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="physics.js"></script>
+    <script src="visualizer.js"></script>
+    <script src="game-ui.js"></script>
+</body>
+</html>
