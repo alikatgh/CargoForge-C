@@ -78,6 +78,158 @@ See [DEPLOYMENT.md](DEPLOYMENT.md) for complete production setup guide.
 
 -----
 
+## 🖥️ CLI Usage
+
+CargoForge-C v2.0 features a powerful command-line interface with subcommands, multiple output formats, and advanced options.
+
+### Basic Commands
+
+```bash
+# Display help
+./cargoforge --help
+./cargoforge --version
+
+# Run optimization
+./cargoforge optimize ship.cfg cargo.txt
+
+# Validate inputs before optimization
+./cargoforge validate ship.cfg cargo.txt
+
+# Display ship information
+./cargoforge info ship.cfg
+
+# Interactive mode (guided wizard)
+./cargoforge interactive
+```
+
+### Output Formats
+
+CargoForge-C supports multiple output formats for different use cases:
+
+```bash
+# Human-readable output (default)
+./cargoforge optimize ship.cfg cargo.txt
+
+# JSON output for API integration
+./cargoforge optimize ship.cfg cargo.txt --format=json
+
+# CSV export for spreadsheets
+./cargoforge optimize ship.cfg cargo.txt --format=csv > results.csv
+
+# ASCII table format
+./cargoforge optimize ship.cfg cargo.txt --format=table
+
+# Markdown report
+./cargoforge optimize ship.cfg cargo.txt --format=markdown > report.md
+```
+
+### Advanced Options
+
+```bash
+# Verbose output with detailed logging
+./cargoforge optimize ship.cfg cargo.txt --verbose
+
+# Quiet mode (suppress non-essential output)
+./cargoforge optimize ship.cfg cargo.txt --quiet
+
+# Disable colored output
+./cargoforge optimize ship.cfg cargo.txt --no-color
+
+# Disable ASCII visualization
+./cargoforge optimize ship.cfg cargo.txt --no-viz
+
+# Save output to file
+./cargoforge optimize ship.cfg cargo.txt --output=results.json --format=json
+```
+
+### Filtering Options
+
+```bash
+# Show only successfully placed cargo
+./cargoforge optimize ship.cfg cargo.txt --only-placed
+
+# Show only failed cargo items
+./cargoforge optimize ship.cfg cargo.txt --only-failed
+
+# Filter by cargo type
+./cargoforge optimize ship.cfg cargo.txt --type=hazardous
+```
+
+### Subcommand-Specific Help
+
+```bash
+# Get help for a specific subcommand
+./cargoforge optimize --help
+./cargoforge validate --help
+./cargoforge info --help
+```
+
+### Example Workflows
+
+```bash
+# 1. Validate inputs before running optimization
+./cargoforge validate ship.cfg cargo.txt && \
+./cargoforge optimize ship.cfg cargo.txt
+
+# 2. Generate multiple output formats
+./cargoforge optimize ship.cfg cargo.txt --format=json > results.json
+./cargoforge optimize ship.cfg cargo.txt --format=markdown > report.md
+./cargoforge optimize ship.cfg cargo.txt --format=csv > data.csv
+
+# 3. Get detailed ship information
+./cargoforge info examples/sample_ship.cfg examples/sample_cargo.txt
+
+# 4. Verbose validation for debugging
+./cargoforge validate ship.cfg cargo.txt --verbose
+
+# 5. API-style usage with JSON
+./cargoforge optimize ship.cfg cargo.txt --format=json --quiet > output.json
+```
+
+### Input File Formats
+
+**Ship Configuration (.cfg)**
+```
+length_m=150
+width_m=25
+max_weight_tonnes=50000
+lightship_weight_tonnes=2000
+lightship_kg_m=8.0
+```
+
+**Cargo Manifest (.txt)**
+```
+# ID              Weight(t) Dimensions(LxWxH)    Type
+HeavyMachinery    550       20x5x3               standard
+ContainerA        250       12.2x2.4x2.6         reefer
+HazmatCargo       100       10x3x3               hazardous
+FragileGoods      50        5x5x5                fragile
+```
+
+**Cargo Types:**
+- `standard` - Regular cargo
+- `hazardous` - Hazmat (requires 3m separation)
+- `reefer` - Refrigerated cargo
+- `fragile` - Fragile items (stacking restrictions)
+- `bulk` - Bulk cargo
+- `general` - General goods
+
+### Backward Compatibility
+
+The new CLI maintains backward compatibility with the legacy interface:
+
+```bash
+# Legacy format (still supported)
+./cargoforge ship.cfg cargo.txt --json
+./cargoforge ship.cfg cargo.txt --no-viz
+
+# Equivalent new format
+./cargoforge optimize ship.cfg cargo.txt --format=json
+./cargoforge optimize ship.cfg cargo.txt --no-viz
+```
+
+-----
+
 ## 💰 Pricing & Subscription Tiers
 
 | Feature | Free | Pro | Enterprise |
@@ -323,8 +475,9 @@ pytest tests/
 
 ```
 CargoForge-C/
-├── src/                          # C source files
+├── Core C Engine (CLI)
 │   ├── main.c                    # Entry point
+│   ├── cli.c/h                   # CLI parser & subcommands (NEW v2.0)
 │   ├── parser.c/h                # Input parsing
 │   ├── optimizer.c/h             # Optimization coordinator
 │   ├── placement_3d.c/h          # 3D bin-packing (guillotine)
@@ -332,7 +485,8 @@ CargoForge-C/
 │   ├── constraints.c/h           # Cargo constraint validation
 │   ├── analysis.c/h              # Stability calculations
 │   ├── visualization.c/h         # ASCII output
-│   └── json_output.c/h           # JSON serialization
+│   ├── json_output.c/h           # JSON serialization
+│   └── cargoforge.h              # Main header file
 ├── web/
 │   ├── backend/
 │   │   ├── app_prod.py           # Production Flask app
@@ -369,9 +523,10 @@ CargoForge-C/
 - [x] **v0.2-beta**: 3D bin-packing, constraints, comprehensive tests
 - [x] **v0.2-web**: Interactive web UI with Three.js visualization
 - [x] **v0.3-production**: User auth, subscriptions, PDF export, Stripe billing
+- [x] **v2.0**: Modern CLI with subcommands, multiple output formats, interactive mode
 
 ### In Progress 🚧
-- [ ] **v0.4**: Email notifications, advanced analytics dashboard
+- [ ] **v2.1**: Email notifications, advanced analytics dashboard
 - [ ] **v0.5**: Team collaboration features, role-based access control
 - [ ] **v0.6**: Mobile apps (iOS/Android) with offline mode
 
