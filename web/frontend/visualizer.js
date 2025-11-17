@@ -318,6 +318,48 @@ class CargoVisualizer {
         ]);
         const midshipLine = new THREE.Line(midshipGeom, centerLineMat);
         this.shipContainer.add(midshipLine);
+
+        // Add deck grid (5m spacing)
+        const gridSize = 5;
+        const gridMaterial = new THREE.LineBasicMaterial({
+            color: 0x34d399,
+            transparent: true,
+            opacity: 0.3
+        });
+
+        // Longitudinal grid lines (along length)
+        for (let y = 0; y <= width; y += gridSize) {
+            const geom = new THREE.BufferGeometry().setFromPoints([
+                new THREE.Vector3(0, 2.1, y),
+                new THREE.Vector3(length, 2.1, y)
+            ]);
+            const line = new THREE.Line(geom, gridMaterial);
+            this.shipContainer.add(line);
+        }
+
+        // Transverse grid lines (across width)
+        for (let x = 0; x <= length; x += gridSize) {
+            const geom = new THREE.BufferGeometry().setFromPoints([
+                new THREE.Vector3(x, 2.1, 0),
+                new THREE.Vector3(x, 2.1, width)
+            ]);
+            const line = new THREE.Line(geom, gridMaterial);
+            this.shipContainer.add(line);
+        }
+
+        // Create clickable deck plane for raycasting
+        const deckGeometry = new THREE.PlaneGeometry(length, width);
+        const deckMaterial = new THREE.MeshBasicMaterial({
+            color: 0x34d399,
+            transparent: true,
+            opacity: 0.05,
+            side: THREE.DoubleSide
+        });
+        this.deckPlane = new THREE.Mesh(deckGeometry, deckMaterial);
+        this.deckPlane.rotation.x = -Math.PI / 2;
+        this.deckPlane.position.set(length/2, 2, width/2);
+        this.deckPlane.name = 'deck';
+        this.shipContainer.add(this.deckPlane);
     }
 
     /**
@@ -441,6 +483,97 @@ class CargoVisualizer {
         sprite.scale.set(10, 2.5, 1);
 
         return sprite;
+    }
+
+    /**
+     * Raycast to find deck click position
+     * Returns {x, y, z} in ship coordinates or null
+     */
+    getDeckClickPosition(mouseX, mouseY) {
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2(mouseX, mouseY);
+        raycaster.setFromCamera(mouse, this.camera);
+
+        // Raycast against deck plane
+        const intersects = raycaster.intersectObject(this.deckPlane);
+
+        if (intersects.length > 0) {
+            const point = intersects[0].point;
+            // Convert from world coordinates to ship local coordinates
+            const localPoint = this.shipContainer.worldToLocal(point.clone());
+
+            // Snap to 5m grid
+            const gridSize = 5;
+            const x = Math.floor(localPoint.x / gridSize) * gridSize;
+            const y = Math.floor(localPoint.z / gridSize) * gridSize;
+            const z = 2; // Deck level
+
+            // Validate position is within ship bounds
+            if (x >= 0 && x < this.currentShip.length &&
+                y >= 0 && y < this.currentShip.width) {
+                return { x, y, z };
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Show ghost preview of cargo placement
+     */
+    showGhostCargo(position, dimensions, cargoType) {
+        // Remove old ghost
+        this.removeGhostCargo();
+
+        if (!position) return;
+
+        const [l, w, h] = dimensions;
+        const geometry = new THREE.BoxGeometry(l, h, w);
+
+        const colorMap = {
+            'standard': 0x667eea,
+            'hazardous': 0xff6b6b,
+            'reefer': 0x4dabf7,
+            'heavy': 0x495057
+        };
+        const color = colorMap[cargoType] || 0x667eea;
+
+        const material = new THREE.MeshPhongMaterial({
+            color: color,
+            transparent: true,
+            opacity: 0.5,
+            wireframe: false
+        });
+
+        this.ghostCargo = new THREE.Mesh(geometry, material);
+        this.ghostCargo.position.set(
+            position.x + l/2,
+            position.z + h/2,
+            position.y + w/2
+        );
+
+        // Add edges
+        const edges = new THREE.EdgesGeometry(geometry);
+        const lineMat = new THREE.LineBasicMaterial({ color: 0x34d399, linewidth: 2 });
+        this.ghostEdges = new THREE.LineSegments(edges, lineMat);
+        this.ghostEdges.position.copy(this.ghostCargo.position);
+
+        this.shipContainer.add(this.ghostCargo);
+        this.shipContainer.add(this.ghostEdges);
+
+        // Pulse animation
+        this.ghostCargo.scale.set(1, 1, 1);
+    }
+
+    removeGhostCargo() {
+        if (this.ghostCargo) {
+            this.shipContainer.remove(this.ghostCargo);
+            this.ghostCargo = null;
+        }
+        if (this.ghostEdges) {
+            this.shipContainer.remove(this.ghostEdges);
+            this.ghostEdges = null;
+        }
     }
 
     /**

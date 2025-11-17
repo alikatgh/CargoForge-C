@@ -235,10 +235,11 @@ class GameController {
         this.selectedCargo = cargo;
         cardElement.classList.add('selected');
 
-        this.showNotification(`Selected ${cargo.id} - Click on ship to place`, 'success');
+        this.showNotification(`✅ Selected ${cargo.id} - Click on ship deck to place`, 'success');
 
-        // Enable ship click
+        // Enable ship click and preview
         this.enableShipPlacement();
+        this.enableGhostPreview();
     }
 
     enableShipPlacement() {
@@ -246,13 +247,19 @@ class GameController {
         const handleClick = (event) => {
             if (!this.selectedCargo) return;
 
-            // Get click coordinates relative to canvas
+            // Get mouse position in normalized device coordinates
             const rect = this.elements.viewport.getBoundingClientRect();
-            const x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-            const y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+            const mouseX = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            const mouseY = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
-            // Place cargo (visualizer handles raycasting)
-            this.placeCargo(x, y);
+            // Use raycasting to get actual deck position
+            const position = this.visualizer.getDeckClickPosition(mouseX, mouseY);
+
+            if (position) {
+                this.placeCargo(position);
+            } else {
+                this.showNotification('Click on the ship deck!', 'warning');
+            }
         };
 
         // Remove old listener if exists
@@ -264,23 +271,64 @@ class GameController {
         this.elements.viewport.addEventListener('click', handleClick);
     }
 
-    placeCargo(screenX, screenY) {
+    enableGhostPreview() {
+        // Add mouse move handler for ghost preview
+        const handleMove = (event) => {
+            if (!this.selectedCargo) {
+                this.visualizer.removeGhostCargo();
+                return;
+            }
+
+            // Get mouse position
+            const rect = this.elements.viewport.getBoundingClientRect();
+            const mouseX = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            const mouseY = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+            // Get deck position
+            const position = this.visualizer.getDeckClickPosition(mouseX, mouseY);
+
+            if (position) {
+                // Show ghost at this position
+                this.visualizer.showGhostCargo(
+                    position,
+                    this.selectedCargo.dimensions,
+                    this.selectedCargo.type
+                );
+                this.elements.viewport.style.cursor = 'crosshair';
+            } else {
+                this.visualizer.removeGhostCargo();
+                this.elements.viewport.style.cursor = 'default';
+            }
+        };
+
+        // Remove old listener if exists
+        if (this.previewHandler) {
+            this.elements.viewport.removeEventListener('mousemove', this.previewHandler);
+        }
+
+        this.previewHandler = handleMove;
+        this.elements.viewport.addEventListener('mousemove', handleMove);
+    }
+
+    disableGhostPreview() {
+        if (this.previewHandler) {
+            this.elements.viewport.removeEventListener('mousemove', this.previewHandler);
+            this.previewHandler = null;
+        }
+        this.visualizer.removeGhostCargo();
+        this.elements.viewport.style.cursor = 'default';
+    }
+
+    placeCargo(position) {
         if (!this.selectedCargo) return;
 
         const level = this.levels[this.currentLevel - 1];
         const ship = level.ship;
 
-        // Calculate placement position (simplified - place at ship center with small offset)
-        // In a full implementation, you'd use raycasting to get exact 3D position
-        const gridSize = 5; // 5m grid
-        const x = Math.floor(Math.random() * (ship.length / gridSize)) * gridSize;
-        const y = Math.floor(Math.random() * (ship.width / gridSize)) * gridSize;
-        const z = -8.0; // On deck
-
-        // Create placed cargo object
+        // Create placed cargo object with REAL position from click
         const placedCargo = {
             ...this.selectedCargo,
-            position: { x, y, z }
+            position: position  // Use actual clicked position!
         };
 
         // Add to placed list
@@ -291,6 +339,9 @@ class GameController {
 
         // Update visualization
         this.visualizer.placeCargo(placedCargo);
+
+        // Remove ghost
+        this.visualizer.removeGhostCargo();
 
         // Calculate physics
         const stability = this.physics.calculateStability(ship, this.placedCargo);
@@ -307,8 +358,11 @@ class GameController {
             card.classList.add('placed');
         }
 
-        // Show notification
-        this.showNotification(`✅ Placed ${this.selectedCargo.id}`, 'success');
+        // Show notification with position info
+        this.showNotification(
+            `✅ Placed ${this.selectedCargo.id} at (${position.x}m, ${position.y}m)`,
+            'success'
+        );
 
         // Check for capsizing
         if (stability.isCapsized) {
@@ -323,6 +377,7 @@ class GameController {
 
         // Deselect
         this.selectedCargo = null;
+        this.disableGhostPreview();
     }
 
     updateStabilityDisplay(stability) {
