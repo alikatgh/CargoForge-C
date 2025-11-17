@@ -41,6 +41,11 @@ def index():
     """Serve the main web interface"""
     return send_from_directory(app.static_folder, 'index.html')
 
+@app.route('/<path:filename>')
+def serve_static(filename):
+    """Serve static files (JS, CSS, HTML, etc.)"""
+    return send_from_directory(app.static_folder, filename)
+
 @app.route('/api/optimize', methods=['POST'])
 def optimize():
     """
