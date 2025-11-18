@@ -95,9 +95,9 @@ case $choice in
         echo ""
         echo "📊 Viewing Test Report..."
         if command -v less &> /dev/null; then
-            less TESTING_COMPLETE.md
+            less ../docs/TESTING_COMPLETE.md
         else
-            cat TESTING_COMPLETE.md
+            cat ../docs/TESTING_COMPLETE.md
         fi
         ;;
 

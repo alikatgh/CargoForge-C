@@ -150,7 +150,7 @@ const position = visualizer.getDeckClickPosition(mouseX, mouseY);
 
 ### Quick Start:
 ```bash
-./PLAY_GAME.sh
+./scripts/PLAY_GAME.sh
 ```
 
 ### Or Manual:
@@ -232,4 +232,4 @@ But the core gameplay is **SOLID** now! 💪
 
 ---
 
-**Try it now with: `./PLAY_GAME.sh`** 🚀
+**Try it now with: `./scripts/PLAY_GAME.sh`** 🚀

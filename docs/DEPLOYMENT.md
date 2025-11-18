@@ -369,8 +369,8 @@ docker-compose down
 Use the included `deploy.sh`:
 
 ```bash
-chmod +x deploy.sh
-./deploy.sh
+chmod +x scripts/deploy.sh
+./scripts/deploy.sh
 ```
 
 The script will:
