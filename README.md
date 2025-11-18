@@ -10,7 +10,7 @@
 
 **CargoForge-C** is a commercial-grade maritime cargo optimization platform combining a high-performance C99 computation engine with a modern web interface, user authentication, and payment processing. Perfect for maritime schools, shipping companies, logistics firms, and educational institutions.
 
-![CargoForge Demo](DEMO.md)
+![CargoForge Demo](docs/DEMO.md)
 
 -----
 
@@ -74,7 +74,7 @@ chmod +x deploy.sh
 # Access at https://yourdomain.com
 ```
 
-See [DEPLOYMENT.md](DEPLOYMENT.md) for complete production setup guide.
+See [DEPLOYMENT.md](docs/DEPLOYMENT.md) for complete production setup guide.
 
 -----
 
@@ -356,9 +356,9 @@ The new CLI maintains backward compatibility with the legacy interface:
 
 | Document | Description |
 |----------|-------------|
-| [DEPLOYMENT.md](DEPLOYMENT.md) | Complete production deployment guide |
-| [API.md](API.md) | REST API documentation with examples |
-| [DEMO.md](DEMO.md) | Interactive demo walkthrough |
+| [DEPLOYMENT.md](docs/DEPLOYMENT.md) | Complete production deployment guide |
+| [API.md](docs/API.md) | REST API documentation with examples |
+| [DEMO.md](docs/DEMO.md) | Interactive demo walkthrough |
 | [CHANGELOG.md](CHANGELOG.md) | Version history and release notes |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Contribution guidelines |
 
@@ -464,7 +464,7 @@ python app_prod.py
 
 ### Production Deployment
 
-See [DEPLOYMENT.md](DEPLOYMENT.md) for:
+See [DEPLOYMENT.md](docs/DEPLOYMENT.md) for:
 - Docker deployment
 - SSL/HTTPS setup
 - Stripe configuration
@@ -524,7 +524,7 @@ curl -X POST https://api.cargoforge.com/api/export/pdf \
   --output cargo_plan.pdf
 ```
 
-See [API.md](API.md) for complete API documentation with examples in Python, JavaScript, PHP, and cURL.
+See [API.md](docs/API.md) for complete API documentation with examples in Python, JavaScript, PHP, and cURL.
 
 -----
 
@@ -552,19 +552,40 @@ pytest tests/
 
 ```
 CargoForge-C/
-├── Core C Engine (CLI)
+├── src/                          # C source files
 │   ├── main.c                    # Entry point
-│   ├── cli.c/h                   # CLI parser & subcommands (NEW v2.0)
-│   ├── parser.c/h                # Input parsing
-│   ├── optimizer.c/h             # Optimization coordinator
-│   ├── placement_3d.c/h          # 3D bin-packing (guillotine)
-│   ├── placement_2d.c/h          # Legacy 2D placement
-│   ├── constraints.c/h           # Cargo constraint validation
-│   ├── analysis.c/h              # Stability calculations
-│   ├── visualization.c/h         # ASCII output
-│   ├── json_output.c/h           # JSON serialization
-│   └── cargoforge.h              # Main header file
-├── web/
+│   ├── cli.c                     # CLI parser & subcommands (v2.0+)
+│   ├── parser.c                  # Input parsing
+│   ├── optimizer.c               # Optimization coordinator
+│   ├── analysis.c                # Stability calculations
+│   ├── placement_2d.c            # Legacy 2D placement
+│   ├── placement_3d.c            # 3D bin-packing (guillotine)
+│   ├── constraints.c             # Cargo constraint validation
+│   ├── visualization.c           # ASCII output
+│   └── json_output.c             # JSON serialization
+├── include/                      # Header files
+│   ├── cargoforge.h              # Main header file
+│   ├── cli.h                     # CLI interface
+│   ├── placement_2d.h            # 2D placement
+│   ├── placement_3d.h            # 3D placement
+│   ├── constraints.h             # Constraints
+│   ├── visualization.h           # Visualization
+│   └── json_output.h             # JSON output
+├── tests/                        # Unit tests
+│   ├── test_parser.c
+│   ├── test_placement_2d.c
+│   └── test_analysis.c
+├── docs/                         # Documentation
+│   ├── API.md                    # API documentation
+│   ├── DEMO.md                   # Demo guide
+│   ├── DEPLOYMENT.md             # Deployment guide
+│   ├── WHATS_NEW.md              # Release highlights
+│   └── ...                       # Additional docs
+├── scripts/                      # Shell scripts
+│   ├── deploy.sh                 # Deployment script
+│   ├── TEST_AND_DEMO.sh          # Testing script
+│   └── PLAY_GAME.sh              # Game launcher
+├── web/                          # Web application
 │   ├── backend/
 │   │   ├── app_prod.py           # Production Flask app
 │   │   ├── pdf_export.py         # PDF generation
@@ -576,19 +597,19 @@ CargoForge-C/
 │       ├── dashboard.html        # User dashboard
 │       ├── terms.html            # Terms of Service
 │       └── privacy.html          # Privacy Policy
-├── tests/                        # C unit tests
 ├── examples/                     # Sample input files
-├── docs/                         # Generated documentation
-├── docker-compose.yml            # Multi-service orchestration
+│   ├── sample_ship.cfg
+│   └── sample_cargo.txt
+├── build/                        # Build artifacts (git-ignored)
+├── Makefile                      # Make build system
+├── CMakeLists.txt                # CMake build system
 ├── Dockerfile                    # Container image
-├── deploy.sh                     # Deployment script
-├── Makefile                      # Make build
-├── CMakeLists.txt                # CMake build
+├── docker-compose.yml            # Multi-service orchestration
 ├── .env.example                  # Environment template
-├── DEPLOYMENT.md                 # Deployment guide
-├── API.md                        # API documentation
-├── DEMO.md                       # Demo guide
-└── README.md                     # This file
+├── README.md                     # This file
+├── CHANGELOG.md                  # Version history
+├── CONTRIBUTING.md               # Contribution guidelines
+└── LICENSE                       # MIT license
 ```
 
 -----

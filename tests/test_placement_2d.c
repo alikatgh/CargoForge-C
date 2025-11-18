@@ -4,8 +4,8 @@
 #include <string.h>
 #include <assert.h>
 
-#include "../cargoforge.h"
-#include "../placement_2d.h"
+#include "cargoforge.h"
+#include "placement_2d.h"
 
 static Cargo* find_item(const char* name, Cargo items[], int count) {
     for (int i = 0; i < count; i++) {

@@ -15,25 +15,32 @@ if(UNIX)
     add_definitions(-D_POSIX_C_SOURCE=200809L)
 endif()
 
+# Include directories
+include_directories(${CMAKE_SOURCE_DIR}/include)
+
 # Source files
 set(SOURCES
-    main.c
-    parser.c
-    optimizer.c
-    analysis.c
-    placement_2d.c
-    placement_3d.c
-    constraints.c
-    visualization.c
+    src/main.c
+    src/cli.c
+    src/parser.c
+    src/optimizer.c
+    src/analysis.c
+    src/placement_2d.c
+    src/placement_3d.c
+    src/constraints.c
+    src/visualization.c
+    src/json_output.c
 )
 
 # Headers
 set(HEADERS
-    cargoforge.h
-    placement_2d.h
-    placement_3d.h
-    constraints.h
-    visualization.h
+    include/cargoforge.h
+    include/cli.h
+    include/placement_2d.h
+    include/placement_3d.h
+    include/constraints.h
+    include/visualization.h
+    include/json_output.h
 )
 
 # Main executable
@@ -47,16 +54,16 @@ install(TARGETS cargoforge DESTINATION bin)
 enable_testing()
 
 # Test: parser
-add_executable(test_parser tests/test_parser.c parser.c)
+add_executable(test_parser tests/test_parser.c src/parser.c)
 target_link_libraries(test_parser m)
 add_test(NAME test_parser COMMAND test_parser)
 
 # Test: placement_2d
-add_executable(test_placement_2d tests/test_placement_2d.c placement_2d.c)
+add_executable(test_placement_2d tests/test_placement_2d.c src/placement_2d.c)
 add_test(NAME test_placement_2d COMMAND test_placement_2d)
 
 # Test: analysis
-add_executable(test_analysis tests/test_analysis.c analysis.c)
+add_executable(test_analysis tests/test_analysis.c src/analysis.c)
 target_link_libraries(test_analysis m)
 add_test(NAME test_analysis COMMAND test_analysis)
 

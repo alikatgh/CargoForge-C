@@ -3,7 +3,7 @@
  */
 #include <assert.h>    // For the assert() macro
 #include <stdio.h>
-#include "../cargoforge.h" // Use .. to go up one directory to find the header
+#include "cargoforge.h"
 
 int main() {
     printf("--- Running Parser Tests ---\n");
