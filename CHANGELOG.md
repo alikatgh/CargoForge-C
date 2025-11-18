@@ -7,6 +7,62 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0] - 2025-11-17
+
+### Added - CLI Modernization 🚀
+- **Modern CLI architecture** with subcommand system (optimize, validate, info, interactive, version, help)
+- **getopt_long argument parser** for professional command-line interface
+- **Multiple output formats**: JSON, CSV, Table, Markdown, and Human-readable
+- **Interactive mode** - Step-by-step wizard for creating ship and cargo configuration files
+- **Validate subcommand** - Input validation without running optimization
+- **Info subcommand** - Display ship and cargo statistics
+- **Comprehensive help system** - Global help and subcommand-specific help (--help flag)
+- **Version information** - Build date and version display (--version flag)
+- **Advanced filtering** - Filter results by placement status (--only-placed, --only-failed) or cargo type
+- **Output control** - Save results to file with --output flag
+- **Colored terminal output** - Auto-detected with --no-color override
+- **Verbose/Quiet modes** - Control output verbosity with -v/--verbose and -q/--quiet
+- **Better error messages** - Contextual errors with file names and line numbers
+- **Progress indicators** - Visual feedback for long operations
+- **Backward compatibility** - Legacy --json and --no-viz flags still supported
+
+### Changed
+- Refactored main.c to use new CLI architecture (simplified to ~50 lines)
+- Added cli.c (1000+ lines) with all CLI logic and subcommand handlers
+- Added cli.h with CLI structures, enums, and function prototypes
+- Updated Makefile to include cli.c and cli.h in build
+- Enhanced README with comprehensive CLI documentation and usage examples
+- Updated project roadmap to include v2.0 milestone
+
+### Technical Details
+- New files: cli.c, cli.h
+- Exit codes for different error types (invalid args, file errors, parse errors, etc.)
+- CLIContext struct for managing all command-line options
+- Subcommand dispatch system with handler functions
+- OutputFormat enum supporting 5 different formats
+- ANSI color codes with terminal detection
+- Support for --help on any subcommand
+
+### Examples
+```bash
+# Modern subcommand interface
+./cargoforge optimize ship.cfg cargo.txt --format=json
+./cargoforge validate ship.cfg cargo.txt --verbose
+./cargoforge info ship.cfg
+./cargoforge interactive
+
+# Multiple output formats
+./cargoforge optimize ship.cfg cargo.txt --format=csv > results.csv
+./cargoforge optimize ship.cfg cargo.txt --format=markdown > report.md
+./cargoforge optimize ship.cfg cargo.txt --format=table
+
+# Advanced filtering
+./cargoforge optimize ship.cfg cargo.txt --only-failed
+./cargoforge optimize ship.cfg cargo.txt --type=hazardous
+```
+
+## [0.3.0-production] - Previous Release
+
 ### Added
 - **3D bin-packing algorithm** using guillotine heuristic for realistic cargo placement
 - **Cargo constraints system** for hazmat separation, fragile cargo, and weight distribution
