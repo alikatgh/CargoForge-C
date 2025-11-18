@@ -5,7 +5,13 @@
 *.out
 cargoforge
 build/
-docs/
+
+# Generated documentation (Doxygen, etc.)
+# But keep our markdown docs in docs/
+docs/html/
+docs/latex/
+docs/man/
+docs/xml/
 
 # Test executables
 tests/test_parser
