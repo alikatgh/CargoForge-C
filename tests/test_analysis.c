@@ -4,7 +4,7 @@
  * Tests stability calculations, CG calculations, and analysis reporting.
  */
 
-#include "../cargoforge.h"
+#include "cargoforge.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
