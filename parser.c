@@ -36,10 +36,17 @@
 
 // Parses ship configuration using the safe parser.
 int parse_ship_config(const char *filename, Ship *ship) {
-    FILE *file = fopen(filename, "r");
-    if (!file) {
-        perror("Error opening ship config file");
-        return -1;
+    FILE *file;
+    bool use_stdin = (strcmp(filename, "-") == 0);
+
+    if (use_stdin) {
+        file = stdin;
+    } else {
+        file = fopen(filename, "r");
+        if (!file) {
+            perror("Error opening ship config file");
+            return -1;
+        }
     }
 
     char line[MAX_LINE_LENGTH];
@@ -52,7 +59,7 @@ int parse_ship_config(const char *filename, Ship *ship) {
 
         float v = safe_atof(value, 0.1f, 1e9f, key);
         if (isnan(v)) {
-            fclose(file);
+            if (!use_stdin) fclose(file);
             return -1; // Abort on invalid data
         }
 
@@ -62,40 +69,111 @@ int parse_ship_config(const char *filename, Ship *ship) {
         else if (strcmp(key, "lightship_weight_tonnes") == 0) ship->lightship_weight = v * 1000.0f;
         else if (strcmp(key, "lightship_kg_m") == 0) ship->lightship_kg = v;
     }
-    fclose(file);
+
+    if (!use_stdin) {
+        fclose(file);
+    }
     return 0;
 }
 
 // Parses a cargo list using the safe parser.
 int parse_cargo_list(const char *filename, Ship *ship) {
-    FILE *file = fopen(filename, "r");
-    if (!file) {
-        perror("Error opening cargo list file");
-        return -1;
+    FILE *file;
+    bool use_stdin = (strcmp(filename, "-") == 0);
+
+    if (use_stdin) {
+        file = stdin;
+    } else {
+        file = fopen(filename, "r");
+        if (!file) {
+            perror("Error opening cargo list file");
+            return -1;
+        }
     }
 
-    // First pass: count lines to determine memory allocation size
-    int count = 0;
-    char line[MAX_LINE_LENGTH];
-    while (fgets(line, sizeof(line), file)) {
-        if (line[0] != '#' && line[0] != '\n') count++;
+    // For stdin, we need to read all lines into memory first since we can't rewind
+    // For files, we can still do two-pass reading
+    char **lines = NULL;
+    int line_count = 0;
+    int line_capacity = 100; // Initial capacity
+
+    if (use_stdin) {
+        // Read all lines from stdin into memory
+        lines = malloc(line_capacity * sizeof(char*));
+        if (!lines) {
+            fprintf(stderr, "Error: Failed to allocate memory for line buffer.\n");
+            return -1;
+        }
+
+        char line[MAX_LINE_LENGTH];
+        while (fgets(line, sizeof(line), file)) {
+            if (line[0] == '#' || line[0] == '\n') continue;
+
+            if (line_count >= line_capacity) {
+                line_capacity *= 2;
+                char **new_lines = realloc(lines, line_capacity * sizeof(char*));
+                if (!new_lines) {
+                    fprintf(stderr, "Error: Failed to reallocate line buffer.\n");
+                    for (int i = 0; i < line_count; i++) free(lines[i]);
+                    free(lines);
+                    return -1;
+                }
+                lines = new_lines;
+            }
+
+            lines[line_count] = strdup(line);
+            if (!lines[line_count]) {
+                fprintf(stderr, "Error: Failed to duplicate line.\n");
+                for (int i = 0; i < line_count; i++) free(lines[i]);
+                free(lines);
+                return -1;
+            }
+            line_count++;
+        }
+
+        ship->cargo = malloc(line_count * sizeof(Cargo));
+        if (!ship->cargo) {
+            fprintf(stderr, "Error: Failed to allocate memory for cargo.\n");
+            for (int i = 0; i < line_count; i++) free(lines[i]);
+            free(lines);
+            return -1;
+        }
+        ship->cargo_capacity = line_count;
+        ship->cargo_count = 0;
+    } else {
+        // File-based: count lines first
+        int count = 0;
+        char line[MAX_LINE_LENGTH];
+        while (fgets(line, sizeof(line), file)) {
+            if (line[0] != '#' && line[0] != '\n') count++;
+        }
+
+        ship->cargo = malloc(count * sizeof(Cargo));
+        if (!ship->cargo) {
+            fprintf(stderr, "Error: Failed to allocate memory for cargo.\n");
+            fclose(file);
+            return -1;
+        }
+        ship->cargo_capacity = count;
+        ship->cargo_count = 0;
+        rewind(file);
     }
 
-    ship->cargo = malloc(count * sizeof(Cargo));
-    if (!ship->cargo) {
-        fprintf(stderr, "Error: Failed to allocate memory for cargo.\n");
-        fclose(file);
-        return -1;
-    }
-    ship->cargo_capacity = count;
-    ship->cargo_count = 0;
-
-    // Second pass: parse data into structs
-    rewind(file);
     int line_num = 0;
-    while (fgets(line, sizeof(line), file) && ship->cargo_count < ship->cargo_capacity) {
+    char line[MAX_LINE_LENGTH];
+
+    for (int i = 0; ship->cargo_count < ship->cargo_capacity; i++) {
+        // Read from either lines array (stdin) or file
+        if (use_stdin) {
+            if (i >= line_count) break;
+            strncpy(line, lines[i], MAX_LINE_LENGTH - 1);
+            line[MAX_LINE_LENGTH - 1] = '\0';
+        } else {
+            if (!fgets(line, sizeof(line), file)) break;
+            if (line[0] == '#' || line[0] == '\n') continue;
+        }
+
         line_num++;
-        if (line[0] == '#' || line[0] == '\n') continue;
 
         char *saveptr;
         char *id = strtok_r(line, " \t", &saveptr);
@@ -117,7 +195,12 @@ int parse_cargo_list(const char *filename, Ship *ship) {
         float weight_t = safe_atof(w_str, 0.1f, 1e6f, "weight");
         if (isnan(weight_t)) {
             free(ship->cargo);
-            fclose(file);
+            if (use_stdin) {
+                for (int j = 0; j < line_count; j++) free(lines[j]);
+                free(lines);
+            } else {
+                fclose(file);
+            }
             return -1;
         }
         c->weight = weight_t * 1000.0f; // tonnes -> kg
@@ -137,12 +220,27 @@ int parse_cargo_list(const char *filename, Ship *ship) {
         if (!dims_ok) {
             fprintf(stderr, "Error: Incomplete or invalid dimensions for cargo '%s' on line %d\n", id, line_num);
             free(ship->cargo);
-            fclose(file);
+            if (use_stdin) {
+                for (int j = 0; j < line_count; j++) free(lines[j]);
+                free(lines);
+            } else {
+                fclose(file);
+            }
             return -1;
         }
 
         ship->cargo_count++;
     }
-    fclose(file);
+
+    // Cleanup
+    if (use_stdin) {
+        for (int i = 0; i < line_count; i++) {
+            free(lines[i]);
+        }
+        free(lines);
+    } else {
+        fclose(file);
+    }
+
     return 0;
 }

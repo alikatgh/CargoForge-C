@@ -98,8 +98,26 @@ CargoForge-C v2.0 features a powerful command-line interface with subcommands, m
 # Display ship information
 ./cargoforge info ship.cfg
 
+# Analyze saved JSON results
+./cargoforge analyze results.json
+
 # Interactive mode (guided wizard)
 ./cargoforge interactive
+```
+
+### Stdin Support
+
+CargoForge-C now supports reading from stdin using `-` as the filename:
+
+```bash
+# Read cargo from pipe
+cat cargo.txt | ./cargoforge optimize ship.cfg -
+
+# Chain commands
+./cargoforge optimize ship.cfg cargo.txt --format=json | ./cargoforge analyze -
+
+# Use with other tools
+grep "Container" cargo.txt | ./cargoforge optimize ship.cfg -
 ```
 
 ### Output Formats
@@ -184,6 +202,65 @@ CargoForge-C supports multiple output formats for different use cases:
 
 # 5. API-style usage with JSON
 ./cargoforge optimize ship.cfg cargo.txt --format=json --quiet > output.json
+
+# 6. Analyze saved optimization results
+./cargoforge optimize ship.cfg cargo.txt --format=json --output=results.json
+./cargoforge analyze results.json
+
+# 7. Use stdin for piped operations
+cat large_cargo.txt | ./cargoforge optimize ship.cfg - --format=csv
+```
+
+### Analyze Subcommand
+
+The `analyze` subcommand provides detailed analysis of saved JSON optimization results:
+
+```bash
+# Save results to file
+./cargoforge optimize ship.cfg cargo.txt --format=json --output=results.json
+
+# Analyze the results
+./cargoforge analyze results.json
+
+# Output includes:
+# - Ship specifications and capacity
+# - Cargo placement statistics
+# - Weight analysis and utilization
+# - Stability analysis with warnings
+# - Smart recommendations
+```
+
+### Configuration File Support
+
+CargoForge-C supports configuration files for default settings:
+
+```bash
+# Create ~/.cargoforgerc for global defaults
+cat > ~/.cargoforgerc <<EOF
+# CargoForge-C Configuration
+format=table
+color=yes
+verbose=no
+show_viz=yes
+EOF
+
+# Or create .cargoforgerc in project directory (overrides global)
+echo "format=json" > .cargoforgerc
+
+# Now commands use these defaults automatically
+./cargoforge optimize ship.cfg cargo.txt  # Uses configured format
+
+# Command-line flags override config file
+./cargoforge optimize ship.cfg cargo.txt --format=csv  # Uses CSV
+```
+
+**Supported Config Options:**
+- `format` - Default output format (human/json/csv/table/markdown)
+- `color` - Enable colored output (yes/no/true/false/1/0)
+- `verbose` - Verbose mode (yes/no)
+- `quiet` - Quiet mode (yes/no)
+- `show_viz` - Show ASCII visualization (yes/no)
+- `algorithm` - Default algorithm (3d/2d/auto)
 ```
 
 ### Input File Formats

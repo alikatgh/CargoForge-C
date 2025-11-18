@@ -18,6 +18,54 @@
 // Global context for color support (simplified access)
 static CLIContext *g_ctx = NULL;
 
+// Load config file if it exists
+static void load_config_file(CLIContext *ctx, const char *config_path) {
+    FILE *fp = fopen(config_path, "r");
+    if (!fp) return;
+
+    char line[256];
+    while (fgets(line, sizeof(line), fp)) {
+        // Skip comments and empty lines
+        if (line[0] == '#' || line[0] == '\n') continue;
+
+        // Parse key=value pairs
+        char *key = strtok(line, "=");
+        char *value = strtok(NULL, "\n");
+        if (!key || !value) continue;
+
+        // Trim whitespace from value
+        while (*value == ' ' || *value == '\t') value++;
+
+        // Apply config options
+        if (strcmp(key, "format") == 0) {
+            if (strcmp(value, "json") == 0) ctx->format = FORMAT_JSON;
+            else if (strcmp(value, "csv") == 0) ctx->format = FORMAT_CSV;
+            else if (strcmp(value, "table") == 0) ctx->format = FORMAT_TABLE;
+            else if (strcmp(value, "markdown") == 0) ctx->format = FORMAT_MARKDOWN;
+        }
+        else if (strcmp(key, "color") == 0) {
+            ctx->color = (strcmp(value, "true") == 0 || strcmp(value, "yes") == 0 || strcmp(value, "1") == 0);
+        }
+        else if (strcmp(key, "verbose") == 0) {
+            ctx->verbose = (strcmp(value, "true") == 0 || strcmp(value, "yes") == 0 || strcmp(value, "1") == 0);
+        }
+        else if (strcmp(key, "quiet") == 0) {
+            ctx->quiet = (strcmp(value, "true") == 0 || strcmp(value, "yes") == 0 || strcmp(value, "1") == 0);
+        }
+        else if (strcmp(key, "show_viz") == 0) {
+            ctx->show_viz = (strcmp(value, "true") == 0 || strcmp(value, "yes") == 0 || strcmp(value, "1") == 0);
+        }
+        else if (strcmp(key, "algorithm") == 0) {
+            static char algo_buf[32];
+            strncpy(algo_buf, value, sizeof(algo_buf) - 1);
+            algo_buf[sizeof(algo_buf) - 1] = '\0';
+            ctx->algorithm = algo_buf;
+        }
+    }
+
+    fclose(fp);
+}
+
 // Initialize CLI context with default values
 void init_cli_context(CLIContext *ctx) {
     ctx->subcommand = NULL;
@@ -38,6 +86,15 @@ void init_cli_context(CLIContext *ctx) {
     ctx->cargo_type_filter = NULL;
     ctx->interactive = false;
     g_ctx = ctx;
+
+    // Load config files (local overrides global)
+    char *home = getenv("HOME");
+    if (home) {
+        char global_config[512];
+        snprintf(global_config, sizeof(global_config), "%s/.cargoforgerc", home);
+        load_config_file(ctx, global_config);
+    }
+    load_config_file(ctx, ".cargoforgerc");
 }
 
 // Free allocated memory in CLI context
@@ -560,10 +617,152 @@ int cmd_info(CLIContext *ctx) {
     return EXIT_SUCCESS;
 }
 
-// SUBCOMMAND: analyze (placeholder for future enhancement)
+// SUBCOMMAND: analyze
 int cmd_analyze(CLIContext *ctx) {
-    fprintf(stderr, "Analyze subcommand is not yet implemented.\n");
-    fprintf(stderr, "This will analyze saved JSON results in a future version.\n");
+    if (!ctx->results_file && !ctx->ship_file) {
+        fprintf(stderr, "Error: 'analyze' requires a JSON results file\n");
+        fprintf(stderr, "Usage: cargoforge analyze <results.json>\n");
+        return EXIT_INVALID_ARGS;
+    }
+
+    const char *filename = ctx->results_file ? ctx->results_file : ctx->ship_file;
+
+    if (!ctx->quiet) {
+        fprintf(stderr, "CargoForge-C Analyzer\n");
+        fprintf(stderr, "Analyzing: %s\n\n", filename);
+    }
+
+    // Read and display JSON file content with analysis
+    FILE *fp = strcmp(filename, "-") == 0 ? stdin : fopen(filename, "r");
+    if (!fp) {
+        print_error_with_context(filename, 0, "Cannot open file");
+        return EXIT_FILE_ERROR;
+    }
+
+    // Simple JSON analyzer - extract key metrics
+    char line[1024];
+    int placed_count = 0, total_count = 0;
+    float total_weight = 0.0, cg_x = 0.0, cg_y = 0.0, gm = 0.0;
+    float ship_length = 0.0, ship_width = 0.0, max_weight = 0.0;
+    bool in_cargo_section = false;
+    bool in_analysis_section = false;
+
+    while (fgets(line, sizeof(line), fp)) {
+        // Parse ship dimensions
+        if (strstr(line, "\"length\":")) {
+            sscanf(line, " \"length\": %f", &ship_length);
+        }
+        if (strstr(line, "\"width\":")) {
+            sscanf(line, " \"width\": %f", &ship_width);
+        }
+        if (strstr(line, "\"max_weight\":")) {
+            sscanf(line, " \"max_weight\": %f", &max_weight);
+        }
+
+        // Parse cargo array
+        if (strstr(line, "\"cargo\":")) {
+            in_cargo_section = true;
+        }
+        if (in_cargo_section && strstr(line, "\"placed\": true")) {
+            placed_count++;
+        }
+        if (in_cargo_section && strstr(line, "\"id\":")) {
+            total_count++;
+        }
+
+        // Parse analysis section
+        if (strstr(line, "\"analysis\":")) {
+            in_analysis_section = true;
+        }
+        if (in_analysis_section && strstr(line, "\"total_cargo_weight\":")) {
+            sscanf(line, " \"total_cargo_weight\": %f", &total_weight);
+        }
+        if (in_analysis_section && strstr(line, "\"longitudinal_percent\":")) {
+            sscanf(line, " \"longitudinal_percent\": %f", &cg_x);
+        }
+        if (in_analysis_section && strstr(line, "\"transverse_percent\":")) {
+            sscanf(line, " \"transverse_percent\": %f", &cg_y);
+        }
+        if (in_analysis_section && strstr(line, "\"metacentric_height\":")) {
+            sscanf(line, " \"metacentric_height\": %f", &gm);
+        }
+    }
+
+    if (fp != stdin) {
+        fclose(fp);
+    }
+
+    // Display analysis results
+    printf("═══════════════════════════════════════════════════\n");
+    printf("  CargoForge-C Results Analysis\n");
+    printf("═══════════════════════════════════════════════════\n\n");
+
+    printf("SHIP SPECIFICATIONS:\n");
+    printf("  Dimensions: %.2f m × %.2f m\n", ship_length, ship_width);
+    printf("  Capacity: %.0f tonnes\n", max_weight / 1000.0);
+    printf("  Deck Area: %.2f m²\n\n", ship_length * ship_width);
+
+    printf("CARGO SUMMARY:\n");
+    printf("  Total Items: %d\n", total_count);
+    printf("  Successfully Placed: %d (%.1f%%)\n", placed_count,
+           total_count > 0 ? (float)placed_count / total_count * 100.0 : 0.0);
+    printf("  Failed to Place: %d\n\n", total_count - placed_count);
+
+    printf("WEIGHT ANALYSIS:\n");
+    printf("  Total Cargo Weight: %.2f tonnes\n", total_weight / 1000.0);
+    printf("  Capacity Utilization: %.1f%%\n", (total_weight / max_weight) * 100.0);
+    printf("  Available Capacity: %.2f tonnes\n\n", (max_weight - total_weight) / 1000.0);
+
+    printf("STABILITY ANALYSIS:\n");
+    printf("  Center of Gravity:\n");
+    printf("    - Longitudinal: %.1f%% ", cg_x);
+    if (cg_x < 45.0 || cg_x > 55.0) {
+        printf("⚠ Off-center\n");
+    } else {
+        printf("✓ Centered\n");
+    }
+    printf("    - Transverse: %.1f%% ", cg_y);
+    if (cg_y < 45.0 || cg_y > 55.0) {
+        printf("⚠ Off-center\n");
+    } else {
+        printf("✓ Centered\n");
+    }
+
+    printf("\n  Metacentric Height (GM): %.2f m\n", gm);
+    printf("  Stability Status: ");
+
+    if (gm < 0.5) {
+        printf("❌ UNSTABLE (GM too low)\n");
+    } else if (gm > 2.5) {
+        printf("⚠ TOO STIFF (GM too high)\n");
+    } else {
+        printf("✅ OPTIMAL\n");
+    }
+
+    printf("\n");
+    printf("═══════════════════════════════════════════════════\n");
+
+    // Recommendations
+    if (placed_count < total_count) {
+        printf("\n⚠ RECOMMENDATIONS:\n");
+        printf("  • %d items failed to place - consider:\n", total_count - placed_count);
+        printf("    - Reducing cargo dimensions\n");
+        printf("    - Using a larger vessel\n");
+        printf("    - Splitting the load\n");
+    }
+
+    if (gm < 0.5) {
+        printf("\n❌ CRITICAL:\n");
+        printf("  • GM below safe threshold\n");
+        printf("  • Vessel may be unstable\n");
+        printf("  • Add ballast or redistribute cargo\n");
+    } else if (gm > 2.5) {
+        printf("\n⚠ WARNING:\n");
+        printf("  • GM above optimal range\n");
+        printf("  • Vessel may be too stiff (uncomfortable)\n");
+        printf("  • Consider lowering center of gravity\n");
+    }
+
     return EXIT_SUCCESS;
 }
 
@@ -715,18 +914,27 @@ int cmd_help(CLIContext *ctx) {
 // Output results in various formats
 void output_results(Ship *ship, AnalysisResult *result, OutputFormat format, const char *output_file) {
     FILE *fp = stdout;
+    FILE *old_stdout = NULL;
 
     if (output_file) {
         fp = fopen(output_file, "w");
         if (!fp) {
             fprintf(stderr, "Error: Cannot open output file %s\n", output_file);
             fp = stdout;
+        } else if (format == FORMAT_JSON) {
+            // For JSON, we need to redirect stdout since print_json_output uses stdout
+            old_stdout = stdout;
+            stdout = fp;
         }
     }
 
     switch (format) {
         case FORMAT_JSON:
             print_json_output(ship, result);
+            if (old_stdout) {
+                fflush(stdout);
+                stdout = old_stdout;
+            }
             break;
 
         case FORMAT_CSV:
