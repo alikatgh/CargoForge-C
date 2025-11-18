@@ -97,7 +97,7 @@
 ├─────────────────────────────────────────────────────────────────────────┤
 │                                                                         │
 │  Step 1: Launch the game                                               │
-│          ./PLAY_GAME.sh                                                │
+│          ./scripts/PLAY_GAME.sh                                        │
 │                                                                         │
 │  Step 2: Click a cargo card (bottom bar)                               │
 │          → It glows GREEN when selected                                │
@@ -145,7 +145,7 @@
 ╔══════════════════════════════════════════════════════════════════════════╗
 ║                          🎮 TRY IT NOW! 🎮                               ║
 ║                                                                          ║
-║                         ./PLAY_GAME.sh                                   ║
+║                         ./scripts/PLAY_GAME.sh                           ║
 ║                                                                          ║
 ║                  You'll IMMEDIATELY see the difference!                  ║
 ║                                                                          ║

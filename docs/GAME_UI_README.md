@@ -8,7 +8,7 @@
 
 ### Option 1: Use the Launcher (Easiest)
 ```bash
-./PLAY_GAME.sh
+./scripts/PLAY_GAME.sh
 ```
 
 ### Option 2: Manual Start

@@ -68,8 +68,8 @@ cp .env.example .env
 nano .env  # Add your Stripe keys, database URL, etc.
 
 # Deploy with Docker
-chmod +x deploy.sh
-./deploy.sh
+chmod +x scripts/deploy.sh
+./scripts/deploy.sh
 
 # Access at https://yourdomain.com
 ```
