@@ -7,6 +7,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.0] - 2025-11-17
+
+### Added - Power User Features 🔥
+- **Stdin Support** - Read ship or cargo data from pipes using `-` as filename
+  - `cat cargo.txt | ./cargoforge optimize ship.cfg -`
+  - Chain commands: `./cargoforge optimize ... --format=json | ./cargoforge analyze -`
+  - Works with all file input parameters
+- **Analyze Subcommand** - Full-featured JSON results analyzer
+  - Parses saved JSON optimization results
+  - Displays detailed statistics and recommendations
+  - Shows ship specs, cargo summary, weight analysis, stability metrics
+  - Provides actionable warnings and suggestions
+- **Configuration File Support** - Set default CLI options
+  - Global config: `~/.cargoforgerc`
+  - Project config: `./.cargoforgerc` (overrides global)
+  - Supported options: format, color, verbose, quiet, show_viz, algorithm
+  - Command-line flags override config settings
+- **Enhanced JSON Output** - Fixed `--output` flag for JSON format
+  - Now correctly writes JSON to specified file
+
+### Changed
+- Modified `parser.c` to support stdin with `-` filename
+- Updated `cli.c` with config file parsing and enhanced analyze command
+- Fixed `output_results()` to handle JSON file output
+
+### Examples
+```bash
+# Stdin support
+cat cargo.txt | ./cargoforge optimize ship.cfg -
+
+# Analyze command
+./cargoforge optimize ship.cfg cargo.txt --output=results.json --format=json
+./cargoforge analyze results.json
+
+# Config file
+echo "format=table" > ~/.cargoforgerc
+./cargoforge optimize ship.cfg cargo.txt  # Uses table by default
+```
+
 ## [2.0.0] - 2025-11-17
 
 ### Added - CLI Modernization 🚀

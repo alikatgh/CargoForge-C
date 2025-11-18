@@ -1,0 +1,58 @@
+# CargoForge-C Configuration File Example
+#
+# This file demonstrates available configuration options.
+# Copy to ~/.cargoforgerc for global defaults
+# or .cargoforgerc in your project directory for project-specific settings.
+#
+# Project-level config overrides global config
+# Command-line flags override both
+
+# Output Format
+# Options: human, json, csv, table, markdown
+# Default: human
+format=table
+
+# Enable Colored Output
+# Options: yes, no, true, false, 1, 0
+# Default: auto-detected based on terminal
+color=yes
+
+# Verbose Output
+# Show detailed information during operations
+# Options: yes, no
+# Default: no
+verbose=no
+
+# Quiet Mode
+# Suppress non-essential output
+# Options: yes, no
+# Default: no
+quiet=no
+
+# Show ASCII Visualization
+# Display cargo layout visualization
+# Options: yes, no
+# Default: yes
+show_viz=yes
+
+# Default Algorithm
+# Options: 3d, 2d, auto
+# Default: 3d
+algorithm=3d
+
+# Example configurations for different use cases:
+
+# For API integration (uncomment to use):
+# format=json
+# quiet=yes
+# color=no
+
+# For debugging (uncomment to use):
+# verbose=yes
+# show_viz=yes
+# color=yes
+
+# For production reports (uncomment to use):
+# format=markdown
+# show_viz=no
+# quiet=no
