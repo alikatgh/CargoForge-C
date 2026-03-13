@@ -6,6 +6,7 @@
  */
 
 #include "cli.h"
+#include "placement_3d.h"
 #include "visualization.h"
 #include "json_output.h"
 #include <stdio.h>
@@ -499,7 +500,7 @@ int cmd_optimize(CLIContext *ctx) {
     if (!ctx->quiet) {
         fprintf(stderr, "\nRunning optimization algorithm...\n");
     }
-    optimize_cargo_placement(&ship);
+    place_cargo_3d(&ship);
     if (!ctx->quiet) print_success("Optimization complete");
 
     // Perform analysis

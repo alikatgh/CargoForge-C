@@ -50,11 +50,9 @@ static float space_volume(const Space3D *space) {
     return space->width * space->depth * space->height;
 }
 
-// Forward declaration needed for constraint checking
-extern Ship *g_current_ship;
-
-int find_best_fit_3d(Bin3D *bins, int bin_count, const Cargo *cargo,
-                     int *best_bin, int *best_space, int *best_orientation) {
+int find_best_fit_3d(const Ship *ship, Bin3D *bins, int bin_count,
+                     const Cargo *cargo, int *best_bin, int *best_space,
+                     int *best_orientation) {
     *best_bin = -1;
     *best_space = -1;
     *best_orientation = -1;
@@ -73,7 +71,7 @@ int find_best_fit_3d(Bin3D *bins, int bin_count, const Cargo *cargo,
             if (!space->is_free) continue;
 
             // Check cargo-specific constraints
-            if (g_current_ship && !check_cargo_constraints(g_current_ship, cargo, bin, space)) {
+            if (ship && !check_cargo_constraints(ship, cargo, bin, space)) {
                 continue;  // Constraint violation, skip this placement
             }
 
@@ -153,13 +151,7 @@ void split_space_3d(Bin3D *bin, int space_idx, const Cargo *cargo, int orientati
     }
 }
 
-// Global pointer for constraint checking (temporary solution)
-Ship *g_current_ship = NULL;
-
 void place_cargo_3d(Ship *ship) {
-    // Set global pointer for constraint checking
-    g_current_ship = ship;
-
     // Sort cargo by volume (largest first - FFD heuristic)
     qsort(ship->cargo, ship->cargo_count, sizeof(Cargo), cargo_cmp_by_volume_desc);
 
@@ -231,7 +223,7 @@ void place_cargo_3d(Ship *ship) {
         Cargo *c = &ship->cargo[i];
         int best_bin, best_space, best_orientation;
 
-        if (find_best_fit_3d(bins, bin_count, c, &best_bin, &best_space, &best_orientation)) {
+        if (find_best_fit_3d(ship, bins, bin_count, c, &best_bin, &best_space, &best_orientation)) {
             Bin3D *bin = &bins[best_bin];
             Space3D *space = &bin->spaces[best_space];
 

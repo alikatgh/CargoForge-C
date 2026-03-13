@@ -23,7 +23,6 @@ set(SOURCES
     src/main.c
     src/cli.c
     src/parser.c
-    src/optimizer.c
     src/analysis.c
     src/placement_2d.c
     src/placement_3d.c
@@ -32,7 +31,6 @@ set(SOURCES
     src/json_output.c
 )
 
-# Headers
 set(HEADERS
     include/cargoforge.h
     include/cli.h

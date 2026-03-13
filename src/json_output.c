@@ -1,8 +1,5 @@
 /*
  * json_output.c - JSON output implementation
- *
- * Simple JSON generation without external dependencies.
- * Outputs valid JSON for web API consumption.
  */
 
 #include "json_output.h"

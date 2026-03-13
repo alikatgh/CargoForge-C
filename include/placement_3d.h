@@ -57,20 +57,9 @@ typedef struct {
  */
 void place_cargo_3d(Ship *ship);
 
-/**
- * find_best_fit_3d - Finds optimal bin and orientation for a cargo item
- *
- * @param bins Array of available bins
- * @param bin_count Number of bins
- * @param cargo Cargo item to place
- * @param best_bin Output: index of best bin (-1 if no fit)
- * @param best_space Output: index of best space in bin
- * @param best_orientation Output: orientation index (0-5)
- *
- * @return 1 if placement found, 0 otherwise
- */
-int find_best_fit_3d(Bin3D *bins, int bin_count, const Cargo *cargo,
-                     int *best_bin, int *best_space, int *best_orientation);
+int find_best_fit_3d(const Ship *ship, Bin3D *bins, int bin_count,
+                     const Cargo *cargo, int *best_bin, int *best_space,
+                     int *best_orientation);
 
 /**
  * split_space_3d - Splits a space after placing cargo (guillotine split)

@@ -1,8 +1,5 @@
 /*
- * json_output.h - JSON output formatting for web API
- *
- * Provides JSON serialization of ship data, cargo placement,
- * and stability analysis results for web interface integration.
+ * json_output.h - JSON output formatting
  */
 
 #ifndef JSON_OUTPUT_H

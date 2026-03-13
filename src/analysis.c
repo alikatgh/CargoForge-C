@@ -1,11 +1,7 @@
 /*
- * analysis.c - Post-optimization analysis and reporting.
- *
- * This file contains the logic to analyze the final cargo layout,
- * calculating stability metrics and printing the final report.
+ * analysis.c - Stability analysis calculations
  */
-#include <math.h>    // For pow() and NAN
-#include <stdbool.h> // For bool type
+#include <math.h>
 #include "cargoforge.h"
 
 // Physical and regulatory constants for naval architecture
@@ -85,25 +81,16 @@ AnalysisResult perform_analysis(const Ship *ship) {
     return result;
 }
 
-
-/**
- * @brief Prints the final, formatted loading plan and analysis report.
- *
- * This function is responsible only for presentation. It calls perform_analysis
- * to get the data and then formats it for human-readable output.
- *
- * @param ship A read-only pointer to the fully loaded Ship struct.
- */
 void print_loading_plan(const Ship *ship) {
     AnalysisResult analysis = perform_analysis(ship);
 
     printf("\n--- CargoForge Stability Analysis ---\n\n");
-    printf("Ship Specs: %.2f m × %.2f m | Max Weight: %.2f t\n",
+    printf("Ship Specs: %.2f m x %.2f m | Max Weight: %.2f t\n",
            ship->length, ship->width, ship->max_weight / 1000.0f);
     printf("----------------------------------------------------------------------\n");
 
     if (isnan(analysis.gm)) {
-        printf("  - 🔴 PLAN REJECTED: Total weight exceeds ship's maximum capacity.\n");
+        printf("  PLAN REJECTED: Total weight exceeds ship's maximum capacity.\n");
         return;
     }
 
@@ -115,18 +102,12 @@ void print_loading_plan(const Ship *ship) {
         }
     }
 
-    // Maritime safety margins
-    const float DWT_SAFETY_FACTOR = 0.90f;  // 90% utilization recommended
+    const float DWT_SAFETY_FACTOR = 0.90f;
     const float usable_capacity_kg = ship->max_weight * DWT_SAFETY_FACTOR;
 
-    // CG should be near midship (45-55% longitudinal, 40-60% transverse)
     const char *cg_stability_str = (analysis.cg.perc_x >= 45 && analysis.cg.perc_x <= 55 &&
                                     analysis.cg.perc_y >= 40 && analysis.cg.perc_y <= 60) ? "Good" : "Warning";
 
-    // GM stability ranges for cargo ships (IMO guidelines):
-    // GM < 0.3m: Unstable (dangerous)
-    // GM 0.5-2.5m: Optimal (safe and comfortable)
-    // GM > 3.0m: Over-stiff (excessive rolling acceleration)
     const char *gm_stability_str;
     if (analysis.gm < 0.3f) {
         gm_stability_str = "CRITICAL - Too tender";
@@ -137,7 +118,7 @@ void print_loading_plan(const Ship *ship) {
     } else {
         gm_stability_str = "Acceptable";
     }
-    
+
     float total_ship_weight_kg = ship->lightship_weight + analysis.total_cargo_weight_kg;
 
     printf("\nLoad Summary\n");
@@ -145,9 +126,9 @@ void print_loading_plan(const Ship *ship) {
     printf("  - Total loaded weight : %.2f t (%.1f %% of max)\n",
            analysis.total_cargo_weight_kg / 1000.0f,
            (total_ship_weight_kg / ship->max_weight) * 100.0f);
-           
+
     if (total_ship_weight_kg > usable_capacity_kg) {
-        printf("  - 🔴 WARNING: exceeds %.0f %% DWT safety margin!\n",
+        printf("  - WARNING: exceeds %.0f %% DWT safety margin!\n",
                DWT_SAFETY_FACTOR * 100.0f);
     }
     printf("  - CG (Lon / Trans)    : %.1f %% / %.1f %% | Balance: %s\n",

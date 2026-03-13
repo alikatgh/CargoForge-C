@@ -3,16 +3,26 @@
 
 #include "cargoforge.h"
 
-/**
- * @brief Places cargo items using a 2D FFD heuristic across multiple bins.
- *
- * This function sorts a ship's cargo by weight (descending) and attempts to
- * place each item into hardcoded holds or the deck. It tries both original
- * and rotated orientations for a better fit. The function modifies the
- * ship's cargo array in-place, updating the pos_x, pos_y, and pos_z fields.
- *
- * @param ship A pointer to the Ship struct, which contains the cargo to be placed.
- */
+#define MAX_SHELVES 100
+
+typedef struct {
+    float y;
+    float height;
+    float used_width;
+} Shelf;
+
+typedef struct {
+    char name[32];
+    float x_offset;
+    float y_offset;
+    float z_offset;
+    float w;
+    float h;
+    float used_height;
+    Shelf shelves[MAX_SHELVES];
+    int shelf_count;
+} Bin;
+
 void place_cargo_2d(Ship *ship);
 
-#endif // PLACEMENT_2D_H
+#endif /* PLACEMENT_2D_H */

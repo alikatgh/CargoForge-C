@@ -17,6 +17,7 @@ docs/xml/
 tests/test_parser
 tests/test_placement_2d
 tests/test_analysis
+tests/run_parser_test
 
 # Backup files
 *.bak
@@ -42,23 +43,3 @@ Testing/
 # Valgrind
 *.log
 vgcore.*
-
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-env/
-venv/
-ENV/
-.venv
-
-# Flask
-instance/
-.webassets-cache
-
-# Node
-node_modules/
-npm-debug.log
-yarn-error.log
