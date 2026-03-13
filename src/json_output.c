@@ -24,7 +24,7 @@ void print_json_output(const Ship *ship, const AnalysisResult *result) {
 
     printf("{\n");
 
-    // Ship specifications
+    /* Ship specifications */
     printf("  \"ship\": {\n");
     printf("    \"length\": %.2f,\n", ship->length);
     printf("    \"width\": %.2f,\n", ship->width);
@@ -33,7 +33,7 @@ void print_json_output(const Ship *ship, const AnalysisResult *result) {
     printf("    \"lightship_kg\": %.2f\n", ship->lightship_kg);
     printf("  },\n");
 
-    // Cargo placements
+    /* Cargo placements */
     printf("  \"cargo\": [\n");
     for (int i = 0; i < ship->cargo_count; i++) {
         const Cargo *c = &ship->cargo[i];
@@ -61,7 +61,7 @@ void print_json_output(const Ship *ship, const AnalysisResult *result) {
     }
     printf("  ],\n");
 
-    // Analysis results
+    /* Analysis results */
     printf("  \"analysis\": {\n");
     printf("    \"placed_count\": %d,\n", result->placed_item_count);
     printf("    \"total_count\": %d,\n", ship->cargo_count);
@@ -77,34 +77,53 @@ void print_json_output(const Ship *ship, const AnalysisResult *result) {
     printf("    },\n");
 
     if (!isnan(result->gm)) {
-        printf("    \"metacentric_height\": %.2f,\n", result->gm);
+        /* Hydrostatics */
+        printf("    \"hydrostatics\": {\n");
+        printf("      \"draft\": %.3f,\n", result->draft);
+        printf("      \"kg\": %.3f,\n", result->kg);
+        printf("      \"kb\": %.3f,\n", result->kb);
+        printf("      \"bm\": %.3f,\n", result->bm);
+        printf("      \"gm\": %.3f\n", result->gm);
+        printf("    },\n");
 
-        // Stability classification
+        /* Trim and heel */
+        printf("    \"trim\": %.4f,\n", result->trim);
+        printf("    \"heel\": %.3f,\n", result->heel);
+        printf("    \"lcg_from_midship\": %.3f,\n", result->lcg);
+
+        /* IMO criteria */
+        printf("    \"imo_stability\": {\n");
+        printf("      \"gz_at_30\": %.4f,\n", result->gz_at_30);
+        printf("      \"gz_max\": %.4f,\n", result->gz_max);
+        printf("      \"gz_max_angle\": %.1f,\n", result->gz_max_angle);
+        printf("      \"area_0_30\": %.5f,\n", result->area_0_30);
+        printf("      \"area_0_40\": %.5f,\n", result->area_0_40);
+        printf("      \"area_30_40\": %.5f,\n", result->area_30_40);
+        printf("      \"compliant\": %s\n", result->imo_compliant ? "true" : "false");
+        printf("    },\n");
+
+        /* Stability classification */
         const char *stability;
-        if (result->gm < 0.3f) {
-            stability = "critical";
-        } else if (result->gm > 3.0f) {
-            stability = "overstiff";
-        } else if (result->gm >= 0.5f && result->gm <= 2.5f) {
-            stability = "optimal";
-        } else {
-            stability = "acceptable";
-        }
+        if (result->gm < 0.3f) stability = "critical";
+        else if (result->gm > 3.0f) stability = "overstiff";
+        else if (result->gm >= 0.5f && result->gm <= 2.5f) stability = "optimal";
+        else stability = "acceptable";
         printf("    \"stability_status\": \"%s\",\n", stability);
 
-        // Balance status
         const char *balance;
         if (result->cg.perc_x >= 45 && result->cg.perc_x <= 55 &&
-            result->cg.perc_y >= 40 && result->cg.perc_y <= 60) {
+            result->cg.perc_y >= 40 && result->cg.perc_y <= 60)
             balance = "good";
-        } else {
+        else
             balance = "warning";
-        }
         printf("    \"balance_status\": \"%s\",\n", balance);
 
         printf("    \"overweight\": false\n");
     } else {
-        printf("    \"metacentric_height\": null,\n");
+        printf("    \"hydrostatics\": null,\n");
+        printf("    \"trim\": null,\n");
+        printf("    \"heel\": null,\n");
+        printf("    \"imo_stability\": null,\n");
         printf("    \"stability_status\": \"rejected\",\n");
         printf("    \"balance_status\": \"unknown\",\n");
         printf("    \"overweight\": true\n");

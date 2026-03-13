@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(CargoForge-C VERSION 0.2.0 LANGUAGES C)
+project(CargoForge-C VERSION 0.3.0 LANGUAGES C)
 
 # C standard
 set(CMAKE_C_STANDARD 99)
@@ -24,7 +24,6 @@ set(SOURCES
     src/cli.c
     src/parser.c
     src/analysis.c
-    src/placement_2d.c
     src/placement_3d.c
     src/constraints.c
     src/visualization.c
@@ -34,7 +33,6 @@ set(SOURCES
 set(HEADERS
     include/cargoforge.h
     include/cli.h
-    include/placement_2d.h
     include/placement_3d.h
     include/constraints.h
     include/visualization.h
@@ -56,14 +54,15 @@ add_executable(test_parser tests/test_parser.c src/parser.c)
 target_link_libraries(test_parser m)
 add_test(NAME test_parser COMMAND test_parser)
 
-# Test: placement_2d
-add_executable(test_placement_2d tests/test_placement_2d.c src/placement_2d.c)
-add_test(NAME test_placement_2d COMMAND test_placement_2d)
-
 # Test: analysis
 add_executable(test_analysis tests/test_analysis.c src/analysis.c)
 target_link_libraries(test_analysis m)
 add_test(NAME test_analysis COMMAND test_analysis)
+
+# Test: constraints
+add_executable(test_constraints tests/test_constraints.c src/constraints.c src/placement_3d.c)
+target_link_libraries(test_constraints m)
+add_test(NAME test_constraints COMMAND test_constraints)
 
 # Build options
 option(BUILD_WITH_ASAN "Build with AddressSanitizer" OFF)

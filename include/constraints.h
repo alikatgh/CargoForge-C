@@ -1,10 +1,11 @@
 /*
  * constraints.h - Cargo placement constraints and validation
  *
- * Handles cargo-specific constraints including:
+ * Handles cargo-specific constraints:
  * - Hazardous materials separation (IMDG Code)
- * - Refrigerated cargo temperature requirements
- * - Fragile cargo stacking limits
+ * - Stacking weight limits per cargo type
+ * - Refrigerated cargo zone preferences
+ * - Fragile cargo protection
  * - Weight distribution limits
  */
 
@@ -14,76 +15,47 @@
 #include "cargoforge.h"
 #include "placement_3d.h"
 
-// Cargo type classifications
-#define CARGO_TYPE_STANDARD "standard"
+/* Cargo type classifications */
+#define CARGO_TYPE_STANDARD  "standard"
 #define CARGO_TYPE_HAZARDOUS "hazardous"
-#define CARGO_TYPE_REEFER "reefer"
-#define CARGO_TYPE_FRAGILE "fragile"
-#define CARGO_TYPE_HEAVY "heavy"
+#define CARGO_TYPE_REEFER    "reefer"
+#define CARGO_TYPE_FRAGILE   "fragile"
+#define CARGO_TYPE_HEAVY     "heavy"
 
-// Constraint limits
-#define MAX_STACK_HEIGHT_FRAGILE 2    // Maximum number of items on top of fragile cargo
-#define MIN_HAZMAT_SEPARATION 3.0f    // Minimum separation between hazmat cargo (meters)
-#define MAX_DECK_WEIGHT_RATIO 0.3f    // Max 30% of total weight on deck
-#define MAX_POINT_LOAD 1000.0f        // Max point load per square meter (tonnes/m²)
+/* Constraint limits */
+#define MIN_HAZMAT_SEPARATION   3.0f    /* minimum separation between hazmat (m) */
+#define MAX_DECK_WEIGHT_RATIO   0.3f    /* max 30% of total weight on deck */
+#define MAX_POINT_LOAD          1000.0f /* max point load (t/m2) */
+#define MAX_STACK_PRESSURE      20.0f   /* max stacking pressure (t/m2) for standard */
+#define MAX_STACK_PRESSURE_FRAGILE 5.0f /* max stacking pressure for fragile cargo */
 
 /**
- * check_cargo_constraints - Validates if a cargo placement is safe and legal
+ * check_cargo_constraints - Validates if a cargo placement is safe
  *
- * @param ship Ship structure
- * @param cargo Cargo item to validate
- * @param bin Target bin for placement
- * @param space Target space in bin
+ * Checks: point load, hazmat separation, reefer zones, fragile protection,
+ * stacking weight, deck weight ratio.
  *
- * @return 1 if constraints satisfied, 0 if violation
+ * @return 1 if all constraints satisfied, 0 if any violation
  */
 int check_cargo_constraints(const Ship *ship, const Cargo *cargo,
                             const Bin3D *bin, const Space3D *space);
 
-/**
- * is_hazardous - Check if cargo is hazardous material
- *
- * @param cargo Cargo to check
- * @return 1 if hazardous, 0 otherwise
- */
 int is_hazardous(const Cargo *cargo);
-
-/**
- * is_fragile - Check if cargo is fragile
- *
- * @param cargo Cargo to check
- * @return 1 if fragile, 0 otherwise
- */
 int is_fragile(const Cargo *cargo);
-
-/**
- * is_reefer - Check if cargo requires refrigeration
- *
- * @param cargo Cargo to check
- * @return 1 if reefer, 0 otherwise
- */
 int is_reefer(const Cargo *cargo);
 
-/**
- * check_hazmat_separation - Verify hazmat separation distance
- *
- * @param ship Ship structure with all cargo
- * @param new_cargo New hazmat cargo to place
- * @param x Target X position
- * @param y Target Y position
- * @param z Target Z position
- *
- * @return 1 if separation adequate, 0 if too close to other hazmat
- */
 int check_hazmat_separation(const Ship *ship, const Cargo *new_cargo,
                             float x, float y, float z);
 
-/**
- * calculate_point_load - Calculate load per unit area
- *
- * @param cargo Cargo item
- * @return Load in tonnes/m²
- */
 float calculate_point_load(const Cargo *cargo);
+
+/**
+ * calculate_stack_pressure - Calculate total weight pressing down at a position.
+ *
+ * Scans placed cargo to find items whose XY footprint overlaps the given
+ * rectangle and whose Z position is above. Returns sum of weight / area in t/m2.
+ */
+float calculate_stack_pressure(const Ship *ship, float x, float y, float z,
+                               float w, float d);
 
 #endif /* CONSTRAINTS_H */
