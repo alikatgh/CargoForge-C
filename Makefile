@@ -84,9 +84,10 @@ clean:
 	       $(TEST_DIR)/test_parser $(TEST_DIR)/test_analysis \
 	       $(TEST_DIR)/test_constraints $(TEST_DIR)/test_hydrostatics $(TEST_DIR)/test_tanks \
 	       $(TEST_DIR)/test_longitudinal_strength $(TEST_DIR)/test_imdg \
-	       $(TEST_DIR)/test_library examples/library_example
+	       $(TEST_DIR)/test_library examples/library_example \
+	       validation/validate_benchmark
 
-.PHONY: all lib clean install test test-asan test-valgrind wasm example
+.PHONY: all lib clean install test test-asan test-valgrind wasm example validate
 
 # --- Sanitizer builds ---
 
@@ -155,6 +156,20 @@ $(TEST_DIR)/test_library: $(TEST_DIR)/test_library.c $(HDRS) libcargoforge.a
 example: libcargoforge.a examples/library_example
 examples/library_example: examples/library_example.c $(HDRS) libcargoforge.a
 	$(CC) $(CFLAGS) -o $@ examples/library_example.c libcargoforge.a $(LDFLAGS)
+
+# --- Benchmark Validation (DNV-SE-0475) ---
+
+VALIDATE_OBJS = $(BUILD_DIR)/parser.o $(BUILD_DIR)/analysis.o $(BUILD_DIR)/placement_3d.o \
+                $(BUILD_DIR)/constraints.o $(BUILD_DIR)/hydrostatics.o $(BUILD_DIR)/tanks.o \
+                $(BUILD_DIR)/longitudinal_strength.o $(BUILD_DIR)/imdg.o
+
+validate: $(BUILD_DIR) validation/validate_benchmark
+	@echo "--- Running Benchmark Vessel Validation ---"
+	./validation/validate_benchmark
+	@echo "--- Validation Complete ---"
+
+validation/validate_benchmark: validation/validate_benchmark.c $(HDRS) $(VALIDATE_OBJS)
+	$(CC) $(CFLAGS) -o $@ validation/validate_benchmark.c $(VALIDATE_OBJS) $(LDFLAGS)
 
 # --- WASM (requires Emscripten) ---
 

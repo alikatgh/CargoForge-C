@@ -1,0 +1,8 @@
+# Loading condition: Mixed general cargo with DG
+# Multi-purpose cargo vessel - 2 holds + deck cargo
+# Total cargo weight approximately 4,200 tonnes
+TIMBER_1 1200 18.0x8.0x4.0 standard
+STEEL_1 1500 12.0x6.0x3.0 standard
+BAGS_1 800 10.0x6.0x3.5 standard
+MACHINERY 400 6.0x4.0x3.0 standard
+DRUMS_DG 300 3.0x2.0x1.5 hazardous DG:3.0:UN1203:any:F-E

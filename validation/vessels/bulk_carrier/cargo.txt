@@ -1,0 +1,8 @@
+# Loading condition: Homogeneous bulk cargo (grain)
+# Handymax bulk carrier - 5 cargo holds
+# Total cargo weight approximately 42,000 tonnes
+HOLD_1 7500 22.0x28.0x12.0 standard
+HOLD_2 9200 24.0x28.0x12.0 standard
+HOLD_3 9500 24.0x28.0x12.0 standard
+HOLD_4 9200 24.0x28.0x12.0 standard
+HOLD_5 6600 20.0x28.0x12.0 standard

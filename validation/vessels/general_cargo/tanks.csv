@@ -1,0 +1,8 @@
+# Tank configuration for Benchmark General Cargo Ship
+# id,length_m,breadth_m,height_m,pos_x_m,pos_y_m,pos_z_m,fill_fraction,density_t_m3
+BallastFP,6.0,10.0,5.0,104.0,0.0,0.0,0.45,1.025
+BallastAP,5.0,10.0,4.0,4.0,0.0,0.0,0.50,1.025
+BallastDB_P,15.0,3.0,2.0,55.0,-7.0,0.0,0.80,1.025
+BallastDB_S,15.0,3.0,2.0,55.0,7.0,0.0,0.80,1.025
+HFO,8.0,5.0,4.0,18.0,0.0,0.0,0.65,0.950
+FreshWater,4.0,4.0,3.0,14.0,0.0,0.0,0.80,1.000

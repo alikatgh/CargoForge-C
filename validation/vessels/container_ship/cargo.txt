@@ -1,0 +1,13 @@
+# Loading condition 1: Design draft condition (~12.0m draft)
+# 4500 TEU container ship - mixed containers
+# Total cargo weight approximately 24,000 tonnes
+STACK_A1 3200 12.2x2.4x9.1 standard
+STACK_A2 3100 12.2x2.4x9.1 standard
+STACK_A3 2800 12.2x2.4x9.1 standard
+STACK_B1 3400 12.2x2.4x9.1 standard
+STACK_B2 3000 12.2x2.4x9.1 standard
+STACK_B3 2600 12.2x2.4x9.1 standard
+STACK_C1 2200 12.2x2.4x9.1 standard
+STACK_C2 1800 12.2x2.4x9.1 standard
+REEFER_1 900 12.2x2.4x2.9 reefer
+REEFER_2 850 12.2x2.4x2.9 reefer
