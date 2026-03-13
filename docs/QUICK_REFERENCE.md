@@ -119,6 +119,13 @@ for cargo in *.txt; do
 done
 ```
 
+### Full Analysis (Hydro + Tanks + Strength + DG)
+
+```bash
+cargoforge optimize ship_full.cfg cargo_dg.txt --format=json --output=results.json && \
+  cargoforge analyze results.json
+```
+
 ### API Integration
 
 ```bash
@@ -133,23 +140,47 @@ cargoforge optimize ship.cfg cargo.txt --quiet --format=json
 ### Ship Config (.cfg)
 
 ```
+# Minimal (box-hull fallback)
 length_m=150
 width_m=25
 max_weight_tonnes=50000
 lightship_weight_tonnes=2000
 lightship_kg_m=8.0
+
+# Optional: real hydrostatics, tanks, strength limits
+hydrostatic_table=examples/sample_hydro.csv
+tank_config=examples/sample_tanks.csv
+permissible_sf_tonnes=5000
+permissible_bm_hog_t_m=120000
+permissible_bm_sag_t_m=100000
 ```
 
 ### Cargo Manifest (.txt)
 
 ```
-# ID  Weight(t)  Dimensions  Type
+# ID  Weight(t)  Dimensions  Type  [DG info]
 HeavyMachinery  550  20x5x3  standard
 ContainerA  250  12.2x2.4x2.6  reefer
-HazmatCargo  100  10x3x3  hazardous
+FlammLiquid  25  6x2.5x2.6  hazardous  DG:3.1:UN1203:A:F-E,S-D
 ```
 
-**Cargo Types**: `standard`, `hazardous`, `reefer`, `fragile`, `bulk`, `general`
+**Cargo Types**: `standard`, `hazardous`, `reefer`, `fragile`, `heavy`, `bulk`
+
+**DG field**: `DG:class.division:UNnumber:stowage:EmS` (optional, enables full IMDG matrix)
+
+### Hydrostatic Table (.csv)
+
+```
+# draft_m,displacement_t,KM_m,KB_m,BM_m,TPC_t_cm,MTC_t_m[,waterplane_m2,LCB_m]
+2.0,2306,13.20,1.06,12.14,9.60,185.0,3375,1.5
+```
+
+### Tank Config (.csv)
+
+```
+# id,length_m,breadth_m,height_m,pos_x_m,pos_y_m,pos_z_m,fill_fraction,density_t_m3
+BallastFP,8.0,12.0,6.0,140.0,0.0,0.0,0.50,1.025
+```
 
 ---
 
@@ -172,9 +203,13 @@ HazmatCargo  100  10x3x3  hazardous
 # Quick validation
 cargoforge validate ship.cfg cargo.txt --quiet && echo "✓" || echo "✗"
 
-# Extract GM value
+# Extract GM value (corrected for free surface if tanks loaded)
 cargoforge optimize ship.cfg cargo.txt --format=json --quiet | \
-  jq -r '.analysis.metacentric_height'
+  jq -r '.analysis.gm_corrected // .analysis.metacentric_height'
+
+# Check longitudinal strength compliance
+cargoforge optimize ship.cfg cargo.txt --format=json --quiet | \
+  jq -r '.analysis.longitudinal_strength.compliant'
 
 # Count placed items
 cargoforge optimize ship.cfg cargo.txt --format=json --quiet | \
@@ -185,6 +220,10 @@ cargoforge optimize ship.cfg cargo.txt --only-failed --format=table
 
 # Silent automation
 cargoforge optimize ship.cfg cargo.txt --quiet --format=json > output.json 2>/dev/null
+
+# Full analysis with hydro tables and DG cargo
+cargoforge optimize ship_full.cfg cargo_dg.txt --format=json --quiet | \
+  jq '{gm: .analysis.gm_corrected, strength: .analysis.longitudinal_strength}'
 ```
 
 ---

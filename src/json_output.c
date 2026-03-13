@@ -19,88 +19,91 @@ void escape_json_string(const char *str, char *buffer, size_t buffer_size) {
     buffer[j] = '\0';
 }
 
-void print_json_output(const Ship *ship, const AnalysisResult *result) {
+void fprint_json_output(FILE *fp, const Ship *ship, const AnalysisResult *result) {
     char escaped[128];
 
-    printf("{\n");
+    fprintf(fp,"{\n");
 
     /* Ship specifications */
-    printf("  \"ship\": {\n");
-    printf("    \"length\": %.2f,\n", ship->length);
-    printf("    \"width\": %.2f,\n", ship->width);
-    printf("    \"max_weight\": %.2f,\n", ship->max_weight);
-    printf("    \"lightship_weight\": %.2f,\n", ship->lightship_weight);
-    printf("    \"lightship_kg\": %.2f\n", ship->lightship_kg);
-    printf("  },\n");
+    fprintf(fp,"  \"ship\": {\n");
+    fprintf(fp,"    \"length\": %.2f,\n", ship->length);
+    fprintf(fp,"    \"width\": %.2f,\n", ship->width);
+    fprintf(fp,"    \"max_weight\": %.2f,\n", ship->max_weight);
+    fprintf(fp,"    \"lightship_weight\": %.2f,\n", ship->lightship_weight);
+    fprintf(fp,"    \"lightship_kg\": %.2f\n", ship->lightship_kg);
+    fprintf(fp,"  },\n");
 
     /* Cargo placements */
-    printf("  \"cargo\": [\n");
+    fprintf(fp,"  \"cargo\": [\n");
     for (int i = 0; i < ship->cargo_count; i++) {
         const Cargo *c = &ship->cargo[i];
 
         escape_json_string(c->id, escaped, sizeof(escaped));
-        printf("    {\n");
-        printf("      \"id\": \"%s\",\n", escaped);
-        printf("      \"weight\": %.2f,\n", c->weight);
-        printf("      \"dimensions\": [%.2f, %.2f, %.2f],\n",
+        fprintf(fp,"    {\n");
+        fprintf(fp,"      \"id\": \"%s\",\n", escaped);
+        fprintf(fp,"      \"weight\": %.2f,\n", c->weight);
+        fprintf(fp,"      \"dimensions\": [%.2f, %.2f, %.2f],\n",
                c->dimensions[0], c->dimensions[1], c->dimensions[2]);
 
         escape_json_string(c->type, escaped, sizeof(escaped));
-        printf("      \"type\": \"%s\",\n", escaped);
+        fprintf(fp,"      \"type\": \"%s\",\n", escaped);
 
         if (c->pos_x >= 0) {
-            printf("      \"position\": {\"x\": %.2f, \"y\": %.2f, \"z\": %.2f},\n",
+            fprintf(fp,"      \"position\": {\"x\": %.2f, \"y\": %.2f, \"z\": %.2f},\n",
                    c->pos_x, c->pos_y, c->pos_z);
-            printf("      \"placed\": true\n");
+            fprintf(fp,"      \"placed\": true\n");
         } else {
-            printf("      \"position\": null,\n");
-            printf("      \"placed\": false\n");
+            fprintf(fp,"      \"position\": null,\n");
+            fprintf(fp,"      \"placed\": false\n");
         }
 
-        printf("    }%s\n", (i < ship->cargo_count - 1) ? "," : "");
+        fprintf(fp,"    }%s\n", (i < ship->cargo_count - 1) ? "," : "");
     }
-    printf("  ],\n");
+    fprintf(fp,"  ],\n");
 
     /* Analysis results */
-    printf("  \"analysis\": {\n");
-    printf("    \"placed_count\": %d,\n", result->placed_item_count);
-    printf("    \"total_count\": %d,\n", ship->cargo_count);
-    printf("    \"total_cargo_weight\": %.2f,\n", result->total_cargo_weight_kg);
-    printf("    \"total_ship_weight\": %.2f,\n",
+    fprintf(fp,"  \"analysis\": {\n");
+    fprintf(fp,"    \"placed_count\": %d,\n", result->placed_item_count);
+    fprintf(fp,"    \"total_count\": %d,\n", ship->cargo_count);
+    fprintf(fp,"    \"total_cargo_weight\": %.2f,\n", result->total_cargo_weight_kg);
+    fprintf(fp,"    \"total_ship_weight\": %.2f,\n",
            ship->lightship_weight + result->total_cargo_weight_kg);
-    printf("    \"capacity_used_percent\": %.2f,\n",
+    fprintf(fp,"    \"capacity_used_percent\": %.2f,\n",
            ((ship->lightship_weight + result->total_cargo_weight_kg) / ship->max_weight) * 100.0f);
 
-    printf("    \"center_of_gravity\": {\n");
-    printf("      \"longitudinal_percent\": %.2f,\n", result->cg.perc_x);
-    printf("      \"transverse_percent\": %.2f\n", result->cg.perc_y);
-    printf("    },\n");
+    fprintf(fp,"    \"center_of_gravity\": {\n");
+    fprintf(fp,"      \"longitudinal_percent\": %.2f,\n", result->cg.perc_x);
+    fprintf(fp,"      \"transverse_percent\": %.2f\n", result->cg.perc_y);
+    fprintf(fp,"    },\n");
 
     if (!isnan(result->gm)) {
         /* Hydrostatics */
-        printf("    \"hydrostatics\": {\n");
-        printf("      \"draft\": %.3f,\n", result->draft);
-        printf("      \"kg\": %.3f,\n", result->kg);
-        printf("      \"kb\": %.3f,\n", result->kb);
-        printf("      \"bm\": %.3f,\n", result->bm);
-        printf("      \"gm\": %.3f\n", result->gm);
-        printf("    },\n");
+        fprintf(fp,"    \"hydrostatics\": {\n");
+        fprintf(fp,"      \"draft\": %.3f,\n", result->draft);
+        fprintf(fp,"      \"kg\": %.3f,\n", result->kg);
+        fprintf(fp,"      \"kb\": %.3f,\n", result->kb);
+        fprintf(fp,"      \"bm\": %.3f,\n", result->bm);
+        fprintf(fp,"      \"gm\": %.3f,\n", result->gm);
+        fprintf(fp,"      \"free_surface_correction\": %.3f,\n", result->free_surface_correction);
+        fprintf(fp,"      \"gm_corrected\": %.3f,\n", result->gm_corrected);
+        fprintf(fp,"      \"hydro_table_used\": %s\n", result->hydro_table_used ? "true" : "false");
+        fprintf(fp,"    },\n");
 
         /* Trim and heel */
-        printf("    \"trim\": %.4f,\n", result->trim);
-        printf("    \"heel\": %.3f,\n", result->heel);
-        printf("    \"lcg_from_midship\": %.3f,\n", result->lcg);
+        fprintf(fp,"    \"trim\": %.4f,\n", result->trim);
+        fprintf(fp,"    \"heel\": %.3f,\n", result->heel);
+        fprintf(fp,"    \"lcg_from_midship\": %.3f,\n", result->lcg);
 
         /* IMO criteria */
-        printf("    \"imo_stability\": {\n");
-        printf("      \"gz_at_30\": %.4f,\n", result->gz_at_30);
-        printf("      \"gz_max\": %.4f,\n", result->gz_max);
-        printf("      \"gz_max_angle\": %.1f,\n", result->gz_max_angle);
-        printf("      \"area_0_30\": %.5f,\n", result->area_0_30);
-        printf("      \"area_0_40\": %.5f,\n", result->area_0_40);
-        printf("      \"area_30_40\": %.5f,\n", result->area_30_40);
-        printf("      \"compliant\": %s\n", result->imo_compliant ? "true" : "false");
-        printf("    },\n");
+        fprintf(fp,"    \"imo_stability\": {\n");
+        fprintf(fp,"      \"gz_at_30\": %.4f,\n", result->gz_at_30);
+        fprintf(fp,"      \"gz_max\": %.4f,\n", result->gz_max);
+        fprintf(fp,"      \"gz_max_angle\": %.1f,\n", result->gz_max_angle);
+        fprintf(fp,"      \"area_0_30\": %.5f,\n", result->area_0_30);
+        fprintf(fp,"      \"area_0_40\": %.5f,\n", result->area_0_40);
+        fprintf(fp,"      \"area_30_40\": %.5f,\n", result->area_30_40);
+        fprintf(fp,"      \"compliant\": %s\n", result->imo_compliant ? "true" : "false");
+        fprintf(fp,"    },\n");
 
         /* Stability classification */
         const char *stability;
@@ -108,7 +111,7 @@ void print_json_output(const Ship *ship, const AnalysisResult *result) {
         else if (result->gm > 3.0f) stability = "overstiff";
         else if (result->gm >= 0.5f && result->gm <= 2.5f) stability = "optimal";
         else stability = "acceptable";
-        printf("    \"stability_status\": \"%s\",\n", stability);
+        fprintf(fp,"    \"stability_status\": \"%s\",\n", stability);
 
         const char *balance;
         if (result->cg.perc_x >= 45 && result->cg.perc_x <= 55 &&
@@ -116,19 +119,28 @@ void print_json_output(const Ship *ship, const AnalysisResult *result) {
             balance = "good";
         else
             balance = "warning";
-        printf("    \"balance_status\": \"%s\",\n", balance);
+        fprintf(fp,"    \"balance_status\": \"%s\",\n", balance);
 
-        printf("    \"overweight\": false\n");
+        /* Longitudinal strength */
+        if (result->strength_compliant >= 0) {
+            fprintf(fp,"    \"longitudinal_strength\": {\n");
+            fprintf(fp,"      \"max_shear_force\": %.1f,\n", result->max_shear_force);
+            fprintf(fp,"      \"max_bending_moment\": %.1f,\n", result->max_bending_moment);
+            fprintf(fp,"      \"compliant\": %s\n", result->strength_compliant ? "true" : "false");
+            fprintf(fp,"    },\n");
+        }
+
+        fprintf(fp,"    \"overweight\": false\n");
     } else {
-        printf("    \"hydrostatics\": null,\n");
-        printf("    \"trim\": null,\n");
-        printf("    \"heel\": null,\n");
-        printf("    \"imo_stability\": null,\n");
-        printf("    \"stability_status\": \"rejected\",\n");
-        printf("    \"balance_status\": \"unknown\",\n");
-        printf("    \"overweight\": true\n");
+        fprintf(fp,"    \"hydrostatics\": null,\n");
+        fprintf(fp,"    \"trim\": null,\n");
+        fprintf(fp,"    \"heel\": null,\n");
+        fprintf(fp,"    \"imo_stability\": null,\n");
+        fprintf(fp,"    \"stability_status\": \"rejected\",\n");
+        fprintf(fp,"    \"balance_status\": \"unknown\",\n");
+        fprintf(fp,"    \"overweight\": true\n");
     }
 
-    printf("  }\n");
-    printf("}\n");
+    fprintf(fp,"  }\n");
+    fprintf(fp,"}\n");
 }

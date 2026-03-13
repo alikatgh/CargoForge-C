@@ -7,6 +7,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added - Phase 1: Maritime Calculation Engine
+- **Hydrostatic Table Interpolation** — Load real stability booklet data from CSV
+  - Linear interpolation for draft, KB, BM, KM, TPC, MTC, waterplane area, LCB
+  - Reverse lookup: displacement to draft
+  - Supports 7-column (minimal) and 9-column (full) CSV formats
+  - Falls back to box-hull model when no table is configured
+- **Free Surface Correction** — Tank configuration with FSM calculation
+  - CSV-based tank definition (id, dimensions, position, fill fraction, density)
+  - Rectangular tank FSM: rho * l * b^3 / 12
+  - Virtual KG rise applied to GM for IMO criteria
+  - Full and empty tanks produce zero free surface effect
+- **Longitudinal Strength** — Still water shear force and bending moment
+  - 21-station hull discretization with trapezoidal lightship distribution
+  - Cargo weight distributed at actual placement positions
+  - Tapered buoyancy distribution with bow/stern reduction
+  - Permissible limits checking against class society values
+- **IMDG Segregation Engine** — Full dangerous goods compliance
+  - Complete 17x17 IMDG Code Table 7.2.4 segregation matrix (Amendment 41-22)
+  - 9 classes with subdivisions (17 distinct entries)
+  - 6 segregation levels: none, away from (3m), separated (6m), complete compartment (12m), longitudinal (24m), incompatible
+  - DG info parsing from cargo manifest (`DG:class.div:UNnumber:stowage:EmS`)
+  - Full pairwise compliance checking with violation reporting
+  - Falls back to legacy 3m separation when no DG info present
+- **New example files**: `sample_ship_full.cfg`, `sample_hydro.csv`, `sample_tanks.csv`, `sample_cargo_dg.txt`
+- **4 new test suites**: hydrostatics (23 assertions), tanks (11 assertions), longitudinal strength (11 assertions), IMDG (170+ assertions)
+- **`ship_cleanup()`** function for proper resource deallocation
+
+### Changed
+- `perform_analysis()` conditionally uses hydrostatic table or box-hull fallback
+- Tank weight and vertical moment included in displacement and KG calculations
+- IMO stability criteria use free-surface-corrected GM
+- Constraint checker uses full IMDG matrix when DG info is present
+- JSON output includes `gm_corrected`, `free_surface_correction`, `hydro_table_used`, `longitudinal_strength`
+- Markdown output includes hydrostatics source, free surface correction, and strength sections
+- All `free(ship.cargo)` calls replaced with `ship_cleanup(&ship)` for proper memory management
+- Ship config parser extended with `hydrostatic_table`, `tank_config`, and permissible strength limit keys
+- Cargo parser supports optional 5th DG field
+- CMake version bumped to 0.4.0
+
 ## [2.1.0] - 2025-11-17
 
 ### Added - Power User Features 🔥

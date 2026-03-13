@@ -18,6 +18,17 @@
 #define MAX_FREE_RECTS 1024
 
 /* ------------------------------------------------------------------ */
+/* FORWARD DECLARATIONS                                              */
+/* ------------------------------------------------------------------ */
+
+/* Forward-declared as struct tags; actual typedefs live in module headers.
+ * Use struct pointers here to avoid pulling in full headers. */
+struct HydroTable_;
+struct TankConfig_;
+struct StrengthLimits_;
+struct DGInfo_;
+
+/* ------------------------------------------------------------------ */
 /* DATA STRUCTURES                                                   */
 /* ------------------------------------------------------------------ */
 
@@ -33,6 +44,7 @@ typedef struct {
     float pos_x;
     float pos_y;
     float pos_z;
+    struct DGInfo_ *dg; /* NULL for non-DG cargo; set when DG: field parsed */
 } Cargo;
 
 /**
@@ -47,6 +59,11 @@ typedef struct {
     Cargo *cargo;
     float lightship_weight;
     float lightship_kg;
+
+    /* Optional data — NULL when not loaded (fallback to legacy behavior) */
+    struct HydroTable_     *hydro;            /* Hydrostatic tables */
+    struct TankConfig_     *tanks;            /* Tank configuration */
+    struct StrengthLimits_ *strength_limits;  /* Permissible SF/BM limits */
 } Ship;
 
 typedef struct {
@@ -57,8 +74,9 @@ typedef struct {
 /**
  * AnalysisResult - Complete stability analysis output.
  *
- * Includes hydrostatic parameters, trim/heel, and IMO intact stability
- * criteria evaluation per MSC.267(85).
+ * Includes hydrostatic parameters, trim/heel, IMO intact stability
+ * criteria evaluation per MSC.267(85), free surface correction,
+ * and longitudinal strength.
  */
 typedef struct {
     /* Basic cargo summary */
@@ -73,6 +91,10 @@ typedef struct {
     float bm;        /* metacentric radius (m) */
     float kg;        /* vertical center of gravity (m) */
 
+    /* Free surface correction */
+    float free_surface_correction; /* virtual rise in KG (m) */
+    float gm_corrected;           /* GM after free surface correction (m) */
+
     /* Trim and heel */
     float trim;      /* trim by stern (m) - positive = stern deeper */
     float heel;      /* heel angle (deg) - positive = starboard */
@@ -86,6 +108,14 @@ typedef struct {
     float area_0_40;     /* area under GZ curve 0-40 deg (m-rad) */
     float area_30_40;    /* area under GZ curve 30-40 deg (m-rad) */
     int   imo_compliant; /* 1 if all IMO criteria satisfied */
+
+    /* Longitudinal strength */
+    float max_shear_force;     /* max SWSF (t) */
+    float max_bending_moment;  /* max SWBM (t-m) */
+    int   strength_compliant;  /* 1=pass, 0=fail, -1=not checked */
+
+    /* Data source flags */
+    int   hydro_table_used;    /* 1 if hydrostatic tables were used */
 } AnalysisResult;
 
 /* ------------------------------------------------------------------ */
@@ -99,5 +129,8 @@ int parse_cargo_list(const char *filename, Ship *ship);
 /* --- analysis.c --- */
 AnalysisResult perform_analysis(const Ship *ship);
 void print_loading_plan(const Ship *ship);
+
+/* --- ship cleanup --- */
+void ship_cleanup(Ship *ship);
 
 #endif /* CARGOFORGE_H */

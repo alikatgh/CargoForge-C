@@ -1,15 +1,21 @@
 /*
  * analysis.c - Stability analysis with hydrostatics, trim/heel, and IMO criteria
  *
- * Naval architecture calculations based on simplified box-hull model:
- * - Hydrostatic parameters (draft, KB, BM, KG, GM)
- * - Longitudinal trim via moment about midship
- * - Transverse heel via off-center CG
+ * Naval architecture calculations supporting two modes:
+ * 1. Hydrostatic table interpolation (when ship->hydro is loaded)
+ * 2. Simplified box-hull model (legacy fallback)
+ *
+ * Also integrates:
+ * - Free surface correction from tank data
+ * - Longitudinal strength (SWSF/SWBM)
  * - GZ curve via wall-sided formula
  * - IMO intact stability criteria (MSC.267/85 Part A, Ch 2.2)
  */
 #include <math.h>
 #include "cargoforge.h"
+#include "hydrostatics.h"
+#include "tanks.h"
+#include "longitudinal_strength.h"
 
 /* Physical constants */
 #define SEAWATER_DENSITY    1.025f  /* t/m3 at 15C */
@@ -85,6 +91,7 @@ AnalysisResult perform_analysis(const Ship *ship) {
     memset(&r, 0, sizeof(r));
     r.cg.perc_x = 50.0f;
     r.cg.perc_y = 50.0f;
+    r.strength_compliant = -1; /* not checked by default */
 
     /* --- Single-pass cargo accumulation --- */
     float moment_x = 0.0f;
@@ -111,6 +118,14 @@ AnalysisResult perform_analysis(const Ship *ship) {
 
     float displacement_kg = ship->lightship_weight + r.total_cargo_weight_kg;
 
+    /* Include tank weight in displacement if tanks are loaded */
+    float tank_weight_t = 0.0f;
+    if (ship->tanks && ship->tanks->count > 0) {
+        tank_weight_t = calculate_tank_weight(ship->tanks);
+        displacement_kg += tank_weight_t * 1000.0f;
+        vertical_moment += calculate_tank_vertical_moment(ship->tanks) * 1000.0f;
+    }
+
     /* Overweight check */
     if (displacement_kg > ship->max_weight) {
         r.gm = NAN;
@@ -126,23 +141,61 @@ AnalysisResult perform_analysis(const Ship *ship) {
     /* --- Hydrostatics --- */
     float displacement_t = displacement_kg / 1000.0f;
     float displaced_vol = displacement_t / SEAWATER_DENSITY;
+    float bm_l = 0.0f; /* longitudinal BM, computed below */
 
-    r.draft = displaced_vol / (ship->length * ship->width * BLOCK_COEFF);
-    r.kb = KB_FACTOR * r.draft;
     r.kg = vertical_moment / displacement_kg;
 
-    /* BM: transverse metacentric radius = I_T / V */
-    float inertia_t = (ship->length * powf(ship->width, 3) / 12.0f) * WATERPLANE_COEFF;
-    r.bm = inertia_t / displaced_vol;
+    if (ship->hydro && ship->hydro->loaded) {
+        /* ---- Table-based hydrostatics ---- */
+        r.hydro_table_used = 1;
+        r.draft = hydro_draft_from_displacement(ship->hydro, displacement_t);
 
+        HydroEntry he;
+        hydro_interpolate(ship->hydro, r.draft, &he);
+
+        r.kb = he.kb;
+        r.bm = he.bm;
+
+        /* Use MTC from table for trim calculation */
+        if (he.mtc > 0.01f) {
+            /* BM_L can be back-calculated: MTC = disp * BM_L / (100 * L)
+             * => BM_L = MTC * 100 * L / disp */
+            bm_l = he.mtc * 100.0f * ship->length / displacement_t;
+        } else {
+            /* Fallback: compute BM_L from waterplane if available */
+            float inertia_l = (ship->width * powf(ship->length, 3) / 12.0f) * WATERPLANE_COEFF;
+            bm_l = inertia_l / displaced_vol;
+        }
+    } else {
+        /* ---- Legacy box-hull fallback ---- */
+        r.hydro_table_used = 0;
+        r.draft = displaced_vol / (ship->length * ship->width * BLOCK_COEFF);
+        r.kb = KB_FACTOR * r.draft;
+
+        /* BM: transverse metacentric radius = I_T / V */
+        float inertia_t = (ship->length * powf(ship->width, 3) / 12.0f) * WATERPLANE_COEFF;
+        r.bm = inertia_t / displaced_vol;
+
+        /* Longitudinal BM */
+        float inertia_l = (ship->width * powf(ship->length, 3) / 12.0f) * WATERPLANE_COEFF;
+        bm_l = inertia_l / displaced_vol;
+    }
+
+    /* GM before free surface correction */
     r.gm = r.kb + r.bm - r.kg;
+
+    /* --- Free Surface Correction --- */
+    r.free_surface_correction = 0.0f;
+    if (ship->tanks && ship->tanks->count > 0) {
+        r.free_surface_correction = calculate_virtual_kg_rise(ship->tanks, displacement_t);
+    }
+    r.gm_corrected = r.gm - r.free_surface_correction;
+
+    /* Use corrected GM for all subsequent calculations */
+    float gm_effective = r.gm_corrected;
 
     /* --- Trim --- */
     r.lcg = lcg_moment / displacement_kg;
-
-    /* Longitudinal BM and GM */
-    float inertia_l = (ship->width * powf(ship->length, 3) / 12.0f) * WATERPLANE_COEFF;
-    float bm_l = inertia_l / displaced_vol;
     float gm_l = r.kb + bm_l - r.kg;
 
     if (gm_l > 0.01f)
@@ -154,25 +207,36 @@ AnalysisResult perform_analysis(const Ship *ship) {
         float avg_y = moment_y / r.total_cargo_weight_kg;
         tcg = avg_y - ship->width / 2.0f;
     }
-    if (r.gm > 0.01f)
-        r.heel = atanf(tcg / r.gm) * 180.0f / (float)M_PI;
+    if (gm_effective > 0.01f)
+        r.heel = atanf(tcg / gm_effective) * 180.0f / (float)M_PI;
 
-    /* --- IMO GZ curve analysis --- */
-    r.gz_at_30 = gz_at_angle(r.gm, r.bm, 30.0f);
-    find_gz_max(r.gm, r.bm, &r.gz_max, &r.gz_max_angle);
+    /* --- IMO GZ curve analysis (using corrected GM) --- */
+    r.gz_at_30 = gz_at_angle(gm_effective, r.bm, 30.0f);
+    find_gz_max(gm_effective, r.bm, &r.gz_max, &r.gz_max_angle);
 
-    r.area_0_30  = integrate_gz(r.gm, r.bm, 0.0f, 30.0f);
-    r.area_0_40  = integrate_gz(r.gm, r.bm, 0.0f, 40.0f);
-    r.area_30_40 = integrate_gz(r.gm, r.bm, 30.0f, 40.0f);
+    r.area_0_30  = integrate_gz(gm_effective, r.bm, 0.0f, 30.0f);
+    r.area_0_40  = integrate_gz(gm_effective, r.bm, 0.0f, 40.0f);
+    r.area_30_40 = integrate_gz(gm_effective, r.bm, 30.0f, 40.0f);
 
     r.imo_compliant = (
-        r.gm           >= IMO_GM_MIN &&
+        gm_effective   >= IMO_GM_MIN &&
         r.gz_at_30     >= IMO_GZ_AT_30_MIN &&
         r.gz_max_angle >= IMO_GZ_MAX_ANGLE &&
         r.area_0_30    >= IMO_AREA_0_30_MIN &&
         r.area_0_40    >= IMO_AREA_0_40_MIN &&
         r.area_30_40   >= IMO_AREA_30_40_MIN
     ) ? 1 : 0;
+
+    /* --- Longitudinal Strength --- */
+    if (ship->strength_limits) {
+        LongStrengthResult ls = calculate_longitudinal_strength(
+            ship, r.draft, displacement_t, ship->length, ship->width);
+
+        r.max_shear_force = ls.max_shear_force;
+        r.max_bending_moment = (ls.max_bm_hog > ls.max_bm_sag)
+                               ? ls.max_bm_hog : ls.max_bm_sag;
+        r.strength_compliant = check_strength_limits(&ls, ship->strength_limits);
+    }
 
     return r;
 }
@@ -183,6 +247,10 @@ void print_loading_plan(const Ship *ship) {
     printf("\n--- CargoForge Stability Analysis ---\n\n");
     printf("Ship: %.2f m x %.2f m | Max Weight: %.2f t\n",
            ship->length, ship->width, ship->max_weight / 1000.0f);
+    if (a.hydro_table_used)
+        printf("Hydrostatics: Table interpolation\n");
+    else
+        printf("Hydrostatics: Box-hull approximation\n");
     printf("----------------------------------------------------------------------\n");
 
     if (isnan(a.gm)) {
@@ -204,10 +272,11 @@ void print_loading_plan(const Ship *ship) {
                            a.cg.perc_y >= 40 && a.cg.perc_y <= 60) ? "Good" : "Warning";
 
     const char *gm_str;
-    if (a.gm < 0.3f)       gm_str = "CRITICAL - Too tender";
-    else if (a.gm > 3.0f)  gm_str = "WARNING - Too stiff";
-    else if (a.gm >= 0.5f && a.gm <= 2.5f) gm_str = "Optimal";
-    else                    gm_str = "Acceptable";
+    float gm_display = a.gm_corrected;
+    if (gm_display < 0.3f)       gm_str = "CRITICAL - Too tender";
+    else if (gm_display > 3.0f)  gm_str = "WARNING - Too stiff";
+    else if (gm_display >= 0.5f && gm_display <= 2.5f) gm_str = "Optimal";
+    else                          gm_str = "Acceptable";
 
     printf("\nLoad Summary\n");
     printf("  Placed / Total        : %d / %d\n", a.placed_item_count, ship->cargo_count);
@@ -220,6 +289,10 @@ void print_loading_plan(const Ship *ship) {
     printf("\nStability\n");
     printf("  KG / KB / BM          : %.2f / %.2f / %.2f m\n", a.kg, a.kb, a.bm);
     printf("  GM (transverse)       : %.2f m | %s\n", a.gm, gm_str);
+    if (a.free_surface_correction > 0.001f) {
+        printf("  Free surface corr     : -%.3f m\n", a.free_surface_correction);
+        printf("  GM (corrected)        : %.2f m\n", a.gm_corrected);
+    }
     printf("  Trim (by stern)       : %.3f m\n", a.trim);
     printf("  Heel                  : %.2f deg\n", a.heel);
 
@@ -240,4 +313,40 @@ void print_loading_plan(const Ship *ship) {
            a.area_30_40, (double)IMO_AREA_30_40_MIN,
            a.area_30_40 >= IMO_AREA_30_40_MIN ? "OK" : "FAIL");
     printf("  Overall               : %s\n", a.imo_compliant ? "COMPLIANT" : "NON-COMPLIANT");
+
+    /* Longitudinal strength */
+    if (a.strength_compliant >= 0) {
+        printf("\nLongitudinal Strength\n");
+        printf("  Max Shear Force       : %.0f t\n", a.max_shear_force);
+        printf("  Max Bending Moment    : %.0f t-m\n", a.max_bending_moment);
+        printf("  Status                : %s\n",
+               a.strength_compliant ? "WITHIN LIMITS" : "EXCEEDS LIMITS");
+    }
+}
+
+void ship_cleanup(Ship *ship) {
+    if (!ship) return;
+
+    if (ship->cargo) {
+        for (int i = 0; i < ship->cargo_count; i++) {
+            if (ship->cargo[i].dg) {
+                free(ship->cargo[i].dg);
+                ship->cargo[i].dg = NULL;
+            }
+        }
+        free(ship->cargo);
+        ship->cargo = NULL;
+    }
+    if (ship->hydro) {
+        free(ship->hydro);
+        ship->hydro = NULL;
+    }
+    if (ship->tanks) {
+        free(ship->tanks);
+        ship->tanks = NULL;
+    }
+    if (ship->strength_limits) {
+        free(ship->strength_limits);
+        ship->strength_limits = NULL;
+    }
 }

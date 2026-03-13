@@ -53,6 +53,7 @@ int  dispatch_subcommand(CLIContext *ctx);
 int cmd_optimize(CLIContext *ctx);
 int cmd_validate(CLIContext *ctx);
 int cmd_info(CLIContext *ctx);
+int cmd_serve(CLIContext *ctx);
 int cmd_version(CLIContext *ctx);
 int cmd_help(CLIContext *ctx);
 

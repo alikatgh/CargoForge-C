@@ -83,6 +83,28 @@ Validating cargo manifest: cargo.txt
 
 ---
 
+### Example 2b: Full Analysis with Hydrostatic Tables
+
+```bash
+# Use a ship config that references hydrostatic table, tank config, and strength limits
+./cargoforge optimize examples/sample_ship_full.cfg examples/sample_cargo.txt
+```
+
+Output includes real hydrostatic values (interpolated from stability booklet), free surface correction from partially filled tanks, and longitudinal strength check against class society limits.
+
+---
+
+### Example 2c: Dangerous Goods Cargo
+
+```bash
+# Cargo manifest with IMDG DG info (class, UN number, stowage, EmS)
+./cargoforge optimize examples/sample_ship_full.cfg examples/sample_cargo_dg.txt
+```
+
+The optimizer checks all DG cargo pairs against the full IMDG Code Table 7.2.4 segregation matrix and reports any violations.
+
+---
+
 ### Example 3: Get Ship Info
 
 ```bash

@@ -1,0 +1,7 @@
+# Tank configuration for MV Example
+# id,length_m,breadth_m,height_m,pos_x_m,pos_y_m,pos_z_m,fill_fraction,density_t_m3
+BallastFP,8.0,12.0,6.0,140.0,0.0,0.0,0.50,1.025
+BallastDB_P,20.0,4.0,6.0,75.0,-10.0,0.0,0.75,1.025
+BallastDB_S,20.0,4.0,6.0,75.0,10.0,0.0,0.75,1.025
+FuelOil_1,10.0,6.0,5.0,30.0,-8.0,0.0,0.60,0.950
+FreshWater,5.0,5.0,4.0,20.0,0.0,0.0,0.85,1.000

@@ -11,6 +11,7 @@
  */
 
 #include "constraints.h"
+#include "imdg.h"
 #include <string.h>
 #include <math.h>
 #include <stdio.h>
@@ -100,11 +101,42 @@ int check_cargo_constraints(const Ship *ship, const Cargo *cargo,
         return 0;
     }
 
-    /* 2. Hazmat separation */
-    if (is_hazardous(cargo)) {
-        if (!check_hazmat_separation(ship, cargo, space->x, space->y, space->z)) {
-            fprintf(stderr, "Constraint: %s too close to other hazmat cargo\n", cargo->id);
-            return 0;
+    /* 2. Hazmat separation (IMDG-aware when DG info available) */
+    if (is_hazardous(cargo) || cargo->dg) {
+        if (cargo->dg) {
+            /* Full IMDG segregation check */
+            for (int i = 0; i < ship->cargo_count; i++) {
+                const Cargo *c = &ship->cargo[i];
+                if (c->pos_x < 0 || c == cargo || !c->dg) continue;
+
+                SegregationType req = imdg_get_segregation(
+                    cargo->dg->dg_class, cargo->dg->dg_division,
+                    c->dg->dg_class, c->dg->dg_division);
+
+                if (req == SEG_INCOMPATIBLE) {
+                    fprintf(stderr, "Constraint: %s incompatible with %s (IMDG)\n",
+                            cargo->id, c->id);
+                    return 0;
+                }
+
+                float min_dist = imdg_min_distance(req);
+                if (min_dist > 0.0f) {
+                    float dx = c->pos_x - space->x;
+                    float dy = c->pos_y - space->y;
+                    float dist = sqrtf(dx*dx + dy*dy);
+                    if (dist < min_dist) {
+                        fprintf(stderr, "Constraint: %s too close to %s (IMDG %s: %.1fm < %.1fm)\n",
+                                cargo->id, c->id, imdg_segregation_name(req), dist, min_dist);
+                        return 0;
+                    }
+                }
+            }
+        } else {
+            /* Legacy 3m hazmat separation fallback */
+            if (!check_hazmat_separation(ship, cargo, space->x, space->y, space->z)) {
+                fprintf(stderr, "Constraint: %s too close to other hazmat cargo\n", cargo->id);
+                return 0;
+            }
         }
     }
 

@@ -6,6 +6,8 @@
 #include "placement_3d.h"
 #include "visualization.h"
 #include "json_output.h"
+#include "imdg.h"
+#include "server.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -90,6 +92,7 @@ void print_general_help(const char *prog_name) {
     printf("  optimize    Run 3D bin-packing optimization\n");
     printf("  validate    Validate ship config and cargo manifest\n");
     printf("  info        Display ship and cargo statistics\n");
+    printf("  serve       Start JSON-RPC HTTP server\n");
     printf("  version     Display version information\n");
     printf("  help        Show this help message\n\n");
 
@@ -127,6 +130,17 @@ void print_subcommand_help(const char *subcommand) {
         printf("cargoforge info <ship_config> [cargo_manifest] [options]\n\n");
         printf("OPTIONS:\n");
         printf("  --format=FORMAT      Output: human|json\n");
+    }
+    else if (strcmp(subcommand, "serve") == 0) {
+        printf("cargoforge serve [options]\n\n");
+        printf("Start a JSON-RPC 2.0 HTTP server exposing the CargoForge API.\n\n");
+        printf("OPTIONS:\n");
+        printf("  --port=PORT          TCP port (default: 8080)\n");
+        printf("  -v, --verbose        Log requests to stderr\n\n");
+        printf("METHODS:\n");
+        printf("  optimize    — params: {ship_config, cargo_manifest}\n");
+        printf("  validate    — params: {ship_config, cargo_manifest?}\n");
+        printf("  version     — no params\n");
     }
     else {
         printf("No help available for: %s\n", subcommand);
@@ -236,6 +250,7 @@ int dispatch_subcommand(CLIContext *ctx) {
     if (strcmp(ctx->subcommand, "optimize") == 0) return cmd_optimize(ctx);
     if (strcmp(ctx->subcommand, "validate") == 0) return cmd_validate(ctx);
     if (strcmp(ctx->subcommand, "info") == 0)     return cmd_info(ctx);
+    if (strcmp(ctx->subcommand, "serve") == 0)    return cmd_serve(ctx);
     if (strcmp(ctx->subcommand, "version") == 0)  return cmd_version(ctx);
     if (strcmp(ctx->subcommand, "help") == 0)     return cmd_help(ctx);
 
@@ -263,7 +278,7 @@ int cmd_optimize(CLIContext *ctx) {
     if (ctx->verbose) fprintf(stderr, "Parsing cargo manifest...\n");
     if (parse_cargo_list(ctx->cargo_file, &ship) != 0) {
         print_error_with_context(ctx->cargo_file, 0, "Failed to parse cargo manifest");
-        free(ship.cargo);
+        ship_cleanup(&ship);
         return EXIT_PARSE_ERROR;
     }
     if (!ctx->quiet) print_success("Cargo manifest loaded");
@@ -275,7 +290,7 @@ int cmd_optimize(CLIContext *ctx) {
     AnalysisResult result = perform_analysis(&ship);
     output_results(&ship, &result, ctx->format, ctx->output_file);
 
-    free(ship.cargo);
+    ship_cleanup(&ship);
     return EXIT_SUCCESS;
 }
 
@@ -323,12 +338,12 @@ int cmd_validate(CLIContext *ctx) {
     fprintf(stderr, "\n");
     if (errors == 0) {
         print_success("All validation checks passed!");
-        if (ship.cargo) free(ship.cargo);
+        if (ship.cargo) ship_cleanup(&ship);
         return EXIT_SUCCESS;
     }
 
     fprintf(stderr, "[FAILED] Validation failed with %d error(s)\n", errors);
-    if (ship.cargo) free(ship.cargo);
+    if (ship.cargo) ship_cleanup(&ship);
     return EXIT_VALIDATION_ERROR;
 }
 
@@ -350,14 +365,31 @@ int cmd_info(CLIContext *ctx) {
     if (ctx->cargo_file) {
         if (parse_cargo_list(ctx->cargo_file, &ship) != 0) {
             print_error_with_context(ctx->cargo_file, 0, "Failed to parse cargo manifest");
-            free(ship.cargo);
+            ship_cleanup(&ship);
             return EXIT_PARSE_ERROR;
         }
     }
 
     output_ship_info(&ship, ctx->format);
-    if (ship.cargo) free(ship.cargo);
+    if (ship.cargo) ship_cleanup(&ship);
     return EXIT_SUCCESS;
+}
+
+/* --- SUBCOMMAND: serve --- */
+
+int cmd_serve(CLIContext *ctx) {
+    int port = 8080;
+
+    /* Check for --port=PORT in ship_file (first positional arg after subcommand) */
+    if (ctx->ship_file && strncmp(ctx->ship_file, "--port=", 7) == 0) {
+        port = atoi(ctx->ship_file + 7);
+        if (port <= 0 || port > 65535) {
+            fprintf(stderr, "Error: Invalid port number\n");
+            return EXIT_INVALID_ARGS;
+        }
+    }
+
+    return cargoforge_serve(port, ctx->verbose);
 }
 
 /* --- SUBCOMMAND: version / help --- */
@@ -498,9 +530,20 @@ void output_markdown(Ship *ship, AnalysisResult *result, FILE *fp) {
     fprintf(fp, "- **Cargo Weight:** %.2f t\n", result->total_cargo_weight_kg / 1000.0f);
     fprintf(fp, "- **CG:** (%.1f%%, %.1f%%)\n", result->cg.perc_x, result->cg.perc_y);
     fprintf(fp, "- **GM:** %.2f m\n", result->gm);
+    if (result->free_surface_correction > 0.001f) {
+        fprintf(fp, "- **Free Surface Correction:** -%.3f m\n", result->free_surface_correction);
+        fprintf(fp, "- **GM (corrected):** %.2f m\n", result->gm_corrected);
+    }
     fprintf(fp, "- **Trim:** %.3f m\n", result->trim);
     fprintf(fp, "- **Heel:** %.2f deg\n", result->heel);
     fprintf(fp, "- **IMO Compliant:** %s\n", result->imo_compliant ? "Yes" : "No");
+    if (result->strength_compliant >= 0) {
+        fprintf(fp, "- **Max Shear Force:** %.0f t\n", result->max_shear_force);
+        fprintf(fp, "- **Max Bending Moment:** %.0f t-m\n", result->max_bending_moment);
+        fprintf(fp, "- **Strength:** %s\n", result->strength_compliant ? "Within limits" : "EXCEEDS LIMITS");
+    }
+    fprintf(fp, "- **Hydrostatics Source:** %s\n",
+            result->hydro_table_used ? "Table interpolation" : "Box-hull approximation");
     fprintf(fp, "\n---\n*Generated by CargoForge-C v%s*\n", CARGOFORGE_VERSION);
 }
 

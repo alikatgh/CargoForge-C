@@ -1,0 +1,8 @@
+# Cargo Manifest with DG (Dangerous Goods) cargo
+# ID              Weight(t) Dimensions(LxWxH)   Type        DG:class.div:UNnumber:stowage:EmS
+HeavyMachinery    550       20x5x3              standard
+FlammableLiquid   25        6x2.5x2.6           hazardous   DG:3.1:UN1203:A:F-E,S-D
+OxidizerDrum      15        6x2.5x2.6           hazardous   DG:5.1:UN1942:A:F-A,S-Q
+CorrosiveAcid     20        6x2.5x2.6           hazardous   DG:8.0:UN1789:A:F-A,S-B
+ContainerA        250       12.2x2.4x2.6        reefer
+SmallCrate        50        2x2x2               standard
