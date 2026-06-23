@@ -48,6 +48,8 @@ Run it directly:
 
 ```sh
 ./cargoforge examples/realistic_ship.cfg examples/realistic_cargo.txt
+./cargoforge --help        # usage and options
+./cargoforge --version     # print version
 ```
 
 ### Example output

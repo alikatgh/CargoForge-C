@@ -28,6 +28,13 @@ make --silent >/dev/null
 run "sample scenario"    ./cargoforge examples/sample_ship.cfg examples/sample_cargo.txt
 run "realistic scenario" ./cargoforge examples/realistic_ship.cfg examples/realistic_cargo.txt
 
+# CLI contract: --version prints the version and exits 0; --help exits 0; no args fails.
+printf '\n=== CLI flags ===\n'
+./cargoforge --version | grep -q "cargoforge " || { echo "FAIL: --version output" >&2; exit 1; }
+./cargoforge --help >/dev/null               || { echo "FAIL: --help should exit 0" >&2; exit 1; }
+if ./cargoforge >/dev/null 2>&1; then echo "FAIL: no-args should exit non-zero" >&2; exit 1; fi
+echo "--version / --help / no-args OK"
+
 # 3. Sanitizers over the examples and a deliberately-bad manifest (error path).
 run "build sanitizer" make sanitize
 # Note: LeakSanitizer (detect_leaks) is Linux-only; CI enables it there. Locally we

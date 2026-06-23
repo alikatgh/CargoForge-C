@@ -7,6 +7,7 @@
 #include <string.h>
 
 /* CONSTANTS */
+#define CARGOFORGE_VERSION "1.0.0"
 #define MAX_LINE_LENGTH 256
 #define MAX_DIMENSION 3
 #define MAX_SHELVES 100
