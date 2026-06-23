@@ -61,3 +61,6 @@ jobs:
           ./cargoforge-san examples/sample_ship.cfg examples/sample_cargo.txt
           ./cargoforge-san examples/realistic_ship.cfg examples/realistic_cargo.txt
           ./cargoforge-san examples/sample_ship.cfg examples/large_cargo.txt
+
+      - name: Fuzz the parser under sanitizers
+        run: ./scripts/fuzz.sh 1000 1

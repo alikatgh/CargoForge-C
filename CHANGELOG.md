@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   unplaced, overweight, or unstable), for use in CI and automation.
 - Man page (`docs/cargoforge.1`) and `make install` / `make uninstall` targets
   (PREFIX/DESTDIR aware).
+- `scripts/fuzz.sh`: a seeded random-input fuzzer that runs the sanitized binary
+  against malformed configs/manifests and fails on any crash or sanitizer error;
+  wired into `scripts/check.sh` and CI.
 
 ## [1.0.0] - 2026-06-23
 

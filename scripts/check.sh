@@ -81,4 +81,7 @@ if ./cargoforge-san examples/sample_ship.cfg /tmp/cf_badweight.txt >/dev/null 2>
 fi
 rm -f /tmp/cf_badweight.txt
 
+# 5. Fuzz the parser/pipeline under the sanitizers (short, deterministic run).
+run "fuzz (150 iterations)" ./scripts/fuzz.sh 150 1
+
 printf '\nAll checks passed.\n'
