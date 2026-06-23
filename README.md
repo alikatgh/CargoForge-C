@@ -49,6 +49,7 @@ Run it directly:
 ```sh
 ./cargoforge examples/realistic_ship.cfg examples/realistic_cargo.txt
 ./cargoforge --json examples/realistic_ship.cfg examples/realistic_cargo.txt  # machine-readable
+./cargoforge --strict examples/realistic_ship.cfg examples/realistic_cargo.txt  # non-zero exit on a bad plan
 ./cargoforge --help        # usage and options
 ./cargoforge --version     # print version
 ```
@@ -56,6 +57,9 @@ Run it directly:
 The `--json` flag emits the plan and stability summary as a single JSON object
 (ship specs, a `placements` array, and a `summary` with CG, GM, and `stable` /
 `balanced` / `rejected` booleans) so the tool composes into scripts and pipelines.
+The `--strict` flag makes the process exit non-zero when the plan isn't fully
+successful — any cargo unplaced, overweight, or unstable (GM ≤ 0.15 m) — so CI and
+automation can gate on it. Both flags may be combined and placed in any position.
 
 ### Example output
 

@@ -46,6 +46,18 @@ else
     echo "--json OK (python3 unavailable; key-checked only)"
 fi
 
+# --strict: exit 0 on a good plan, non-zero on an overweight one.
+./cargoforge --strict examples/realistic_ship.cfg examples/realistic_cargo.txt >/dev/null \
+    || { echo "FAIL: --strict on a good plan should exit 0" >&2; exit 1; }
+printf 'length_m=50\nwidth_m=10\nmax_weight_tonnes=100\nlightship_weight_tonnes=50\n' > /tmp/cf_tiny.cfg
+printf 'Heavy 200 5x5x5 bulk\n' > /tmp/cf_heavy.txt
+if ./cargoforge --strict /tmp/cf_tiny.cfg /tmp/cf_heavy.txt >/dev/null 2>&1; then
+    echo "FAIL: --strict on an overweight plan should exit non-zero" >&2
+    rm -f /tmp/cf_tiny.cfg /tmp/cf_heavy.txt; exit 1
+fi
+rm -f /tmp/cf_tiny.cfg /tmp/cf_heavy.txt
+echo "--strict OK"
+
 # 3. Static analysis (Clang static analyzer), if clang is available.
 if command -v clang >/dev/null 2>&1; then
     run "static analysis" make --silent analyze

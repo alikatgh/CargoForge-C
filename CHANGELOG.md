@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Configurable number of below-deck holds via the optional `holds=` ship-config
   key (1–50, default 2). Holds split the ship's length evenly fore-to-aft.
+- `--strict` flag: exit non-zero when a plan isn't fully successful (any cargo
+  unplaced, overweight, or unstable), for use in CI and automation.
 
 ## [1.0.0] - 2026-06-23
 

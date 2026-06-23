@@ -5,6 +5,7 @@
  * for the maritime cargo logistics simulator.
  */
 #include "cargoforge.h"
+#include <math.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -23,12 +24,14 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    // 2. Parse arguments: an optional --json flag (any position) plus two files.
-    bool json = false;
+    // 2. Parse arguments: optional --json / --strict flags (any position) + two files.
+    bool json = false, strict = false;
     const char *config_file = NULL, *cargo_file = NULL;
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--json") == 0) {
             json = true;
+        } else if (strcmp(argv[i], "--strict") == 0) {
+            strict = true;
         } else if (!config_file) {
             config_file = argv[i];
         } else if (!cargo_file) {
@@ -63,11 +66,30 @@ int main(int argc, char *argv[]) {
     if (json) print_loading_plan_json(&ship);
     else print_loading_plan(&ship);
 
-    // 6. Clean up allocated memory.
+    // 6. In --strict mode, fail the exit code if the plan isn't fully successful:
+    //    all cargo placed, within weight, and stable (positive GM). Default mode
+    //    always returns success so existing scripts are unaffected.
+    int exit_code = EXIT_SUCCESS;
+    if (strict) {
+        AnalysisResult a = perform_analysis(&ship);
+        bool overweight = isnan(a.gm);
+        bool all_placed = (a.placed_item_count == ship.cargo_count);
+        bool stable = (!overweight && a.gm > 0.15f);
+        if (!all_placed || overweight || !stable) {
+            fprintf(stderr,
+                    "Strict: plan not fully successful (placed %d/%d%s%s).\n",
+                    a.placed_item_count, ship.cargo_count,
+                    overweight ? ", overweight" : "",
+                    (!overweight && !stable) ? ", unstable" : "");
+            exit_code = EXIT_FAILURE;
+        }
+    }
+
+    // 8. Clean up allocated memory.
     free(ship.cargo);
     ship.cargo = NULL;
 
-    return EXIT_SUCCESS;
+    return exit_code;
 }
 
 // Prints usage/help to stderr.
@@ -75,10 +97,11 @@ void usage(const char *prog_name) {
     fprintf(stderr,
         "cargoforge %s - maritime cargo-stowage & stability simulator\n\n"
         "Usage:\n"
-        "  %s [--json] <ship_config_file> <cargo_list_file>\n"
+        "  %s [--json] [--strict] <ship_config_file> <cargo_list_file>\n"
         "  %s --help | --version\n\n"
         "Options:\n"
         "      --json     Emit the loading plan as JSON (machine-readable)\n"
+        "      --strict   Exit non-zero if any cargo is unplaced, overweight, or unstable\n"
         "  -h, --help     Show this help and exit\n"
         "  -v, --version  Show version and exit\n\n"
         "Example:\n"
