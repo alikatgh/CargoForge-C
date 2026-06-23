@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Cargo validation & reporting: duplicate-ID detection, implausible-density
+  warnings, and a weight-by-type summary (in `--verbose` and `--md`).
 - `--csv` (RFC-4180 placements) and `--md` (Markdown report with a placements
   table and stability summary, including average/heaviest/lightest cargo).
 - `--diagram`: an ASCII top-down stowage plan (holds + deck, cargo footprints),

@@ -1,0 +1,4 @@
+# two items share an ID (a warning, not an error)
+BoxA 10 5x5x5 general
+BoxA 12 4x4x4 general
+BoxB 8 3x3x3 reefer

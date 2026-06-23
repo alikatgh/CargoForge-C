@@ -75,6 +75,16 @@ static void test_parses_optional_holds_field(void) {
     printf("OK\n");
 }
 
+static void test_duplicate_ids_warn_but_parse(void) {
+    printf("  duplicate IDs are warned, not rejected... ");
+    Ship ship = {0};
+    /* Duplicates are a warning (printed to stderr), not a parse failure. */
+    assert(parse_cargo_list("tests/fixtures/dup_cargo.txt", &ship) == 0);
+    assert(ship.cargo_count == 3);
+    free(ship.cargo);
+    printf("OK\n");
+}
+
 static void test_skips_over_long_line(void) {
     printf("  skip over-long line, parse the rest... ");
     Ship ship = {0};
@@ -96,6 +106,7 @@ int main(void) {
     test_parses_cargo_and_initializes_sentinels();
     test_rejects_empty_cargo_list();
     test_parses_optional_holds_field();
+    test_duplicate_ids_warn_but_parse();
     test_skips_over_long_line();
     printf("--- All Parser Tests Passed ---\n");
     return 0;

@@ -217,8 +217,28 @@ int parse_cargo_list(const char *filename, Ship *ship) {
             return -1;
         }
 
+        // Sanity-check density: above ~15 t/m³ (denser than lead) likely a data error.
+        float vol = c->dimensions[0] * c->dimensions[1] * c->dimensions[2];
+        if (vol > 0.0f && c->weight / vol > 15000.0f) {
+            fprintf(stderr, "Warning: Cargo '%s' has implausibly high density (%.0f kg/m³).\n",
+                    id, c->weight / vol);
+        }
+
         ship->cargo_count++;
     }
     fclose(file);
+
+    // Warn about duplicate cargo IDs (each duplicated id reported once).
+    for (int i = 0; i < ship->cargo_count; i++) {
+        bool already = false;
+        for (int k = 0; k < i; k++)
+            if (strcmp(ship->cargo[k].id, ship->cargo[i].id) == 0) { already = true; break; }
+        if (already) continue;
+        for (int j = i + 1; j < ship->cargo_count; j++)
+            if (strcmp(ship->cargo[i].id, ship->cargo[j].id) == 0) {
+                fprintf(stderr, "Warning: Duplicate cargo ID '%s'.\n", ship->cargo[i].id);
+                break;
+            }
+    }
     return 0;
 }

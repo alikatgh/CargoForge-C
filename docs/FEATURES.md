@@ -59,11 +59,11 @@ Tracking 100 features toward a world-class maritime stowage & stability tool.
 49. [ ] Out-of-gauge handling
 50. [ ] Cargo grouping by destination
 51. [ ] Load/discharge port sequencing
-52. [ ] Weight-by-type summary
+52. [x] Weight-by-type summary (`--verbose` / `--md`)
 53. [x] Per-item CG contribution (`--verbose`)
-54. [ ] Duplicate-ID detection
+54. [x] Duplicate-ID detection
 55. [x] Manifest statistics (avg/heaviest/lightest in `--md`)
-56. [ ] Heavy-item density warnings
+56. [x] Heavy-item density warnings
 57. [ ] Lashing/securing estimate
 58. [ ] Dangerous-goods class labels
 
@@ -117,4 +117,4 @@ Tracking 100 features toward a world-class maritime stowage & stability tool.
 
 ---
 
-**Shipped: 54 / 100.** Updated as features land.
+**Shipped: 57 / 100.** Updated as features land.

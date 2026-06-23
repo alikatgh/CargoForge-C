@@ -228,6 +228,27 @@ static void print_ship_diagram(const Ship *ship, const OutputOptions *opt, const
     }
 }
 
+// Prints total placed weight grouped by cargo type, one line per type, each line
+// prefixed with `bullet` (so text and Markdown can share the aggregation logic).
+static void print_weight_by_type(const Ship *ship, const char *bullet) {
+    for (int i = 0; i < ship->cargo_count; i++) {
+        const Cargo *ci = &ship->cargo[i];
+        if (ci->pos_x < 0.0f) continue;
+        bool seen = false; // skip a type already summarized at a lower index
+        for (int k = 0; k < i; k++)
+            if (ship->cargo[k].pos_x >= 0.0f && strcmp(ship->cargo[k].type, ci->type) == 0) { seen = true; break; }
+        if (seen) continue;
+        float sum = 0.0f;
+        int count = 0;
+        for (int j = i; j < ship->cargo_count; j++)
+            if (ship->cargo[j].pos_x >= 0.0f && strcmp(ship->cargo[j].type, ci->type) == 0) {
+                sum += ship->cargo[j].weight;
+                count++;
+            }
+        printf("%s%-12s : %.2f t (%d item%s)\n", bullet, ci->type, sum / 1000.0f, count, count == 1 ? "" : "s");
+    }
+}
+
 void print_loading_plan(const Ship *ship, const OutputOptions *opt) {
     OutputOptions defaults = {false, 0, false};
     if (!opt) opt = &defaults;
@@ -287,6 +308,11 @@ void print_loading_plan(const Ship *ship, const OutputOptions *opt) {
            analysis.gm, col(opt, stab_col), stable ? "Stable" : "UNSTABLE", col(opt, C_RESET));
     if (opt->verbosity >= 0)
         printf("  - GML (longitudinal)   : %.2f m\n", analysis.gml);
+
+    if (opt->verbosity >= 1) {
+        printf("\nWeight by Type\n");
+        print_weight_by_type(ship, "  - ");
+    }
 
     if (opt->diagram && opt->verbosity >= 0)
         print_ship_diagram(ship, opt, &analysis);
@@ -438,4 +464,7 @@ void print_loading_plan_md(const Ship *ship) {
     printf("- **Draft (mean):** %.2f m\n", a.draft_mean);
     printf("- **GM / GML:** %.2f m / %.2f m\n", a.gm, a.gml);
     printf("- **Stability:** %s\n", a.gm > 0.15f ? "Stable ✅" : "UNSTABLE ❌");
+
+    printf("\n## Weight by Type\n\n");
+    print_weight_by_type(ship, "- ");
 }
