@@ -42,6 +42,11 @@ int parse_ship_config(const char *filename, Ship *ship) {
         return -1;
     }
 
+    /* Track which required keys were seen so we can reject an incomplete config.
+     * A missing width_m (etc.) would otherwise leave the field at 0 and divide
+     * by zero in the downstream draft / GM math. */
+    bool seen_length = false, seen_width = false, seen_max_weight = false;
+
     char line[MAX_LINE_LENGTH];
     while (fgets(line, sizeof(line), file)) {
         if (line[0] == '#' || line[0] == '\n') continue;
@@ -56,13 +61,24 @@ int parse_ship_config(const char *filename, Ship *ship) {
             return -1; // Abort on invalid data
         }
 
-        if (strcmp(key, "length_m") == 0) ship->length = v;
-        else if (strcmp(key, "width_m") == 0) ship->width = v;
-        else if (strcmp(key, "max_weight_tonnes") == 0) ship->max_weight = v * 1000.0f;
+        if (strcmp(key, "length_m") == 0)                  { ship->length = v;              seen_length = true; }
+        else if (strcmp(key, "width_m") == 0)              { ship->width = v;               seen_width = true; }
+        else if (strcmp(key, "max_weight_tonnes") == 0)    { ship->max_weight = v * 1000.0f; seen_max_weight = true; }
         else if (strcmp(key, "lightship_weight_tonnes") == 0) ship->lightship_weight = v * 1000.0f;
-        else if (strcmp(key, "lightship_kg_m") == 0) ship->lightship_kg = v;
+        else if (strcmp(key, "lightship_kg_m") == 0)       ship->lightship_kg = v;
+        else fprintf(stderr, "Warning: Unknown ship config key '%s' (ignored).\n", key);
     }
     fclose(file);
+
+    if (!seen_length || !seen_width || !seen_max_weight) {
+        fprintf(stderr,
+                "Error: Ship config '%s' is missing required field(s):%s%s%s\n",
+                filename,
+                seen_length ? "" : " length_m",
+                seen_width ? "" : " width_m",
+                seen_max_weight ? "" : " max_weight_tonnes");
+        return -1;
+    }
     return 0;
 }
 
@@ -79,6 +95,12 @@ int parse_cargo_list(const char *filename, Ship *ship) {
     char line[MAX_LINE_LENGTH];
     while (fgets(line, sizeof(line), file)) {
         if (line[0] != '#' && line[0] != '\n') count++;
+    }
+
+    if (count == 0) {
+        fprintf(stderr, "Error: Cargo list '%s' contains no cargo entries.\n", filename);
+        fclose(file);
+        return -1;
     }
 
     ship->cargo = malloc(count * sizeof(Cargo));
@@ -109,6 +131,14 @@ int parse_cargo_list(const char *filename, Ship *ship) {
         }
 
         Cargo *c = &ship->cargo[ship->cargo_count];
+
+        /* malloc does not zero memory. The placement and analysis stages use
+         * pos_x < 0 as the "not yet placed" sentinel, so it MUST be set before
+         * any item is read back. Leaving these uninitialized is undefined
+         * behavior that silently corrupts the CG optimizer. */
+        c->pos_x = c->pos_y = c->pos_z = -1.0f;
+        c->placed_w = c->placed_h = 0.0f;
+
         strncpy(c->id, id, sizeof(c->id) - 1);
         c->id[sizeof(c->id) - 1] = '\0';
         strncpy(c->type, type, sizeof(c->type) - 1);
@@ -117,6 +147,7 @@ int parse_cargo_list(const char *filename, Ship *ship) {
         float weight_t = safe_atof(w_str, 0.1f, 1e6f, "weight");
         if (isnan(weight_t)) {
             free(ship->cargo);
+            ship->cargo = NULL; // avoid a dangling pointer; the caller also frees
             fclose(file);
             return -1;
         }
@@ -137,6 +168,7 @@ int parse_cargo_list(const char *filename, Ship *ship) {
         if (!dims_ok) {
             fprintf(stderr, "Error: Incomplete or invalid dimensions for cargo '%s' on line %d\n", id, line_num);
             free(ship->cargo);
+            ship->cargo = NULL; // avoid a dangling pointer; the caller also frees
             fclose(file);
             return -1;
         }

@@ -1,94 +1,181 @@
 # CargoForge-C
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/alikatgh/CargoForge-C/ci.yml)](https://github.com/alikatgh/CargoForge-C/actions)
-[![Contributors](https://img.shields.io/github/contributors/alikatgh/CargoForge-C.svg)](https://github.com/alikatgh/CargoForge-C/graphs/contributors)
-[![GitHub issues](https://img.shields.io/github/issues/alikatgh/CargoForge-C.svg)](https://github.com/alikatgh/CargoForge-C/issues)
+[![CI](https://github.com/alikatgh/CargoForge-C/actions/workflows/c-build.yml/badge.svg)](https://github.com/alikatgh/CargoForge-C/actions/workflows/c-build.yml)
+![C99](https://img.shields.io/badge/C-C99-blue.svg)
+![Dependencies](https://img.shields.io/badge/dependencies-none-brightgreen.svg)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-> **Project Status: Alpha**
-> This project is in active development. Expect breaking changes until the v1.0 release.
+A small, dependency-free **maritime cargo-stowage simulator** written in pure C99.
+Give it a ship and a cargo manifest; it decides where each item goes, then reports
+whether the resulting load is **stable enough to sail**.
 
-A lightweight, dependency-free maritime cargo simulator written in pure C99.
+It is a compact, readable model of two real problems naval architects solve every
+day: **bin packing** (fit the cargo) and **ship stability** (don't capsize).
 
------
+---
 
-## Why CargoForge-C?
+## What it computes
 
-This project should and will address a critical need in global shipping: **90% of world trade moves by sea**, and inefficient loading costs millions in fuel and introduces safety risks. This tool aims to simulate and optimize that process.
+For a given ship and manifest, CargoForge-C produces a loading plan and two
+stability figures that decide whether that plan is safe:
 
-  - **Learn and Contribute**: Perfect for C enthusiasts to practice low-level programming while tackling practical, high-impact logistics problems.
-  - **Maritime Focus**: Optimizes cargo loading on large vessels, considering weight distribution and stability to reduce fuel costs and safety hazards.
-  - **Performance & Portability**: No external libraries—everything is built from scratch. It runs on any platform with a C compiler, from desktops to embedded boards.
-  - **Open for Growth**: Designed with a modular architecture to welcome contributors. Help add new features like hardware sensor integration or advanced optimization algorithms.
+| Quantity | Meaning | Why it matters |
+|----------|---------|----------------|
+| **Center of Gravity (CG)** | Where the combined weight of ship + cargo acts, reported as % of length (longitudinal) and % of beam (transverse). | A CG far from amidships/centerline gives the ship a list or trim. ~50% / 50% is ideal. |
+| **Metacentric Height (GM)** | `GM = KB + BM − KG`. The lever arm of the ship's righting moment. | **GM > 0 ⇒ the ship self-rights** when heeled. GM ≤ 0 ⇒ it capsizes. The single most important stability number. |
 
-## Initial features
+`GM` is built from the classic naval-architecture terms:
 
-  - **Cargo Loading Simulator**: Input ship specifications and a cargo manifest to receive an optimized cargo placement plan.
-  - **Ship Stability Calculations**: Computes the vessel's **center of gravity ($C\_g$)** to ensure a safe and stable load.
-  - **Route Optimization**: Includes a basic graph-based pathfinding algorithm for efficient voyages.
-  - **Performance-Oriented**: Optimized for speed using inline functions, fixed-size arrays, and bitwise operations where appropriate.
-  - **Planned Extensions**: Future versions will include hardware interfaces (e.g., serial ports) and genetic algorithms.
+- **KB** — height of the center of buoyancy above the keel (≈ half the draft).
+- **BM** — `I / V`, the transverse waterplane moment of inertia over the displaced
+  volume (the ship's "form stability").
+- **KG** — height of the center of gravity above the keel, from the lightship data
+  plus every placed item's vertical moment.
 
-## Stack
+An overweight plan (total weight beyond the ship's maximum) is rejected outright.
 
-  - **Language**: **C (C99)**
-  - **Compiler**: Built and tested with **GCC** and **Clang**.
-  - **Dependencies**: **None.** The project is intentionally self-contained for maximum portability.
+---
 
-## Getting Started
+## Quickstart
 
-#### Prerequisites
-
-  - A C compiler (GCC, Clang).
-  - `make` (for easy building via the provided `Makefile`).
-  - **OS Compatibility**: Tested on Linux and macOS. Should compile on Windows via MinGW/MSYS2.
-
-#### Installation
-
-1.  **Clone the repository:**
-
-    ```bash
-    git clone https://github.com/alikatgh/CargoForge-C.git
-    cd CargoForge-C
-    ```
-
-2.  **Build the project:**
-
-    ```bash
-    make
-    ```
-
-## Usage
-
-Run the simulator from the command line with ship and cargo configuration files.
-
-```bash
-./cargoforge examples/sample_ship.cfg examples/sample_cargo.txt
+```sh
+make                 # build ./cargoforge (optimized)
+make run             # build and run on the bundled sample scenario
+make test            # build and run the unit-test suite
 ```
 
-#### Example(s)
+Run it directly:
 
-```
-Optimal Placement Plan:
-- Bow:       ContainerA (CG Stability: 45%)
-- Midship:   ContainerB
-...
-Total Execution Time: 0.12ms
+```sh
+./cargoforge examples/realistic_ship.cfg examples/realistic_cargo.txt
 ```
 
-> **Note**: If input files are missing or incorrectly formatted, the program will print a usage guide to the console.
+### Example output
 
-## Contributing
+```
+--- CargoForge Stability Analysis ---
 
-Please see `CONTRIBUTING.md` for detailed guidelines (coming soon).
+Ship Specs: 150.00 m × 25.00 m | Max Weight: 20000.00 t
+----------------------------------------------------------------------
+  - HeavyEngine     | Pos (X,Y,Z): (  75.00,    0.00,   -5.00) | 60.00 t
+  - SteelCoils_A    | Pos (X,Y,Z): (  75.00,    4.00,   -5.00) | 40.00 t
+  - SteelCoils_B    | Pos (X,Y,Z): (  80.00,    4.00,   -5.00) | 40.00 t
+  - BulkyGenerator  | Pos (X,Y,Z): (  75.00,    9.00,   -5.00) | 35.00 t
+  ...
+Load Summary
+  - Placed / Total items: 10 / 10
+  - Total loaded weight : 295.00 t (26.5 % of max)
+  - CG (Lon / Trans)    : 50.0 % / 49.5 % | Balance: Good
+  - Metacentric Height (GM): 23.74 m | Stability: Stable
+```
 
-## Roadmap
+`Pos (X,Y,Z)`: X is along the ship's length, Y across the beam, Z the deck level
+(negative = below the main deck, in a hold; 0 = on deck).
 
-  - [ ] **v0.1**: Core simulator engine and file parsing. (Target: Q3 2025)
-  - [ ] **v0.2**: Advanced optimization algorithms (genetic, simulated annealing). (Target: Q4 2025)
-  - [ ] **v0.3**: Comprehensive stability and hull stress calculations. (Target: Q1 2026)
-  - [ ] **v1.0**: Full documentation, hardware integration extensions, and stable API. (Target: Q2 2026)
+---
+
+## Input formats
+
+### Ship config (`*.cfg`) — `key=value`, `#` comments
+
+```ini
+length_m=150
+width_m=25
+max_weight_tonnes=20000
+lightship_weight_tonnes=5000   # empty-ship weight
+lightship_kg_m=8               # empty-ship vertical CG above keel
+```
+
+`length_m`, `width_m`, and `max_weight_tonnes` are **required**; a missing field
+is rejected rather than silently defaulted to zero. Unknown keys are warned about
+and ignored.
+
+### Cargo manifest (`*.txt`) — whitespace-separated, `#` comments
+
+```
+# ID            Weight(t)  Dimensions(LxWxH)  Type
+HeavyEngine     60         10x4x5             breakbulk
+StandardCont_1  25         12.2x2.4x2.6       container
+```
+
+Columns: identifier, weight in tonnes, `LxWxH` dimensions in metres, and a free-form
+type label. Malformed lines are reported and skipped; invalid numbers abort the parse.
+
+---
+
+## How it works
+
+1. **Sort** cargo heaviest-first (a First-Fit-Decreasing heuristic — heavy items
+   are the hardest to place and dominate stability, so they go first).
+2. For each item, evaluate three bins — two holds (fore/aft, below deck) and the
+   deck — using a **2D shelf packer**: items fill a shelf along the ship's length,
+   shelves stack across the beam, and both axes are bounds-checked.
+3. Among the bins where the item fits, pick the placement that keeps the running
+   **center of gravity closest to amidships/centerline** — stability-aware packing,
+   not just "first spot that fits."
+4. **Transverse trim:** center each bin's loaded band on the beam so mass isn't
+   piled against one side (a uniform per-bin shift, so it never overlaps cargo or
+   exceeds the hull).
+5. Compute CG and GM and print the plan with a stability verdict.
+
+See [`docs/`](docs/) for the bug journal documenting fixes and invariants.
+
+---
+
+## Project layout
+
+```
+cargoforge.h       shared data structures and the public API
+main.c             CLI entry point and program flow
+parser.c           ship-config and cargo-manifest parsing (+ validation)
+optimizer.c        thin coordinator over the placement module
+placement_2d.c     the 2D shelf bin-packer + CG-aware bin selection
+analysis.c         CG and metacentric-height (GM) stability math + reporting
+tests/             unit tests (parser, placement invariants, analysis math)
+examples/          sample ship configs and cargo manifests
+docs/              bug journal and notes
+```
+
+---
+
+## Development
+
+```sh
+make WERROR=1 test   # build the suite with warnings promoted to errors (CI default)
+make sanitize        # build ./cargoforge-san with AddressSanitizer + UBSan
+make debug           # -g -O0 build for a debugger
+make format          # apply .clang-format (if clang-format is installed)
+```
+
+The CI pipeline ([`.github/workflows/c-build.yml`](.github/workflows/c-build.yml))
+builds with **both gcc and clang** under `-Werror`, runs the full test suite, and
+runs every example scenario under AddressSanitizer + UndefinedBehaviorSanitizer.
+
+The tests assert **invariants** (every item placed, in bounds, no overlap; CG/GM
+match hand-computed values), not frozen output — so the heuristic can improve
+without churning the suite.
+
+---
+
+## Limitations & roadmap
+
+CargoForge-C is a teaching-grade model, not a classed stability program. Known
+simplifications, roughly in priority order:
+
+- **Longitudinal packing is greedy within a bin** — the transverse band is centered
+  (step 4 above), but items still fill each shelf left-to-right, so the longitudinal
+  distribution isn't optimized beyond the heaviest-first bin choice.
+- **2D footprints only** — items are not stacked vertically within a hold; the
+  third dimension feeds the GM math but not the packing.
+- **Fixed bins** — two holds + deck, split at midships. Configurable compartments
+  are a natural extension.
+- **Static stability only** — no free-surface effect, no longitudinal GML/trim, no
+  wind heeling.
+
+Contributions welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).
+
+---
 
 ## License
 
-MIT
+Released under the [MIT License](LICENSE).

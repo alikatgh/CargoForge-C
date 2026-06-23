@@ -1,6 +1,17 @@
-# Ignore C build artifacts
+# Build artifacts
 *.o
 *.out
-
-# Ignore the final executable
 cargoforge
+cargoforge-san
+*.dSYM/
+
+# Test binaries
+tests/test_parser
+tests/test_placement_2d
+tests/test_analysis
+
+# OS files
+.DS_Store
+
+# Backup files
+*.bak

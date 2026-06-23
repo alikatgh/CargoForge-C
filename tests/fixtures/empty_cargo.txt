@@ -1,0 +1,2 @@
+# A manifest with comments but no cargo entries — parser must reject this.
+# ID  Weight  Dimensions  Type

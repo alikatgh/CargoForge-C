@@ -1,28 +1,53 @@
-# .github/workflows/c-build.yml
+name: CI
 
-name: C/C++ CI
-
-# This workflow runs on pushes and pull requests to the main branch
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
-  build:
-    # Use the latest version of Ubuntu to run the job
+  build-and-test:
+    name: build & test (${{ matrix.cc }})
     runs-on: ubuntu-latest
-
+    strategy:
+      fail-fast: false
+      matrix:
+        cc: [gcc, clang]
     steps:
-      # Step 1: Check out your repository code
       - name: Check out code
         uses: actions/checkout@v4
 
-      # Step 2: Compile the project using your Makefile
-      - name: Compile the project
-        run: make
+      - name: Compiler version
+        run: ${{ matrix.cc }} --version
 
-      # Step 3: Run a basic test to ensure the executable works
-      - name: Run a basic test
+      # Build and run the unit tests with warnings promoted to errors.
+      - name: Build + unit tests (warnings as errors)
+        run: make CC=${{ matrix.cc }} WERROR=1 test
+
+      # Smoke-test the binary on the bundled scenarios.
+      - name: Run sample scenario
         run: ./cargoforge examples/sample_ship.cfg examples/sample_cargo.txt
+
+      - name: Run realistic scenario
+        run: ./cargoforge examples/realistic_ship.cfg examples/realistic_cargo.txt
+
+  sanitizers:
+    name: AddressSanitizer + UBSan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Build sanitized binary
+        run: make CC=clang sanitize
+
+      # halt_on_error makes UBSan failures fatal so CI actually catches them.
+      - name: Run scenarios under sanitizers
+        env:
+          ASAN_OPTIONS: detect_leaks=1
+          UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
+        run: |
+          ./cargoforge-san examples/sample_ship.cfg examples/sample_cargo.txt
+          ./cargoforge-san examples/realistic_ship.cfg examples/realistic_cargo.txt
+          ./cargoforge-san examples/sample_ship.cfg examples/large_cargo.txt

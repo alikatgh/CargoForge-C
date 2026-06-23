@@ -1,0 +1,11 @@
+# ID               Weight(t)  Dimensions(LxWxH)   Type
+HeavyEngine        60         10x4x5              breakbulk
+SteelCoils_A       40         5x5x3               breakbulk
+SteelCoils_B       40         5x5x3               breakbulk
+StandardCont_1     25         12.2x2.4x2.6        container
+StandardCont_2     25         12.2x2.4x2.6        container
+StandardCont_3     25         12.2x2.4x2.6        container
+StandardCont_4     25         12.2x2.4x2.6        container
+LightGoods_1       10         12.2x2.4x2.6        container
+LightGoods_2       10         12.2x2.4x2.6        container
+BulkyGenerator     35         15x6x4              oversize
