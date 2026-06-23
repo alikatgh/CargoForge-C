@@ -122,12 +122,48 @@ static void test_top_heavy_load_is_unstable(void) {
     printf("OK (GM = %.2f m)\n", (double)r.gm);
 }
 
+/* The hydrostatics must be self-consistent and physically sane: displacement =
+ * lightship + cargo, deadweight = cargo, GM = KB + BM - KG, a centered load has
+ * near-zero trim/heel, and freeboard = depth - draft when a depth is given. */
+static void test_hydrostatics_are_consistent(void) {
+    printf("  hydrostatics consistent (disp, GM=KB+BM-KG, freeboard)... ");
+
+    Ship ship = {0};
+    ship.length = 100.0f;
+    ship.width = 20.0f;
+    ship.depth = 12.0f;
+    ship.max_weight = 10000.0f * 1000.0f;
+    ship.lightship_weight = 1000.0f * 1000.0f;
+    ship.lightship_kg = 5.0f;
+
+    Cargo item = {
+        .id = "Centered", .weight = 100.0f * 1000.0f, .dimensions = {10.0f, 4.0f, 4.0f},
+        .type = "general", .pos_x = 45.0f, .pos_y = 8.0f, .pos_z = -2.0f,
+        .placed_w = 10.0f, .placed_h = 4.0f,
+    };
+    ship.cargo = &item;
+    ship.cargo_count = 1;
+
+    AnalysisResult r = perform_analysis(&ship);
+
+    assert(approx(r.displacement_t, 1100.0f, 0.5f) && "displacement = lightship + cargo");
+    assert(approx(r.deadweight_t, 100.0f, 0.5f) && "deadweight = cargo weight");
+    assert(approx(r.gm, r.kb + r.bm - r.kg, 0.01f) && "GM must equal KB + BM - KG");
+    assert(r.draft_mean > 0.0f && r.volume_m3 > 0.0f);
+    assert(approx(r.draft_fore, r.draft_aft, 0.05f) && "centered load => ~zero trim");
+    assert(fabsf(r.heel_deg) < 1.0f && "centered load => ~upright");
+    assert(approx(r.freeboard, ship.depth - r.draft_mean, 0.01f) && "freeboard = depth - draft");
+
+    printf("OK\n");
+}
+
 int main(void) {
     printf("--- Running Analysis Tests ---\n");
     test_centered_load_is_balanced_and_stable();
     test_overweight_plan_is_rejected();
     test_unplaced_cargo_is_excluded();
     test_top_heavy_load_is_unstable();
+    test_hydrostatics_are_consistent();
     printf("--- All Analysis Tests Passed ---\n");
     return 0;
 }

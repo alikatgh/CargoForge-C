@@ -93,6 +93,7 @@ int parse_ship_config(const char *filename, Ship *ship) {
         else if (strcmp(key, "max_weight_tonnes") == 0)    { ship->max_weight = v * 1000.0f; seen_max_weight = true; }
         else if (strcmp(key, "lightship_weight_tonnes") == 0) ship->lightship_weight = v * 1000.0f;
         else if (strcmp(key, "lightship_kg_m") == 0)       ship->lightship_kg = v;
+        else if (strcmp(key, "depth_m") == 0)              ship->depth = v;
         else if (strcmp(key, "holds") == 0) {
             int h = (int)v;
             if (h < 1 || h > MAX_HOLDS) {

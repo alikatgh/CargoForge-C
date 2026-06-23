@@ -75,10 +75,18 @@ Ship Specs: 150.00 m × 25.00 m | Max Weight: 20000.00 t
   - BulkyGenerator  | Pos (X,Y,Z): (  75.00,    9.00,   -5.00) | 35.00 t
   ...
 Load Summary
-  - Placed / Total items: 10 / 10
-  - Total loaded weight : 295.00 t (26.5 % of max)
-  - CG (Lon / Trans)    : 50.0 % / 49.5 % | Balance: Good
-  - Metacentric Height (GM): 23.74 m | Stability: Stable
+  - Placed / Total items : 10 / 10
+  - Total loaded weight  : 295.00 t (26.5 % of max)
+  - Displacement / DWT   : 5295.00 t / 295.00 t
+  - CG (Lon / Trans)     : 50.0 % / 49.5 % | Balance: Good
+
+Hydrostatics & Stability
+  - Draft (mean)         : 1.72 m  (fore 1.72 / aft 1.72)
+  - Displaced volume     : 5165.9 m³
+  - KG / KB / BM         : 7.37 / 0.86 / 30.25 m
+  - Trim / Heel          : -0.00 m / -0.3°
+  - GM (transverse)      : 23.74 m | Stability: Stable
+  - GML (longitudinal)   : 1082.37 m
 ```
 
 `Pos (X,Y,Z)`: X is along the ship's length, Y across the beam, Z the deck level
@@ -97,6 +105,7 @@ max_weight_tonnes=20000
 lightship_weight_tonnes=5000   # empty-ship weight
 lightship_kg_m=8               # empty-ship vertical CG above keel
 holds=2                        # optional: number of below-deck holds (default 2)
+depth_m=14                     # optional: moulded hull depth, enables freeboard
 ```
 
 `length_m`, `width_m`, and `max_weight_tonnes` are **required**; a missing field

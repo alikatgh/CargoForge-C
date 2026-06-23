@@ -41,13 +41,24 @@ typedef struct {
     Cargo *cargo;
     float lightship_weight, lightship_kg;
     int   hold_count;   /* below-deck holds; 0 means "use DEFAULT_HOLDS" */
+    float depth;        /* moulded hull depth (m), optional; enables freeboard. 0 = unset */
 } Ship;
 
 typedef struct { float perc_x, perc_y; } CG;
 
 typedef struct {
-    CG    cg;
-    float gm;
+    CG    cg;                      /* combined CG as % of length / beam */
+    float gm;                      /* transverse metacentric height (m) */
+    float gml;                     /* longitudinal metacentric height (m) */
+    float kg, kb, bm;              /* vertical CG, centre of buoyancy, metacentric radius (m) */
+    float draft_mean;              /* mean draft (m) */
+    float draft_fore, draft_aft;   /* draft at the ends after trim (m) */
+    float trim;                    /* draft_aft - draft_fore (m); + = trim by stern */
+    float heel_deg;                /* static list angle (deg); + = to starboard */
+    float displacement_t;          /* total weight afloat (t) */
+    float deadweight_t;            /* cargo deadweight (t) */
+    float volume_m3;               /* underwater (displaced) volume (m^3) */
+    float freeboard;               /* depth - mean draft (m); NAN if depth unset */
     float total_cargo_weight_kg;
     int   placed_item_count;
 } AnalysisResult;

@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Full hydrostatics report: vertical CG (KG), centre of buoyancy (KB), metacentric
+  radius (BM), mean/fore/aft draft, trim, static heel, longitudinal metacentric
+  height (GML), displacement, deadweight, displaced volume, and freeboard (when the
+  optional `depth_m` ship-config key is given). Shown in the text report and `--json`.
+- Optional `depth_m` ship-config key (moulded hull depth) enabling freeboard.
 - Configurable number of below-deck holds via the optional `holds=` ship-config
   key (1–50, default 2). Holds split the ship's length evenly fore-to-aft.
 - `--strict` flag: exit non-zero when a plan isn't fully successful (any cargo
