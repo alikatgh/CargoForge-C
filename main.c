@@ -69,7 +69,7 @@ int main(int argc, char *argv[]) {
 
     // 2. Parse arguments: optional flags (any position) + two file paths.
     bool json = false, csv = false, md = false, strict = false, diagram = false;
-    bool show_config = false;
+    bool show_config = false, summary = false, table = false, progress = false;
     int verbosity = 0;
     enum { COLOR_AUTO, COLOR_ALWAYS, COLOR_NEVER } color_mode = COLOR_AUTO;
     const char *config_file = NULL, *cargo_file = NULL;
@@ -82,6 +82,12 @@ int main(int argc, char *argv[]) {
             csv = true;
         } else if (strcmp(argv[i], "--md") == 0) {
             md = true;
+        } else if (strcmp(argv[i], "--summary") == 0) {
+            summary = true;
+        } else if (strcmp(argv[i], "--table") == 0) {
+            table = true;
+        } else if (strcmp(argv[i], "--progress") == 0) {
+            progress = true;
         } else if (strcmp(argv[i], "--strict") == 0) {
             strict = true;
         } else if (strcmp(argv[i], "--quiet") == 0 || strcmp(argv[i], "-q") == 0) {
@@ -138,12 +144,14 @@ int main(int argc, char *argv[]) {
     Ship ship = {0};
 
     // 4. Parse the input files.
+    if (progress) fprintf(stderr, "==> Parsing ship config: %s\n", config_file);
     if (parse_ship_config(config_file, &ship) != 0) {
         fprintf(stderr, "Error: Failed to parse ship config: %s\n", config_file);
         return EXIT_FAILURE;
     }
     apply_env_overrides(&ship); // CARGOFORGE_* env vars override the config file
 
+    if (progress) fprintf(stderr, "==> Parsing cargo manifest: %s\n", cargo_file);
     if (parse_cargo_list(cargo_file, &ship) != 0) {
         fprintf(stderr, "Error: Failed to parse cargo list: %s\n", cargo_file);
         free(ship.cargo); // Free memory if parsing fails after allocation.
@@ -151,11 +159,14 @@ int main(int argc, char *argv[]) {
     }
 
     // 5. Run the optimization and analysis.
+    if (progress) fprintf(stderr, "==> Optimizing placement (%d items)\n", ship.cargo_count);
     optimize_cargo_placement(&ship);
-    OutputOptions opt = { use_color, verbosity, diagram };
+    if (progress) fprintf(stderr, "==> Analyzing stability and reporting\n");
+    OutputOptions opt = { use_color, verbosity, diagram, table };
     if (json) print_loading_plan_json(&ship);
     else if (csv) print_loading_plan_csv(&ship);
     else if (md) print_loading_plan_md(&ship);
+    else if (summary) print_status_line(&ship);
     else print_loading_plan(&ship, &opt);
 
     // 6. In --strict mode, fail the exit code if the plan isn't fully successful:
@@ -199,6 +210,9 @@ void usage(const char *prog_name) {
         "      --json            Emit the loading plan as JSON (machine-readable)\n"
         "      --csv             Emit the placements as CSV\n"
         "      --md              Emit a Markdown report\n"
+        "      --summary         Print a one-line plan status\n"
+        "      --table           Render placements as a box-drawing table\n"
+        "      --progress        Print stage progress to stderr\n"
         "      --strict          Exit non-zero if any cargo is unplaced, overweight, or unstable\n"
         "  -q, --quiet           Print only the load summary\n"
         "      --verbose         Print extra per-item detail\n"

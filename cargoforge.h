@@ -85,6 +85,7 @@ typedef struct {
     bool color;      /* wrap verdicts in ANSI color */
     int  verbosity;  /* -1 = quiet (summary only), 0 = normal, 1 = verbose */
     bool diagram;    /* render the ASCII stowage plan + utilization + gauge */
+    bool table;      /* render placements as a box-drawing table */
 } OutputOptions;
 
 
@@ -97,6 +98,7 @@ void print_loading_plan(const Ship *ship, const OutputOptions *opt);
 void print_loading_plan_json(const Ship *ship);
 void print_loading_plan_csv(const Ship *ship);
 void print_loading_plan_md(const Ship *ship);
+void print_status_line(const Ship *ship);
 void usage(const char *prog_name);
 void place_cargo_2d(Ship *ship);
 Point calculate_cg_for_placement(const Ship *ship, const Cargo *new_item, Point new_pos, float item_w, float item_h);

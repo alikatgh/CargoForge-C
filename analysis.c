@@ -346,8 +346,33 @@ static void print_cargo_notes(const Ship *ship, const OutputOptions *opt) {
                col(opt, C_RED), col(opt, C_RESET), unplaced_pri);
 }
 
+// Draws a box-drawing rule with the given left/middle/right junctions.
+static void table_rule(const char *l, const char *m, const char *r) {
+    static const int w[] = {17, 9, 9, 9, 12};
+    printf("%s", l);
+    for (int c = 0; c < 5; c++) {
+        for (int k = 0; k < w[c]; k++) printf("─");
+        printf("%s", c < 4 ? m : r);
+    }
+    printf("\n");
+}
+
+// Renders the placed cargo as an aligned box-drawing table.
+static void print_placements_table(const Ship *ship) {
+    table_rule("┌", "┬", "┐");
+    printf("│ %-15s │ %7s │ %7s │ %7s │ %10s │\n", "ID", "X (m)", "Y (m)", "Z (m)", "Weight (t)");
+    table_rule("├", "┼", "┤");
+    for (int i = 0; i < ship->cargo_count; ++i) {
+        const Cargo *c = &ship->cargo[i];
+        if (c->pos_x < 0.0f) continue;
+        printf("│ %-15.15s │ %7.2f │ %7.2f │ %7.2f │ %10.2f │\n",
+               c->id, c->pos_x, c->pos_y, c->pos_z, c->weight / 1000.0f);
+    }
+    table_rule("└", "┴", "┘");
+}
+
 void print_loading_plan(const Ship *ship, const OutputOptions *opt) {
-    OutputOptions defaults = {false, 0, false};
+    OutputOptions defaults = {false, 0, false, false};
     if (!opt) opt = &defaults;
     AnalysisResult analysis = perform_analysis(ship);
 
@@ -361,8 +386,10 @@ void print_loading_plan(const Ship *ship, const OutputOptions *opt) {
         return;
     }
 
-    // Per-item placement list (suppressed in quiet mode).
-    if (opt->verbosity >= 0) {
+    // Per-item placement list (suppressed in quiet mode; boxed table if requested).
+    if (opt->verbosity >= 0 && opt->table) {
+        print_placements_table(ship);
+    } else if (opt->verbosity >= 0) {
         for (int i = 0; i < ship->cargo_count; ++i) {
             const Cargo *c = &ship->cargo[i];
             if (c->pos_x < 0.0f) continue;
@@ -468,6 +495,38 @@ void print_loading_plan(const Ship *ship, const OutputOptions *opt) {
 
     if (opt->diagram && opt->verbosity >= 0)
         print_ship_diagram(ship, opt, &analysis);
+
+    // Consolidated warnings recap — surfaces every issue in one place.
+    if (opt->verbosity >= 0) {
+        int unplaced_n = ship->cargo_count - analysis.placed_item_count;
+        int prio_unplaced = 0;
+        for (int i = 0; i < ship->cargo_count; i++)
+            if (ship->cargo[i].priority && ship->cargo[i].pos_x < 0.0f) prio_unplaced++;
+        bool imo_fail = !(analysis.gm_fluid >= MIN_GM && analysis.gz30 >= 0.20f &&
+                          (isnan(analysis.wind_heel_deg) || analysis.wind_heel_deg <= 16.0f));
+        if (!balanced || !stable || unplaced_n > 0 || imo_fail) {
+            printf("\n%s⚠ Warnings%s\n", col(opt, C_YELLOW), col(opt, C_RESET));
+            if (!stable)      printf("  - GM below the %.2f m minimum (UNSTABLE)\n", MIN_GM);
+            else if (imo_fail) printf("  - Fails the simplified IMO intact-stability criteria\n");
+            if (!balanced)    printf("  - CG outside the 45–55%% balance band\n");
+            if (unplaced_n > 0) printf("  - %d cargo item(s) could not be placed%s\n", unplaced_n,
+                                       prio_unplaced ? " (includes priority/must-load!)" : "");
+        }
+    }
+}
+
+// One-line plan status for dashboards/scripts (`--summary`).
+void print_status_line(const Ship *ship) {
+    AnalysisResult a = perform_analysis(ship);
+    if (isnan(a.gm)) {
+        printf("REJECTED: overweight (%.0f t vs %.0f t max)\n", a.displacement_t, ship->max_weight / 1000.0f);
+        return;
+    }
+    bool stable = a.gm > 0.15f;
+    bool balanced = (a.cg.perc_x >= 45 && a.cg.perc_x <= 55 && a.cg.perc_y >= 45 && a.cg.perc_y <= 55);
+    printf("%d/%d placed | %.1f t | GM %.2f m %s | balance %s\n",
+           a.placed_item_count, ship->cargo_count, a.total_cargo_weight_kg / 1000.0f,
+           a.gm, stable ? "Stable" : "UNSTABLE", balanced ? "Good" : "Warning");
 }
 
 // Prints `    "key": <value>,\n`, emitting JSON null when the value is NaN.

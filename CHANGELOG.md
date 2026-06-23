@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- More output modes: `--summary` (one-line status), `--table` (box-drawing
+  placements table), `--progress` (stage messages on stderr), and a consolidated
+  "⚠ Warnings" recap at the end of the report.
 - Per-hold weight cap via the optional `max_hold_weight_tonnes` config key (the
   deck is exempt as overflow); stowage-area-used and cargo-volume metrics; and an
   Unplaced-Cargo report listing what didn't fit (flagging priority items).

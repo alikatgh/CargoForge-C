@@ -68,6 +68,9 @@ if ./cargoforge --color=never "$S" "$C" | grep -q "$ESC"; then echo "FAIL: --col
 ./cargoforge --diagram "$S" "$C" | grep -q "Stowage Plan" || { echo "FAIL: --diagram" >&2; exit 1; }
 ./cargoforge --csv "$S" "$C" | head -1 | grep -q "^id,x_m," || { echo "FAIL: --csv header" >&2; exit 1; }
 ./cargoforge --md  "$S" "$C" | grep -q "^# CargoForge Stowage Plan" || { echo "FAIL: --md" >&2; exit 1; }
+./cargoforge --summary "$S" "$C" | grep -q "placed |"  || { echo "FAIL: --summary" >&2; exit 1; }
+./cargoforge --table   "$S" "$C" | grep -q "┌"          || { echo "FAIL: --table" >&2; exit 1; }
+./cargoforge --progress "$S" "$C" 2>&1 >/dev/null | grep -q "Optimizing" || { echo "FAIL: --progress" >&2; exit 1; }
 echo "output modes OK"
 
 # Input flexibility: --init round-trips through --show-config on stdin; stdin cargo; env override.
