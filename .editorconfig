@@ -1,0 +1,23 @@
+# EditorConfig — https://editorconfig.org
+# Consistent whitespace across editors; matches .clang-format for C sources.
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+# Makefiles require real tabs for recipe lines.
+[Makefile]
+indent_style = tab
+
+# YAML (CI workflows) conventionally uses 2-space indentation.
+[*.{yml,yaml}]
+indent_size = 2
+
+# Markdown: keep trailing whitespace (two spaces can mean a hard line break).
+[*.md]
+trim_trailing_whitespace = false

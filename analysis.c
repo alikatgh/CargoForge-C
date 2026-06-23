@@ -21,20 +21,20 @@ AnalysisResult perform_analysis(const Ship *ship) {
 
         result.placed_item_count++;
         result.total_cargo_weight_kg += c->weight;
-        
+
         // THE FIX: Use the final placed dimensions for an accurate moment calculation
         cargo_moment_x += c->weight * (c->pos_x + c->placed_w / 2.0f);
         cargo_moment_y += c->weight * (c->pos_y + c->placed_h / 2.0f);
         vertical_moment += c->weight * (c->pos_z + c->dimensions[2] / 2.0f);
     }
-    
+
     float total_ship_weight_kg = ship->lightship_weight + result.total_cargo_weight_kg;
 
     if (total_ship_weight_kg > ship->max_weight) {
         result.gm = NAN; // Mark as invalid if overweight
         return result;
     }
-    
+
     // Combine ship's own moment with cargo moment for the final CG
     float total_moment_x = (ship->lightship_weight * ship->length / 2.0f) + cargo_moment_x;
     float total_moment_y = (ship->lightship_weight * ship->width / 2.0f) + cargo_moment_y;
@@ -78,7 +78,7 @@ void print_loading_plan(const Ship *ship) {
     // Use a slightly wider range for "Good" balance
     const char *cg_stability_str = (analysis.cg.perc_x >= 45 && analysis.cg.perc_x <= 55 && analysis.cg.perc_y >= 45 && analysis.cg.perc_y <= 55) ? "Good" : "Warning";
     const char *gm_stability_str = (analysis.gm > 0.15f) ? "Stable" : "UNSTABLE";
-    
+
     printf("\nLoad Summary\n");
     printf("  - Placed / Total items: %d / %d\n", analysis.placed_item_count, ship->cargo_count);
     printf("  - Total loaded weight : %.2f t (%.1f %% of max)\n", analysis.total_cargo_weight_kg / 1000.0f, (ship->lightship_weight + analysis.total_cargo_weight_kg) / ship->max_weight * 100.0f);
