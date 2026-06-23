@@ -132,11 +132,47 @@ static void test_transverse_load_is_centered(void) {
     printf("OK (CG_y = %.2f m of %.1f m beam)\n", cg_y, ship.width);
 }
 
+/* A configured hold count must still produce a valid plan: every item placed, in
+ * bounds, and non-overlapping, using the dynamically-built bins. */
+static void test_configurable_holds(void) {
+    printf("  configurable hold count yields a valid plan... ");
+
+    Ship ship = {0};
+    ship.length = 40.0f;
+    ship.width = 10.0f;
+    ship.hold_count = 4; // 4 holds split the length into 10 m segments, + deck
+
+    Cargo items[] = {
+        {.id = "A", .weight = 900.0f, .dimensions = {8.0f, 3.0f, 2.0f}, .type = "g", .pos_x = -1, .pos_y = -1, .pos_z = -1},
+        {.id = "B", .weight = 700.0f, .dimensions = {8.0f, 3.0f, 2.0f}, .type = "g", .pos_x = -1, .pos_y = -1, .pos_z = -1},
+        {.id = "C", .weight = 500.0f, .dimensions = {8.0f, 3.0f, 2.0f}, .type = "g", .pos_x = -1, .pos_y = -1, .pos_z = -1},
+        {.id = "D", .weight = 300.0f, .dimensions = {8.0f, 3.0f, 2.0f}, .type = "g", .pos_x = -1, .pos_y = -1, .pos_z = -1},
+    };
+    ship.cargo = items;
+    ship.cargo_count = (int)(sizeof(items) / sizeof(items[0]));
+
+    place_cargo_2d(&ship);
+
+    for (int i = 0; i < ship.cargo_count; i++) {
+        const Cargo *c = &items[i];
+        assert(c->pos_x >= 0.0f && "every item should be placed");
+        assert(c->pos_x + c->placed_w <= ship.length + 1e-4f);
+        assert(c->pos_y >= 0.0f && c->pos_y + c->placed_h <= ship.width + 1e-4f);
+    }
+    for (int i = 0; i < ship.cargo_count; i++) {
+        for (int j = i + 1; j < ship.cargo_count; j++) {
+            assert(!items_overlap(&items[i], &items[j]) && "items must not overlap");
+        }
+    }
+    printf("OK\n");
+}
+
 int main(void) {
     printf("--- Running Placement Tests ---\n");
     test_all_placed_in_bounds_no_overlap();
     test_oversize_item_is_not_placed();
     test_transverse_load_is_centered();
+    test_configurable_holds();
     printf("--- All Placement Tests Passed ---\n");
     return 0;
 }

@@ -53,8 +53,9 @@ explicitly (malloc does not zero), and both placement and analysis rely on it.
 
 1. **Sort** cargo heaviest-first (First-Fit-Decreasing; heavy items dominate
    stability and are hardest to place).
-2. For each item, ask each bin — two holds (fore/aft, below deck) and the deck —
-   for a candidate spot via `find_placement()`: it tries both rotations, prefers
+2. For each item, ask each bin — the below-deck holds (count from the `holds=`
+   config key, default 2, splitting the length fore-to-aft) plus a full-length
+   deck — for a candidate spot via `find_placement()`: it tries both rotations, prefers
    reusing an existing shelf over opening a new row, and bounds-checks **both** the
    X-extent (length) and Y-extent (beam). The decision is a `Placement` struct.
 3. **Choose** the candidate bin whose resulting center of gravity is closest to

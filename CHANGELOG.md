@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Configurable number of below-deck holds via the optional `holds=` ship-config
+  key (1–50, default 2). Holds split the ship's length evenly fore-to-aft.
+
 ## [1.0.0] - 2026-06-23
 
 The first hardened release: correct, tested, sanitizer-clean, and documented.

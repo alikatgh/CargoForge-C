@@ -64,6 +64,17 @@ static void test_rejects_empty_cargo_list(void) {
     printf("OK\n");
 }
 
+static void test_parses_optional_holds_field(void) {
+    printf("  parse optional holds field (valid + out-of-range)... ");
+    Ship ship = {0};
+    assert(parse_ship_config("tests/fixtures/holds4_ship.cfg", &ship) == 0);
+    assert(ship.hold_count == 4);
+
+    Ship bad = {0};
+    assert(parse_ship_config("tests/fixtures/holds_bad_ship.cfg", &bad) == -1);
+    printf("OK\n");
+}
+
 static void test_skips_over_long_line(void) {
     printf("  skip over-long line, parse the rest... ");
     Ship ship = {0};
@@ -84,6 +95,7 @@ int main(void) {
     test_rejects_missing_required_field();
     test_parses_cargo_and_initializes_sentinels();
     test_rejects_empty_cargo_list();
+    test_parses_optional_holds_field();
     test_skips_over_long_line();
     printf("--- All Parser Tests Passed ---\n");
     return 0;

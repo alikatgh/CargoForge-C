@@ -60,6 +60,8 @@ export UBSAN_OPTIONS="halt_on_error=1:print_stacktrace=1"
 ./cargoforge-san examples/realistic_ship.cfg examples/realistic_cargo.txt >/dev/null
 # Over-long-line path (exercises the line-draining loop under ASan/UBSan).
 ./cargoforge-san examples/sample_ship.cfg tests/fixtures/longline_cargo.txt >/dev/null
+# Configurable holds (exercises the dynamic bin alloc/free under ASan/UBSan).
+./cargoforge-san tests/fixtures/holds4_ship.cfg examples/sample_cargo.txt >/dev/null
 # Error path: a bad weight must error cleanly, not double-free.
 printf 'GoodItem 10 5x5x5 general\nBadItem notanumber 5x5x5 general\n' > /tmp/cf_badweight.txt
 if ./cargoforge-san examples/sample_ship.cfg /tmp/cf_badweight.txt >/dev/null 2>&1; then

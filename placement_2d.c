@@ -22,17 +22,31 @@ static void commit_placement(Bin *bin, const Placement *p);
 Point calculate_cg_for_placement(const Ship *ship, const Cargo *new_item, Point new_pos, float item_w, float item_h);
 
 
-#define BIN_COUNT 3
-
 void place_cargo_2d(Ship *ship) {
     qsort(ship->cargo, ship->cargo_count, sizeof(Cargo), cargo_cmp_by_weight_desc);
 
-    Bin bins[BIN_COUNT] = {
-        {"Hold1", 0.0f, 0.0f, -5.0f, ship->length / 2, ship->width, 0.0f, {{0}}, 0},
-        {"Hold2", ship->length / 2, 0.0f, -5.0f, ship->length / 2, ship->width, 0.0f, {{0}}, 0},
-        {"Deck", 0.0f, 0.0f, 0.0f, ship->length, ship->width, 0.0f, {{0}}, 0}
-    };
-    int bin_count = BIN_COUNT;
+    /* Build the stowage regions: `holds` below-deck holds that split the length
+     * evenly fore-to-aft, plus one full-length deck on top. Configurable via the
+     * `holds=` config key; 0 falls back to DEFAULT_HOLDS so existing configs are
+     * unchanged. If allocation fails, fall back to a single full-length hold on
+     * the stack so we still produce a plan. */
+    int holds = (ship->hold_count > 0) ? ship->hold_count : DEFAULT_HOLDS;
+    int bin_count = holds + 1; // + deck
+    Bin fallback[1];
+    Bin *bins = malloc((size_t)bin_count * sizeof(Bin));
+    if (!bins) {
+        bins = fallback;
+        bin_count = 1;
+        bins[0] = (Bin){"Hold1", 0.0f, 0.0f, -5.0f, ship->length, ship->width, 0.0f, {{0}}, 0};
+        holds = 1;
+    } else {
+        float hold_w = ship->length / (float)holds;
+        for (int i = 0; i < holds; i++) {
+            bins[i] = (Bin){"", i * hold_w, 0.0f, -5.0f, hold_w, ship->width, 0.0f, {{0}}, 0};
+            snprintf(bins[i].name, sizeof(bins[i].name), "Hold%d", i + 1);
+        }
+        bins[holds] = (Bin){"Deck", 0.0f, 0.0f, 0.0f, ship->length, ship->width, 0.0f, {{0}}, 0};
+    }
 
     /* Remember which bin each item landed in, so the transverse-trim pass below
      * can shift a whole bin's load as a unit. Index aligns with the (now sorted)
@@ -92,6 +106,8 @@ void place_cargo_2d(Ship *ship) {
         }
         free(bin_of);
     }
+
+    if (bins != fallback) free(bins);
 }
 
 // THIS IS THE FINAL, CORRECTED CG CALCULATION

@@ -91,11 +91,13 @@ width_m=25
 max_weight_tonnes=20000
 lightship_weight_tonnes=5000   # empty-ship weight
 lightship_kg_m=8               # empty-ship vertical CG above keel
+holds=2                        # optional: number of below-deck holds (default 2)
 ```
 
 `length_m`, `width_m`, and `max_weight_tonnes` are **required**; a missing field
-is rejected rather than silently defaulted to zero. Unknown keys are warned about
-and ignored.
+is rejected rather than silently defaulted to zero. `holds` is optional (1–50,
+default 2) and sets how many below-deck holds split the length fore-to-aft.
+Unknown keys are warned about and ignored.
 
 ### Cargo manifest (`*.txt`) — whitespace-separated, `#` comments
 

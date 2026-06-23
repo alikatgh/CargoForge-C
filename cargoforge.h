@@ -11,6 +11,8 @@
 #define MAX_LINE_LENGTH 256
 #define MAX_DIMENSION 3
 #define MAX_SHELVES 100
+#define DEFAULT_HOLDS 2   /* below-deck holds when the config omits `holds=` */
+#define MAX_HOLDS 50      /* upper bound on configurable holds */
 
 /* DATA STRUCTURES */
 typedef struct { float x; float y; } Point;
@@ -38,6 +40,7 @@ typedef struct {
     int   cargo_count, cargo_capacity;
     Cargo *cargo;
     float lightship_weight, lightship_kg;
+    int   hold_count;   /* below-deck holds; 0 means "use DEFAULT_HOLDS" */
 } Ship;
 
 typedef struct { float perc_x, perc_y; } CG;
