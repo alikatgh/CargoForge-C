@@ -365,3 +365,77 @@ void print_loading_plan_json(const Ship *ship) {
     printf("  }\n");
     printf("}\n");
 }
+
+// Writes one CSV field, quoting per RFC 4180 if it contains a comma, quote, CR or LF.
+static void print_csv_field(const char *s) {
+    bool needs_quote = false;
+    for (const char *p = s; *p; ++p)
+        if (*p == ',' || *p == '"' || *p == '\n' || *p == '\r') { needs_quote = true; break; }
+    if (!needs_quote) { fputs(s, stdout); return; }
+    putchar('"');
+    for (const char *p = s; *p; ++p) { if (*p == '"') putchar('"'); putchar(*p); }
+    putchar('"');
+}
+
+// Emits the placements as RFC-4180 CSV (header + one row per placed item).
+void print_loading_plan_csv(const Ship *ship) {
+    printf("id,x_m,y_m,z_m,weight_t,footprint_w_m,footprint_h_m,type\n");
+    for (int i = 0; i < ship->cargo_count; ++i) {
+        const Cargo *c = &ship->cargo[i];
+        if (c->pos_x < 0.0f) continue;
+        print_csv_field(c->id);
+        printf(",%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,", c->pos_x, c->pos_y, c->pos_z,
+               c->weight / 1000.0f, c->placed_w, c->placed_h);
+        print_csv_field(c->type);
+        putchar('\n');
+    }
+}
+
+// Escapes a Markdown table cell (just the pipe, which would break the table).
+static void print_md_cell(const char *s) {
+    for (const char *p = s; *p; ++p) { if (*p == '|') putchar('\\'); putchar(*p); }
+}
+
+// Emits a full Markdown report: ship, placements table, and a stability summary.
+void print_loading_plan_md(const Ship *ship) {
+    AnalysisResult a = perform_analysis(ship);
+    bool rejected = isnan(a.gm);
+
+    printf("# CargoForge Stowage Plan\n\n");
+    printf("**Ship:** %.2f m × %.2f m  ·  **Max weight:** %.2f t\n\n",
+           ship->length, ship->width, ship->max_weight / 1000.0f);
+
+    if (rejected) {
+        printf("> ⚠️ **PLAN REJECTED** — total weight exceeds the ship's maximum.\n");
+        return;
+    }
+
+    printf("## Placements\n\n");
+    printf("| ID | X (m) | Y (m) | Z (m) | Weight (t) | Type |\n");
+    printf("|----|------:|------:|------:|-----------:|------|\n");
+    float heaviest = 0.0f, lightest = 0.0f;
+    bool first = true;
+    for (int i = 0; i < ship->cargo_count; ++i) {
+        const Cargo *c = &ship->cargo[i];
+        if (c->pos_x < 0.0f) continue;
+        float t = c->weight / 1000.0f;
+        if (first || t > heaviest) heaviest = t;
+        if (first || t < lightest) lightest = t;
+        first = false;
+        printf("| ");
+        print_md_cell(c->id);
+        printf(" | %.2f | %.2f | %.2f | %.2f | ", c->pos_x, c->pos_y, c->pos_z, t);
+        print_md_cell(c->type);
+        printf(" |\n");
+    }
+
+    float avg = a.placed_item_count > 0 ? (a.total_cargo_weight_kg / 1000.0f) / a.placed_item_count : 0.0f;
+    printf("\n## Summary\n\n");
+    printf("- **Placed / total:** %d / %d\n", a.placed_item_count, ship->cargo_count);
+    printf("- **Loaded / displacement:** %.2f t / %.2f t\n", a.deadweight_t, a.displacement_t);
+    printf("- **Cargo weight (avg / heaviest / lightest):** %.2f / %.2f / %.2f t\n", avg, heaviest, lightest);
+    printf("- **CG (long. / trans.):** %.1f%% / %.1f%%\n", a.cg.perc_x, a.cg.perc_y);
+    printf("- **Draft (mean):** %.2f m\n", a.draft_mean);
+    printf("- **GM / GML:** %.2f m / %.2f m\n", a.gm, a.gml);
+    printf("- **Stability:** %s\n", a.gm > 0.15f ? "Stable ✅" : "UNSTABLE ❌");
+}

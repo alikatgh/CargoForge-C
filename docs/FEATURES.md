@@ -62,7 +62,7 @@ Tracking 100 features toward a world-class maritime stowage & stability tool.
 52. [ ] Weight-by-type summary
 53. [x] Per-item CG contribution (`--verbose`)
 54. [ ] Duplicate-ID detection
-55. [ ] Manifest statistics
+55. [x] Manifest statistics (avg/heaviest/lightest in `--md`)
 56. [ ] Heavy-item density warnings
 57. [ ] Lashing/securing estimate
 58. [ ] Dangerous-goods class labels
@@ -70,7 +70,7 @@ Tracking 100 features toward a world-class maritime stowage & stability tool.
 ## Output & UX
 59. [x] Human-readable plan
 60. [x] JSON output (`--json`)
-61. [ ] CSV output (`--csv`)
+61. [x] CSV output (`--csv`)
 62. [x] Colored output (ANSI)
 63. [x] `--color=auto|always|never`
 64. [x] TTY auto-detection (+ NO_COLOR)
@@ -87,7 +87,7 @@ Tracking 100 features toward a world-class maritime stowage & stability tool.
 75. [ ] Imperial/metric unit toggle
 76. [x] Per-hold utilization bars (`--diagram`)
 77. [x] Stability gauge visualization (`--diagram`)
-78. [ ] Markdown report (`--md`)
+78. [x] Markdown report (`--md`)
 
 ## Input & configuration
 79. [x] `key=value` ship config
@@ -117,4 +117,4 @@ Tracking 100 features toward a world-class maritime stowage & stability tool.
 
 ---
 
-**Shipped: 51 / 100.** Updated as features land.
+**Shipped: 54 / 100.** Updated as features land.

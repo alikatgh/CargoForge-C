@@ -66,6 +66,8 @@ S=examples/sample_ship.cfg; C=examples/sample_cargo.txt
 ./cargoforge --color=always "$S" "$C" | grep -q "$ESC"    || { echo "FAIL: --color=always emitted no ANSI" >&2; exit 1; }
 if ./cargoforge --color=never "$S" "$C" | grep -q "$ESC"; then echo "FAIL: --color=never emitted ANSI" >&2; exit 1; fi
 ./cargoforge --diagram "$S" "$C" | grep -q "Stowage Plan" || { echo "FAIL: --diagram" >&2; exit 1; }
+./cargoforge --csv "$S" "$C" | head -1 | grep -q "^id,x_m," || { echo "FAIL: --csv header" >&2; exit 1; }
+./cargoforge --md  "$S" "$C" | grep -q "^# CargoForge Stowage Plan" || { echo "FAIL: --md" >&2; exit 1; }
 echo "output modes OK"
 
 # 3. Static analysis (Clang static analyzer), if clang is available.

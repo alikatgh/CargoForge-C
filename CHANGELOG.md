@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- `--csv` (RFC-4180 placements) and `--md` (Markdown report with a placements
+  table and stability summary, including average/heaviest/lightest cargo).
 - `--diagram`: an ASCII top-down stowage plan (holds + deck, cargo footprints),
   per-hold utilization bars, and a GM stability gauge.
 - Colored terminal output with `--color=auto|always|never` (and `--no-color`),

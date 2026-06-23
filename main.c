@@ -26,13 +26,17 @@ int main(int argc, char *argv[]) {
     }
 
     // 2. Parse arguments: optional flags (any position) + two file paths.
-    bool json = false, strict = false, diagram = false;
+    bool json = false, csv = false, md = false, strict = false, diagram = false;
     int verbosity = 0;
     enum { COLOR_AUTO, COLOR_ALWAYS, COLOR_NEVER } color_mode = COLOR_AUTO;
     const char *config_file = NULL, *cargo_file = NULL;
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--json") == 0) {
             json = true;
+        } else if (strcmp(argv[i], "--csv") == 0) {
+            csv = true;
+        } else if (strcmp(argv[i], "--md") == 0) {
+            md = true;
         } else if (strcmp(argv[i], "--strict") == 0) {
             strict = true;
         } else if (strcmp(argv[i], "--quiet") == 0 || strcmp(argv[i], "-q") == 0) {
@@ -87,6 +91,8 @@ int main(int argc, char *argv[]) {
     optimize_cargo_placement(&ship);
     OutputOptions opt = { use_color, verbosity, diagram };
     if (json) print_loading_plan_json(&ship);
+    else if (csv) print_loading_plan_csv(&ship);
+    else if (md) print_loading_plan_md(&ship);
     else print_loading_plan(&ship, &opt);
 
     // 6. In --strict mode, fail the exit code if the plan isn't fully successful:
@@ -124,6 +130,8 @@ void usage(const char *prog_name) {
         "  %s --help | --version\n\n"
         "Options:\n"
         "      --json            Emit the loading plan as JSON (machine-readable)\n"
+        "      --csv             Emit the placements as CSV\n"
+        "      --md              Emit a Markdown report\n"
         "      --strict          Exit non-zero if any cargo is unplaced, overweight, or unstable\n"
         "  -q, --quiet           Print only the load summary\n"
         "      --verbose         Print extra per-item detail\n"
