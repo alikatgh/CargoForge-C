@@ -77,14 +77,14 @@ Tracking 100 features toward a world-class maritime stowage & stability tool.
 65. [x] ASCII top-down ship diagram (`--diagram`)
 66. [x] `--quiet` mode
 67. [x] `--verbose` mode
-68. [ ] Output sorting (`--sort`)
+68. [x] Output sorting (`--sort`)
 69. [x] Box-drawing tables (`--table`)
 70. [x] Aligned tabular columns (`--table`)
 71. [x] Summary-only mode (`--summary`)
 72. [x] Collected warnings summary
 73. [x] Strict exit codes (`--strict`)
 74. [x] Progress / status messages (`--progress`)
-75. [ ] Imperial/metric unit toggle
+75. [x] Imperial/metric unit toggle (`--units`)
 76. [x] Per-hold utilization bars (`--diagram`)
 77. [x] Stability gauge visualization (`--diagram`)
 78. [x] Markdown report (`--md`)
@@ -117,4 +117,4 @@ Tracking 100 features toward a world-class maritime stowage & stability tool.
 
 ---
 
-**Shipped: 90 / 100.** Updated as features land.
+**Shipped: 92 / 100.** Updated as features land.

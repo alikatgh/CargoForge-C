@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- `--units=metric|imperial` to display lengths in feet, weights in long tons, and
+  volumes in cubic feet (metric remains the default and the JSON canonical units).
+- `--sort=none|weight|id|position` to order the per-item placement list.
 - Engine as a static library: `make lib` builds `libcargoforge.a` against the
   public `cargoforge.h` API, so the placement/analysis engine can be embedded.
 - `make bench` (throughput benchmark on a synthetic large manifest) and

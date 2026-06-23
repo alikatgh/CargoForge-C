@@ -80,12 +80,18 @@ typedef struct {
 
 #define MIN_GM 0.15f               /* minimum acceptable metacentric height (m) */
 
+/* Display unit system and per-item display sort order. */
+typedef enum { UNITS_METRIC = 0, UNITS_IMPERIAL } Units;
+typedef enum { SORT_NONE = 0, SORT_WEIGHT, SORT_ID, SORT_POSITION } SortKey;
+
 /* CLI output preferences for the human-readable report. */
 typedef struct {
-    bool color;      /* wrap verdicts in ANSI color */
-    int  verbosity;  /* -1 = quiet (summary only), 0 = normal, 1 = verbose */
-    bool diagram;    /* render the ASCII stowage plan + utilization + gauge */
-    bool table;      /* render placements as a box-drawing table */
+    bool    color;      /* wrap verdicts in ANSI color */
+    int     verbosity;  /* -1 = quiet (summary only), 0 = normal, 1 = verbose */
+    bool    diagram;    /* render the ASCII stowage plan + utilization + gauge */
+    bool    table;      /* render placements as a box-drawing table */
+    Units   units;      /* metric (default) or imperial display units */
+    SortKey sort;       /* per-item display order */
 } OutputOptions;
 
 

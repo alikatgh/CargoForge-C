@@ -71,6 +71,8 @@ int main(int argc, char *argv[]) {
     bool json = false, csv = false, md = false, strict = false, diagram = false;
     bool show_config = false, summary = false, table = false, progress = false;
     int verbosity = 0;
+    Units units = UNITS_METRIC;
+    SortKey sort = SORT_NONE;
     enum { COLOR_AUTO, COLOR_ALWAYS, COLOR_NEVER } color_mode = COLOR_AUTO;
     const char *config_file = NULL, *cargo_file = NULL;
     for (int i = 1; i < argc; i++) {
@@ -104,6 +106,18 @@ int main(int argc, char *argv[]) {
             else if (strcmp(v, "never") == 0) color_mode = COLOR_NEVER;
             else if (strcmp(v, "auto") == 0) color_mode = COLOR_AUTO;
             else { fprintf(stderr, "Error: --color must be auto, always, or never.\n"); return EXIT_FAILURE; }
+        } else if (strncmp(argv[i], "--units=", 8) == 0) {
+            const char *v = argv[i] + 8;
+            if (strcmp(v, "metric") == 0) units = UNITS_METRIC;
+            else if (strcmp(v, "imperial") == 0) units = UNITS_IMPERIAL;
+            else { fprintf(stderr, "Error: --units must be metric or imperial.\n"); return EXIT_FAILURE; }
+        } else if (strncmp(argv[i], "--sort=", 7) == 0) {
+            const char *v = argv[i] + 7;
+            if (strcmp(v, "none") == 0) sort = SORT_NONE;
+            else if (strcmp(v, "weight") == 0) sort = SORT_WEIGHT;
+            else if (strcmp(v, "id") == 0) sort = SORT_ID;
+            else if (strcmp(v, "position") == 0) sort = SORT_POSITION;
+            else { fprintf(stderr, "Error: --sort must be none, weight, id, or position.\n"); return EXIT_FAILURE; }
         } else if (!config_file) {
             config_file = argv[i];
         } else if (!cargo_file) {
@@ -162,7 +176,7 @@ int main(int argc, char *argv[]) {
     if (progress) fprintf(stderr, "==> Optimizing placement (%d items)\n", ship.cargo_count);
     optimize_cargo_placement(&ship);
     if (progress) fprintf(stderr, "==> Analyzing stability and reporting\n");
-    OutputOptions opt = { use_color, verbosity, diagram, table };
+    OutputOptions opt = { use_color, verbosity, diagram, table, units, sort };
     if (json) print_loading_plan_json(&ship);
     else if (csv) print_loading_plan_csv(&ship);
     else if (md) print_loading_plan_md(&ship);
@@ -216,6 +230,8 @@ void usage(const char *prog_name) {
         "      --strict          Exit non-zero if any cargo is unplaced, overweight, or unstable\n"
         "  -q, --quiet           Print only the load summary\n"
         "      --verbose         Print extra per-item detail\n"
+        "      --units=SYSTEM    Display units: metric (default) or imperial\n"
+        "      --sort=KEY        Sort items: none (default), weight, id, or position\n"
         "      --diagram         Draw an ASCII stowage plan, utilization bars, and GM gauge\n"
         "      --color=WHEN      Colorize output: auto (default), always, or never\n"
         "      --no-color        Disable colored output\n"

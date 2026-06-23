@@ -71,6 +71,9 @@ if ./cargoforge --color=never "$S" "$C" | grep -q "$ESC"; then echo "FAIL: --col
 ./cargoforge --summary "$S" "$C" | grep -q "placed |"  || { echo "FAIL: --summary" >&2; exit 1; }
 ./cargoforge --table   "$S" "$C" | grep -q "┌"          || { echo "FAIL: --table" >&2; exit 1; }
 ./cargoforge --progress "$S" "$C" 2>&1 >/dev/null | grep -q "Optimizing" || { echo "FAIL: --progress" >&2; exit 1; }
+./cargoforge --units=imperial "$S" "$C" | grep -q "ft" || { echo "FAIL: --units=imperial" >&2; exit 1; }
+./cargoforge --sort=id "$S" "$C" | grep -q "Load Summary" || { echo "FAIL: --sort=id" >&2; exit 1; }
+if ./cargoforge --units=furlongs "$S" "$C" >/dev/null 2>&1; then echo "FAIL: bad --units accepted" >&2; exit 1; fi
 echo "output modes OK"
 
 # Input flexibility: --init round-trips through --show-config on stdin; stdin cargo; env override.

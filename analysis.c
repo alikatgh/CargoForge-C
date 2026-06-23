@@ -151,6 +151,43 @@ static const char *col(const OutputOptions *o, const char *code) {
     return o->color ? code : "";
 }
 
+/* Unit conversion for display. Internally everything is metric (metres, tonnes,
+ * m³); imperial mode converts to feet, long tons (UK shipping), and cubic feet. */
+#define M_TO_FT   3.280839895f
+#define T_TO_LT   0.984206528f
+#define M3_TO_FT3 35.31466672f
+static bool imperial(const OutputOptions *o) { return o->units == UNITS_IMPERIAL; }
+static float ulen(const OutputOptions *o, float m) { return imperial(o) ? m * M_TO_FT : m; }
+static float uwt(const OutputOptions *o, float t) { return imperial(o) ? t * T_TO_LT : t; }
+static float uvol(const OutputOptions *o, float v) { return imperial(o) ? v * M3_TO_FT3 : v; }
+static const char *u_len(const OutputOptions *o) { return imperial(o) ? "ft" : "m"; }
+static const char *u_wt(const OutputOptions *o) { return imperial(o) ? "LT" : "t"; }
+static const char *u_vol(const OutputOptions *o) { return imperial(o) ? "ft³" : "m³"; }
+
+/* Display sort: orders a copy of the placed-cargo pointers by the chosen key. The
+ * key lives in a file-static so a plain qsort comparator can read it (CLI is
+ * single-threaded). Returns the number of placed items written to `out`. */
+static SortKey g_sort_key;
+static int display_cmp(const void *a, const void *b) {
+    const Cargo *ca = *(const Cargo *const *)a, *cb = *(const Cargo *const *)b;
+    switch (g_sort_key) {
+        case SORT_ID:       return strcmp(ca->id, cb->id);
+        case SORT_POSITION: return (ca->pos_x > cb->pos_x) - (ca->pos_x < cb->pos_x);
+        case SORT_WEIGHT:   return (cb->weight > ca->weight) - (cb->weight < ca->weight);
+        default:            return 0;
+    }
+}
+static int collect_placed(const Ship *ship, const Cargo **out, SortKey key) {
+    int n = 0;
+    for (int i = 0; i < ship->cargo_count; i++)
+        if (ship->cargo[i].pos_x >= 0.0f) out[n++] = &ship->cargo[i];
+    if (key != SORT_NONE) {
+        g_sort_key = key;
+        qsort(out, (size_t)n, sizeof(*out), display_cmp);
+    }
+    return n;
+}
+
 // Renders one top-down layer (holds when deck=false, the deck when deck=true) as
 // an ASCII grid, scaling the ship's length to ~58 columns and preserving aspect.
 static void render_layer(const Ship *ship, bool deck) {
@@ -372,12 +409,14 @@ static void print_placements_table(const Ship *ship) {
 }
 
 void print_loading_plan(const Ship *ship, const OutputOptions *opt) {
-    OutputOptions defaults = {false, 0, false, false};
+    OutputOptions defaults = {0};
     if (!opt) opt = &defaults;
     AnalysisResult analysis = perform_analysis(ship);
 
     printf("\n%s--- CargoForge Stability Analysis ---%s\n\n", col(opt, C_BOLD), col(opt, C_RESET));
-    printf("Ship Specs: %.2f m × %.2f m | Max Weight: %.2f t\n", ship->length, ship->width, ship->max_weight / 1000.0f);
+    printf("Ship Specs: %.2f %s × %.2f %s | Max Weight: %.2f %s\n",
+           ulen(opt, ship->length), u_len(opt), ulen(opt, ship->width), u_len(opt),
+           uwt(opt, ship->max_weight / 1000.0f), u_wt(opt));
     printf("----------------------------------------------------------------------\n");
 
     if (isnan(analysis.gm)) {
@@ -390,17 +429,22 @@ void print_loading_plan(const Ship *ship, const OutputOptions *opt) {
     if (opt->verbosity >= 0 && opt->table) {
         print_placements_table(ship);
     } else if (opt->verbosity >= 0) {
-        for (int i = 0; i < ship->cargo_count; ++i) {
-            const Cargo *c = &ship->cargo[i];
-            if (c->pos_x < 0.0f) continue;
-            printf("  - %-15s | Pos (X,Y,Z): (%7.2f, %7.2f, %7.2f) | %.2f t",
-                   c->id, c->pos_x, c->pos_y, c->pos_z, c->weight / 1000.0f);
-            if (opt->verbosity >= 1 && analysis.total_cargo_weight_kg > 0.0f) {
-                float share = c->weight / analysis.total_cargo_weight_kg * 100.0f;
-                float lon = (c->pos_x + c->placed_w / 2.0f) / ship->length * 100.0f;
-                printf("  %s[%.1f%% of cargo, Lon %.0f%%]%s", col(opt, C_DIM), share, lon, col(opt, C_RESET));
+        const Cargo **order = malloc((size_t)ship->cargo_count * sizeof(*order));
+        if (order) {
+            int n = collect_placed(ship, order, opt->sort);
+            for (int k = 0; k < n; ++k) {
+                const Cargo *c = order[k];
+                printf("  - %-15s | Pos (X,Y,Z): (%7.2f, %7.2f, %7.2f) | %.2f %s",
+                       c->id, ulen(opt, c->pos_x), ulen(opt, c->pos_y), ulen(opt, c->pos_z),
+                       uwt(opt, c->weight / 1000.0f), u_wt(opt));
+                if (opt->verbosity >= 1 && analysis.total_cargo_weight_kg > 0.0f) {
+                    float share = c->weight / analysis.total_cargo_weight_kg * 100.0f;
+                    float lon = (c->pos_x + c->placed_w / 2.0f) / ship->length * 100.0f;
+                    printf("  %s[%.1f%% of cargo, Lon %.0f%%]%s", col(opt, C_DIM), share, lon, col(opt, C_RESET));
+                }
+                printf("\n");
             }
-            printf("\n");
+            free(order);
         }
     }
 
@@ -411,8 +455,9 @@ void print_loading_plan(const Ship *ship, const OutputOptions *opt) {
         for (int i = 0; i < ship->cargo_count; ++i) {
             const Cargo *c = &ship->cargo[i];
             if (c->pos_x >= 0.0f) continue;
-            printf("  - %-15s | %.2f t | %.1f×%.1f×%.1f m%s\n", c->id, c->weight / 1000.0f,
-                   c->dimensions[0], c->dimensions[1], c->dimensions[2], c->priority ? "  [PRIORITY]" : "");
+            printf("  - %-15s | %.2f %s | %.1f×%.1f×%.1f %s%s\n", c->id, uwt(opt, c->weight / 1000.0f), u_wt(opt),
+                   ulen(opt, c->dimensions[0]), ulen(opt, c->dimensions[1]), ulen(opt, c->dimensions[2]),
+                   u_len(opt), c->priority ? "  [PRIORITY]" : "");
         }
     }
 
@@ -435,27 +480,27 @@ void print_loading_plan(const Ship *ship, const OutputOptions *opt) {
 
     printf("\nLoad Summary\n");
     printf("  - Placed / Total items : %d / %d\n", analysis.placed_item_count, ship->cargo_count);
-    printf("  - Total loaded weight  : %.2f t (%.1f %% of max)\n", analysis.total_cargo_weight_kg / 1000.0f, (ship->lightship_weight + analysis.total_cargo_weight_kg) / ship->max_weight * 100.0f);
-    printf("  - Displacement / DWT   : %.2f t / %.2f t\n", analysis.displacement_t, analysis.deadweight_t);
-    printf("  - Stowage area used    : %.0f %% (%.0f / %.0f m²)\n", total_area > 0 ? placed_area / total_area * 100.0f : 0.0f, placed_area, total_area);
-    printf("  - Cargo volume         : %.0f m³\n", cargo_vol);
+    printf("  - Total loaded weight  : %.2f %s (%.1f %% of max)\n", uwt(opt, analysis.total_cargo_weight_kg / 1000.0f), u_wt(opt), (ship->lightship_weight + analysis.total_cargo_weight_kg) / ship->max_weight * 100.0f);
+    printf("  - Displacement / DWT   : %.2f %s / %.2f %s\n", uwt(opt, analysis.displacement_t), u_wt(opt), uwt(opt, analysis.deadweight_t), u_wt(opt));
+    printf("  - Stowage area used    : %.0f %% (%.0f / %.0f %s²)\n", total_area > 0 ? placed_area / total_area * 100.0f : 0.0f, ulen(opt, ulen(opt, placed_area)), ulen(opt, ulen(opt, total_area)), u_len(opt));
+    printf("  - Cargo volume         : %.0f %s\n", uvol(opt, cargo_vol), u_vol(opt));
     printf("  - CG (Lon / Trans)     : %.1f %% / %.1f %% | Balance: %s%s%s\n",
            analysis.cg.perc_x, analysis.cg.perc_y, col(opt, bal_col), balanced ? "Good" : "Warning", col(opt, C_RESET));
 
     // Full hydrostatics block (suppressed in quiet mode).
     if (opt->verbosity >= 0) {
         printf("\nHydrostatics & Stability\n");
-        printf("  - Draft (mean)         : %.2f m  (fore %.2f / aft %.2f)\n", analysis.draft_mean, analysis.draft_fore, analysis.draft_aft);
-        printf("  - Displaced volume     : %.1f m³\n", analysis.volume_m3);
-        printf("  - KG / KB / BM         : %.2f / %.2f / %.2f m\n", analysis.kg, analysis.kb, analysis.bm);
-        printf("  - Trim / Heel          : %.2f m / %.1f°\n", analysis.trim, analysis.heel_deg);
+        printf("  - Draft (mean)         : %.2f %s  (fore %.2f / aft %.2f)\n", ulen(opt, analysis.draft_mean), u_len(opt), ulen(opt, analysis.draft_fore), ulen(opt, analysis.draft_aft));
+        printf("  - Displaced volume     : %.1f %s\n", uvol(opt, analysis.volume_m3), u_vol(opt));
+        printf("  - KG / KB / BM         : %.2f / %.2f / %.2f %s\n", ulen(opt, analysis.kg), ulen(opt, analysis.kb), ulen(opt, analysis.bm), u_len(opt));
+        printf("  - Trim / Heel          : %.2f %s / %.1f°\n", ulen(opt, analysis.trim), u_len(opt), analysis.heel_deg);
         if (!isnan(analysis.freeboard))
-            printf("  - Freeboard            : %.2f m\n", analysis.freeboard);
+            printf("  - Freeboard            : %.2f %s\n", ulen(opt, analysis.freeboard), u_len(opt));
     }
-    printf("  - GM (transverse)      : %.2f m | Stability: %s%s%s\n",
-           analysis.gm, col(opt, stab_col), stable ? "Stable" : "UNSTABLE", col(opt, C_RESET));
+    printf("  - GM (transverse)      : %.2f %s | Stability: %s%s%s\n",
+           ulen(opt, analysis.gm), u_len(opt), col(opt, stab_col), stable ? "Stable" : "UNSTABLE", col(opt, C_RESET));
     if (opt->verbosity >= 0)
-        printf("  - GML (longitudinal)   : %.2f m\n", analysis.gml);
+        printf("  - GML (longitudinal)   : %.2f %s\n", ulen(opt, analysis.gml), u_len(opt));
 
     // --- Stability criteria & simplified IMO compliance ---
     if (opt->verbosity >= 0) {
@@ -466,15 +511,15 @@ void print_loading_plan(const Ship *ship, const OutputOptions *opt) {
 
         printf("\nStability Criteria\n");
         if (analysis.fs_correction > 0.005f)
-            printf("  - Free-surface corr.   : -%.2f m  →  GM(fluid) %.2f m\n", analysis.fs_correction, analysis.gm_fluid);
-        printf("  - GZ at 30°            : %.2f m\n", analysis.gz30);
-        printf("  - GM margin (≥ %.2f m) : %+.2f m  [%s%s%s]\n", MIN_GM, analysis.gm_margin,
+            printf("  - Free-surface corr.   : -%.2f %s  →  GM(fluid) %.2f %s\n", ulen(opt, analysis.fs_correction), u_len(opt), ulen(opt, analysis.gm_fluid), u_len(opt));
+        printf("  - GZ at 30°            : %.2f %s\n", ulen(opt, analysis.gz30), u_len(opt));
+        printf("  - GM margin (≥ %.2f %s) : %+.2f %s  [%s%s%s]\n", ulen(opt, MIN_GM), u_len(opt), ulen(opt, analysis.gm_margin), u_len(opt),
                col(opt, analysis.gm_margin >= 0 ? C_GREEN : C_RED), analysis.gm_margin >= 0 ? "PASS" : "FAIL", col(opt, C_RESET));
         if (!isnan(analysis.wind_heel_deg))
             printf("  - Wind heel / deck edge: %.1f° / %.1f°\n", analysis.wind_heel_deg, analysis.deck_edge_deg);
         if (!isnan(analysis.freeboard)) {
             bool ll_ok = analysis.freeboard >= 0.15f * ship->depth;
-            printf("  - Load line            : freeboard %.2f m  [%s%s%s]\n", analysis.freeboard,
+            printf("  - Load line            : freeboard %.2f %s  [%s%s%s]\n", ulen(opt, analysis.freeboard), u_len(opt),
                    col(opt, ll_ok ? C_GREEN : C_RED), ll_ok ? "OK" : "SUBMERGED", col(opt, C_RESET));
         }
         printf("  - IMO intact (approx)  : %s%s%s\n", col(opt, imo ? C_GREEN : C_RED), imo ? "PASS" : "FAIL", col(opt, C_RESET));
