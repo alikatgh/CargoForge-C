@@ -125,7 +125,8 @@ type label. Malformed lines are reported and skipped; invalid numbers abort the 
    exceeds the hull).
 5. Compute CG and GM and print the plan with a stability verdict.
 
-See [`docs/`](docs/) for the bug journal documenting fixes and invariants.
+See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the module/data-flow and
+math details, and [`docs/BUG_JOURNAL.md`](docs/BUG_JOURNAL.md) for fixes and invariants.
 
 ---
 
