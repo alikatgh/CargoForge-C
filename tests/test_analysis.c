@@ -95,11 +95,39 @@ static void test_unplaced_cargo_is_excluded(void) {
     printf("OK\n");
 }
 
+/* A very high vertical center of gravity must drive GM negative (KB + BM < KG),
+ * i.e. the simulator must flag a top-heavy ship as UNSTABLE rather than just low. */
+static void test_top_heavy_load_is_unstable(void) {
+    printf("  top-heavy ship -> negative GM (UNSTABLE)... ");
+
+    Ship ship = {0};
+    ship.length = 50.0f;
+    ship.width = 10.0f;
+    ship.max_weight = 10000.0f * 1000.0f;
+    ship.lightship_weight = 1000.0f * 1000.0f;
+    ship.lightship_kg = 15.0f;  /* lightship CG sits very high above the keel */
+
+    Cargo item = {
+        .id = "OnDeck", .weight = 10.0f * 1000.0f, .dimensions = {5.0f, 5.0f, 4.0f},
+        .type = "general", .pos_x = 22.0f, .pos_y = 4.0f, .pos_z = 0.0f,  /* on deck */
+        .placed_w = 5.0f, .placed_h = 5.0f,
+    };
+    ship.cargo = &item;
+    ship.cargo_count = 1;
+
+    AnalysisResult r = perform_analysis(&ship);
+    assert(!isnan(r.gm) && "not overweight, so GM should be a real number");
+    assert(r.gm < 0.0f && "a top-heavy ship must report negative (unstable) GM");
+
+    printf("OK (GM = %.2f m)\n", (double)r.gm);
+}
+
 int main(void) {
     printf("--- Running Analysis Tests ---\n");
     test_centered_load_is_balanced_and_stable();
     test_overweight_plan_is_rejected();
     test_unplaced_cargo_is_excluded();
+    test_top_heavy_load_is_unstable();
     printf("--- All Analysis Tests Passed ---\n");
     return 0;
 }
