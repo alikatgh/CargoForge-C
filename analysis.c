@@ -377,6 +377,18 @@ void print_loading_plan(const Ship *ship, const OutputOptions *opt) {
         }
     }
 
+    // Unplaced-cargo report — what didn't fit, and why it matters.
+    int unplaced = ship->cargo_count - analysis.placed_item_count;
+    if (unplaced > 0 && opt->verbosity >= 0) {
+        printf("\n%sUnplaced Cargo (%d)%s\n", col(opt, C_RED), unplaced, col(opt, C_RESET));
+        for (int i = 0; i < ship->cargo_count; ++i) {
+            const Cargo *c = &ship->cargo[i];
+            if (c->pos_x >= 0.0f) continue;
+            printf("  - %-15s | %.2f t | %.1f×%.1f×%.1f m%s\n", c->id, c->weight / 1000.0f,
+                   c->dimensions[0], c->dimensions[1], c->dimensions[2], c->priority ? "  [PRIORITY]" : "");
+        }
+    }
+
     // Use a slightly wider range for "Good" balance.
     bool balanced = (analysis.cg.perc_x >= 45 && analysis.cg.perc_x <= 55 &&
                      analysis.cg.perc_y >= 45 && analysis.cg.perc_y <= 55);
@@ -384,10 +396,22 @@ void print_loading_plan(const Ship *ship, const OutputOptions *opt) {
     const char *bal_col = balanced ? C_GREEN : C_YELLOW;
     const char *stab_col = stable ? C_GREEN : C_RED;
 
+    // Stowage metrics: footprint area used and total cargo volume.
+    float placed_area = 0.0f, cargo_vol = 0.0f;
+    for (int i = 0; i < ship->cargo_count; i++) {
+        const Cargo *c = &ship->cargo[i];
+        if (c->pos_x < 0.0f) continue;
+        placed_area += c->placed_w * c->placed_h;
+        cargo_vol += c->dimensions[0] * c->dimensions[1] * c->dimensions[2];
+    }
+    float total_area = 2.0f * ship->length * ship->width; // holds (=L×B) + deck (=L×B)
+
     printf("\nLoad Summary\n");
     printf("  - Placed / Total items : %d / %d\n", analysis.placed_item_count, ship->cargo_count);
     printf("  - Total loaded weight  : %.2f t (%.1f %% of max)\n", analysis.total_cargo_weight_kg / 1000.0f, (ship->lightship_weight + analysis.total_cargo_weight_kg) / ship->max_weight * 100.0f);
     printf("  - Displacement / DWT   : %.2f t / %.2f t\n", analysis.displacement_t, analysis.deadweight_t);
+    printf("  - Stowage area used    : %.0f %% (%.0f / %.0f m²)\n", total_area > 0 ? placed_area / total_area * 100.0f : 0.0f, placed_area, total_area);
+    printf("  - Cargo volume         : %.0f m³\n", cargo_vol);
     printf("  - CG (Lon / Trans)     : %.1f %% / %.1f %% | Balance: %s%s%s\n",
            analysis.cg.perc_x, analysis.cg.perc_y, col(opt, bal_col), balanced ? "Good" : "Warning", col(opt, C_RESET));
 

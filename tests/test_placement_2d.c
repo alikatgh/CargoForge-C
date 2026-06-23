@@ -167,12 +167,37 @@ static void test_configurable_holds(void) {
     printf("OK\n");
 }
 
+/* A per-hold weight cap must keep an over-cap item out of the holds; it overflows
+ * to the deck (which is exempt) rather than violating the limit. */
+static void test_per_hold_weight_limit(void) {
+    printf("  per-hold weight limit routes heavy cargo to deck... ");
+
+    Ship ship = {0};
+    ship.length = 40.0f;
+    ship.width = 10.0f;
+    ship.max_hold_weight = 30.0f * 1000.0f; // 30 t cap per hold
+
+    Cargo items[] = {
+        {.id = "Heavy", .weight = 50.0f * 1000.0f, .dimensions = {8.0f, 4.0f, 2.0f}, .type = "g",
+         .pos_x = -1, .pos_y = -1, .pos_z = -1, .stackable = true},
+    };
+    ship.cargo = items;
+    ship.cargo_count = 1;
+
+    place_cargo_2d(&ship);
+
+    assert(items[0].pos_x >= 0.0f && "item should still be placed (on deck)");
+    assert(items[0].pos_z >= 0.0f && "a 50 t item must not enter a 30 t-capped hold");
+    printf("OK\n");
+}
+
 int main(void) {
     printf("--- Running Placement Tests ---\n");
     test_all_placed_in_bounds_no_overlap();
     test_oversize_item_is_not_placed();
     test_transverse_load_is_centered();
     test_configurable_holds();
+    test_per_hold_weight_limit();
     printf("--- All Placement Tests Passed ---\n");
     return 0;
 }

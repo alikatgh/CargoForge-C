@@ -50,6 +50,7 @@ typedef struct {
     float lightship_weight, lightship_kg;
     int   hold_count;   /* below-deck holds; 0 means "use DEFAULT_HOLDS" */
     float depth;        /* moulded hull depth (m), optional; enables freeboard. 0 = unset */
+    float max_hold_weight; /* per-hold weight cap (kg); 0 = unlimited */
 } Ship;
 
 typedef struct { float perc_x, perc_y; } CG;

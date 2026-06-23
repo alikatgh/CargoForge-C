@@ -52,6 +52,8 @@ void place_cargo_2d(Ship *ship) {
      * can shift a whole bin's load as a unit. Index aligns with the (now sorted)
      * ship->cargo array. If the allocation fails we simply skip trimming. */
     int *bin_of = malloc((size_t)ship->cargo_count * sizeof(int));
+    // Running weight per bin, to enforce an optional per-hold weight cap.
+    float *bin_weight = calloc((size_t)bin_count, sizeof(float));
 
     Point ideal_cg = {ship->length / 2.0f, ship->width / 2.0f};
 
@@ -63,6 +65,11 @@ void place_cargo_2d(Ship *ship) {
         double min_dist = DBL_MAX;
 
         for (int j = 0; j < bin_count; j++) {
+            // Respect a per-hold weight cap (deck, z=0, is exempt as open overflow).
+            if (ship->max_hold_weight > 0.0f && bins[j].z_offset < 0.0f && bin_weight &&
+                bin_weight[j] + c->weight > ship->max_hold_weight)
+                continue;
+
             Placement p = find_placement(&bins[j], c);
             if (!p.valid) continue;
 
@@ -84,11 +91,13 @@ void place_cargo_2d(Ship *ship) {
             c->placed_w = best.w; // Store final dimensions (post-rotation)
             c->placed_h = best.h;
             commit_placement(&bins[best_bin_idx], &best);
+            if (bin_weight) bin_weight[best_bin_idx] += c->weight;
         } else {
             fprintf(stderr, "Warning: Could not place cargo %s\n", c->id);
         }
         if (bin_of) bin_of[i] = best_bin_idx;
     }
+    free(bin_weight);
 
     /* Transverse trim: the shelf packer stacks rows from y=0 upward, which piles
      * the load against one side of the beam and skews the transverse CG. Center

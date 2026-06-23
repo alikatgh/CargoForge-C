@@ -13,12 +13,12 @@ Tracking 100 features toward a world-class maritime stowage & stability tool.
 7. [x] Transverse centering trim
 8. [x] Both-axis bounds checking
 9. [x] Oversize-cargo rejection
-10. [ ] Per-hold weight limits
+10. [x] Per-hold weight limits (`max_hold_weight_tonnes`)
 11. [ ] Vertical stacking / tiers
 12. [ ] Hold depth modeling
-13. [ ] Volume-utilization metric
-14. [ ] Packing-efficiency report
-15. [ ] Unplaced-cargo report section
+13. [x] Volume-utilization metric (cargo volume)
+14. [x] Packing-efficiency report (stowage area used)
+15. [x] Unplaced-cargo report section
 
 ## Stability & naval architecture
 16. [x] Longitudinal center of gravity
@@ -117,4 +117,4 @@ Tracking 100 features toward a world-class maritime stowage & stability tool.
 
 ---
 
-**Shipped: 77 / 100.** Updated as features land.
+**Shipped: 81 / 100.** Updated as features land.

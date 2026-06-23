@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Per-hold weight cap via the optional `max_hold_weight_tonnes` config key (the
+  deck is exempt as overflow); stowage-area-used and cargo-volume metrics; and an
+  Unplaced-Cargo report listing what didn't fit (flagging priority items).
 - Cargo attributes via an optional comma-separated 5th manifest field
   (`priority`, `reefer`, `fragile`, `nostack`, `oog`, `dg=N`). Drives a new
   "Cargo Notes" report: reefer power demand, lashing estimate, dangerous-goods
