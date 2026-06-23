@@ -38,14 +38,14 @@ Tracking 100 features toward a world-class maritime stowage & stability tool.
 30. [x] Deadweight
 31. [x] Displaced volume (m³)
 32. [x] Freeboard (`depth_m`)
-33. [ ] Load-line / Plimsoll check
-34. [ ] Free-surface correction
-35. [ ] Wind heeling moment
-36. [ ] Righting arm (GZ) estimate
-37. [ ] Angle of vanishing stability (approx)
-38. [ ] IMO intact-stability criteria check (approx)
-39. [ ] Ballast suggestion
-40. [ ] Stability safety margin
+33. [x] Load-line / Plimsoll check
+34. [x] Free-surface correction
+35. [x] Wind heeling moment
+36. [x] Righting arm (GZ) estimate
+37. [x] Deck-edge immersion angle
+38. [x] IMO intact-stability criteria check (approx)
+39. [x] Ballast suggestion
+40. [x] Stability safety margin
 
 ## Cargo modeling & constraints
 41. [x] Cargo type labels
@@ -117,4 +117,4 @@ Tracking 100 features toward a world-class maritime stowage & stability tool.
 
 ---
 
-**Shipped: 61 / 100.** Updated as features land.
+**Shipped: 69 / 100.** Updated as features land.

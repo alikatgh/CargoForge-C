@@ -157,6 +157,35 @@ static void test_hydrostatics_are_consistent(void) {
     printf("OK\n");
 }
 
+/* The derived stability criteria must be self-consistent: margin = GM(fluid) - min,
+ * GZ at 30° is positive for a stable ship, and a dry load has no free-surface loss. */
+static void test_stability_criteria(void) {
+    printf("  stability criteria (margin, GZ30, free-surface)... ");
+
+    Ship ship = {0};
+    ship.length = 100.0f;
+    ship.width = 20.0f;
+    ship.max_weight = 10000.0f * 1000.0f;
+    ship.lightship_weight = 1000.0f * 1000.0f;
+    ship.lightship_kg = 5.0f;
+
+    Cargo item = {
+        .id = "Dry", .weight = 100.0f * 1000.0f, .dimensions = {10.0f, 4.0f, 4.0f},
+        .type = "general", .pos_x = 45.0f, .pos_y = 8.0f, .pos_z = -2.0f,
+        .placed_w = 10.0f, .placed_h = 4.0f,
+    };
+    ship.cargo = &item;
+    ship.cargo_count = 1;
+
+    AnalysisResult r = perform_analysis(&ship);
+    assert(r.fs_correction == 0.0f && "no liquid cargo => no free-surface loss");
+    assert(approx(r.gm_fluid, r.gm, 0.001f) && "GM(fluid) == GM when no free surface");
+    assert(approx(r.gm_margin, r.gm_fluid - MIN_GM, 0.001f));
+    assert(r.gz30 > 0.0f && "a stable ship has positive GZ at 30 degrees");
+
+    printf("OK\n");
+}
+
 int main(void) {
     printf("--- Running Analysis Tests ---\n");
     test_centered_load_is_balanced_and_stable();
@@ -164,6 +193,7 @@ int main(void) {
     test_unplaced_cargo_is_excluded();
     test_top_heavy_load_is_unstable();
     test_hydrostatics_are_consistent();
+    test_stability_criteria();
     printf("--- All Analysis Tests Passed ---\n");
     return 0;
 }

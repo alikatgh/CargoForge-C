@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Stability criteria & compliance: free-surface correction (for liquid/tank/ballast
+  cargo) and corrected GM(fluid), righting arm GZ at 30°, GM safety margin, a
+  simplified load-line/Plimsoll check, beam-wind heel, deck-edge immersion angle, a
+  simplified IMO intact-stability PASS/FAIL, and a ballast suggestion when a plan
+  fails or lists. Shown in the report and `--json`.
 - Input flexibility: read any file from stdin with `-`; `--init` prints a sample
   config; `--show-config` echoes the parsed config; `CARGOFORGE_HOLDS` /
   `CARGOFORGE_DEPTH_M` environment overrides. Config now also accepts inline

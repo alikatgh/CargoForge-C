@@ -60,9 +60,17 @@ typedef struct {
     float deadweight_t;            /* cargo deadweight (t) */
     float volume_m3;               /* underwater (displaced) volume (m^3) */
     float freeboard;               /* depth - mean draft (m); NAN if depth unset */
+    float fs_correction;           /* free-surface reduction of GM (m) */
+    float gm_fluid;                /* GM corrected for free surface (m) */
+    float gz30;                    /* righting arm GZ at 30 deg (m) */
+    float gm_margin;               /* gm_fluid - required minimum GM (m) */
+    float wind_heel_deg;           /* steady beam-wind heel (deg); NAN if depth unset */
+    float deck_edge_deg;           /* deck-edge immersion angle (deg); NAN if depth unset */
     float total_cargo_weight_kg;
     int   placed_item_count;
 } AnalysisResult;
+
+#define MIN_GM 0.15f               /* minimum acceptable metacentric height (m) */
 
 /* CLI output preferences for the human-readable report. */
 typedef struct {

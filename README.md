@@ -89,6 +89,11 @@ Hydrostatics & Stability
   - Trim / Heel          : -0.00 m / -0.3°
   - GM (transverse)      : 23.74 m | Stability: Stable
   - GML (longitudinal)   : 1082.37 m
+
+Stability Criteria
+  - GZ at 30°            : 14.39 m
+  - GM margin (≥ 0.15 m) : +23.59 m  [PASS]
+  - IMO intact (approx)  : PASS
 ```
 
 `Pos (X,Y,Z)`: X is along the ship's length, Y across the beam, Z the deck level

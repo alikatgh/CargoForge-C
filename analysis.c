@@ -9,13 +9,24 @@
 #define WATERPLANE_COEFFICIENT 0.8f
 #define RAD_TO_DEG 57.29577951f
 
+// True for cargo types that behave as a free liquid surface (tanks/ballast).
+static bool is_liquid_type(const char *type) {
+    static const char *kw[] = {"liquid", "tank", "fuel", "oil", "water", "ballast"};
+    for (size_t k = 0; k < sizeof kw / sizeof kw[0]; k++)
+        if (strstr(type, kw[k])) return true;
+    return false;
+}
+
 AnalysisResult perform_analysis(const Ship *ship) {
     AnalysisResult result = {0};
-    result.freeboard = NAN; // remains NAN unless a hull depth is configured
+    result.freeboard = NAN;       // remains NAN unless a hull depth is configured
+    result.wind_heel_deg = NAN;   // needs a hull depth
+    result.deck_edge_deg = NAN;   // needs a hull depth
 
     // Calculate moments for all placed cargo
     float cargo_moment_x = 0.0f, cargo_moment_y = 0.0f;
     float vertical_moment = ship->lightship_weight * ship->lightship_kg;
+    float free_surface_inertia = 0.0f; // sum of liquid free-surface moments
 
     for (int i = 0; i < ship->cargo_count; i++) {
         const Cargo *c = &ship->cargo[i];
@@ -28,6 +39,10 @@ AnalysisResult perform_analysis(const Ship *ship) {
         cargo_moment_x += c->weight * (c->pos_x + c->placed_w / 2.0f);
         cargo_moment_y += c->weight * (c->pos_y + c->placed_h / 2.0f);
         vertical_moment += c->weight * (c->pos_z + c->dimensions[2] / 2.0f);
+
+        // Free surface of a liquid tank reduces stability: I = l * b^3 / 12.
+        if (is_liquid_type(c->type))
+            free_surface_inertia += c->placed_w * c->placed_h * c->placed_h * c->placed_h / 12.0f;
     }
 
     float total_ship_weight_kg = ship->lightship_weight + result.total_cargo_weight_kg;
@@ -43,6 +58,7 @@ AnalysisResult perform_analysis(const Ship *ship) {
         result.kg = result.kb = result.bm = NAN;
         result.draft_mean = result.draft_fore = result.draft_aft = NAN;
         result.trim = result.heel_deg = result.volume_m3 = NAN;
+        result.fs_correction = result.gm_fluid = result.gz30 = result.gm_margin = NAN;
         return result;
     }
 
@@ -94,9 +110,29 @@ AnalysisResult perform_analysis(const Ship *ship) {
         result.heel_deg = NAN; // unstable: no static equilibrium heel angle
     }
 
-    // --- Freeboard (only if a hull depth was configured) ---
+    // --- Free-surface correction: liquid tanks lower the effective GM ---
+    result.fs_correction = free_surface_inertia / displaced_volume;
+    result.gm_fluid = result.gm - result.fs_correction;
+    result.gm_margin = result.gm_fluid - MIN_GM;
+
+    // --- Righting arm at 30° (wall-sided approximation): GZ = sinθ (GM + ½·BM·tan²θ) ---
+    float r30 = 30.0f / RAD_TO_DEG;
+    float t30 = tanf(r30);
+    result.gz30 = sinf(r30) * (result.gm_fluid + 0.5f * bm * t30 * t30);
+
+    // --- Freeboard and the checks that depend on it (only with a configured depth) ---
     if (ship->depth > 0.0f) {
         result.freeboard = ship->depth - draft;
+        if (result.freeboard > 0.0f) {
+            // Heel at which the deck edge immerses: tan θ = 2·freeboard / beam.
+            result.deck_edge_deg = atanf(2.0f * result.freeboard / ship->width) * RAD_TO_DEG;
+            // Steady beam-wind heel (IMO-style 504 Pa on the above-water side area).
+            float area = ship->length * result.freeboard;
+            float lever = result.freeboard / 2.0f + draft / 2.0f;
+            float heel_arm = (504.0f * area * lever) / (total_ship_weight_kg * 9.81f);
+            if (result.gm_fluid > 0.01f)
+                result.wind_heel_deg = atanf(heel_arm / result.gm_fluid) * RAD_TO_DEG;
+        }
     }
 
     return result;
@@ -309,6 +345,34 @@ void print_loading_plan(const Ship *ship, const OutputOptions *opt) {
     if (opt->verbosity >= 0)
         printf("  - GML (longitudinal)   : %.2f m\n", analysis.gml);
 
+    // --- Stability criteria & simplified IMO compliance ---
+    if (opt->verbosity >= 0) {
+        bool imo_gm = analysis.gm_fluid >= MIN_GM;
+        bool imo_gz = analysis.gz30 >= 0.20f;
+        bool imo_wind = isnan(analysis.wind_heel_deg) || analysis.wind_heel_deg <= 16.0f;
+        bool imo = imo_gm && imo_gz && imo_wind;
+
+        printf("\nStability Criteria\n");
+        if (analysis.fs_correction > 0.005f)
+            printf("  - Free-surface corr.   : -%.2f m  →  GM(fluid) %.2f m\n", analysis.fs_correction, analysis.gm_fluid);
+        printf("  - GZ at 30°            : %.2f m\n", analysis.gz30);
+        printf("  - GM margin (≥ %.2f m) : %+.2f m  [%s%s%s]\n", MIN_GM, analysis.gm_margin,
+               col(opt, analysis.gm_margin >= 0 ? C_GREEN : C_RED), analysis.gm_margin >= 0 ? "PASS" : "FAIL", col(opt, C_RESET));
+        if (!isnan(analysis.wind_heel_deg))
+            printf("  - Wind heel / deck edge: %.1f° / %.1f°\n", analysis.wind_heel_deg, analysis.deck_edge_deg);
+        if (!isnan(analysis.freeboard)) {
+            bool ll_ok = analysis.freeboard >= 0.15f * ship->depth;
+            printf("  - Load line            : freeboard %.2f m  [%s%s%s]\n", analysis.freeboard,
+                   col(opt, ll_ok ? C_GREEN : C_RED), ll_ok ? "OK" : "SUBMERGED", col(opt, C_RESET));
+        }
+        printf("  - IMO intact (approx)  : %s%s%s\n", col(opt, imo ? C_GREEN : C_RED), imo ? "PASS" : "FAIL", col(opt, C_RESET));
+        if (!imo)
+            printf("  - Suggestion           : add low ballast to raise GM(fluid) above %.2f m\n", MIN_GM);
+        else if (fabsf(analysis.heel_deg) > 2.0f)
+            printf("  - Suggestion           : shift ballast toward %s to correct the %.1f° list\n",
+                   analysis.heel_deg > 0.0f ? "port" : "starboard", fabsf(analysis.heel_deg));
+    }
+
     if (opt->verbosity >= 1) {
         printf("\nWeight by Type\n");
         print_weight_by_type(ship, "  - ");
@@ -386,6 +450,12 @@ void print_loading_plan_json(const Ship *ship) {
     json_num("heel_deg", a.heel_deg, false);
     json_num("volume_m3", a.volume_m3, false);
     json_num("freeboard_m", a.freeboard, false);
+    json_num("fs_correction_m", a.fs_correction, false);
+    json_num("gm_fluid_m", a.gm_fluid, false);
+    json_num("gz30_m", a.gz30, false);
+    json_num("gm_margin_m", a.gm_margin, false);
+    json_num("wind_heel_deg", a.wind_heel_deg, false);
+    json_num("deck_edge_deg", a.deck_edge_deg, false);
     printf("    \"balanced\": %s,\n", (!rejected && balanced) ? "true" : "false");
     printf("    \"stable\": %s\n", stable ? "true" : "false");
     printf("  }\n");
