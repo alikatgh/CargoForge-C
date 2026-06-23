@@ -132,6 +132,10 @@ StandardCont_1  25         12.2x2.4x2.6       container
 Columns: identifier, weight in tonnes, `LxWxH` dimensions in metres, and a free-form
 type label. Malformed lines are reported and skipped; invalid numbers abort the parse.
 
+Inputs are also accepted as **CSV** (a `*.csv` manifest — header row auto-skipped,
+dimensions kept as one `LxWxH` cell) and **JSON** (a `*.json` flat ship config),
+detected by file extension. Pass `-` for either file to read from stdin.
+
 An optional **5th field** carries comma-separated attributes:
 
 ```

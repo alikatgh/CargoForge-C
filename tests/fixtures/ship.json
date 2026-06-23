@@ -1,0 +1,8 @@
+{
+  "length_m": 150,
+  "width_m": 25,
+  "max_weight_tonnes": 50000,
+  "lightship_weight_tonnes": 2000,
+  "lightship_kg_m": 8.0,
+  "depth_m": 14
+}

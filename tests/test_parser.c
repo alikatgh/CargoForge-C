@@ -126,6 +126,28 @@ static void test_skips_over_long_line(void) {
     printf("OK\n");
 }
 
+static void test_parses_csv_cargo(void) {
+    printf("  parse CSV cargo manifest (header skipped)... ");
+    Ship ship = {0};
+    assert(parse_cargo_list("tests/fixtures/cargo.csv", &ship) == 0);
+    assert(ship.cargo_count == 4); // 4 data rows, header excluded
+    assert(strcmp(ship.cargo[0].id, "HeavyMachinery") == 0);
+    assert(ship.cargo[0].weight == 550.0f * 1000.0f);
+    free(ship.cargo);
+    printf("OK\n");
+}
+
+static void test_parses_json_config(void) {
+    printf("  parse JSON ship config... ");
+    Ship ship = {0};
+    assert(parse_ship_config("tests/fixtures/ship.json", &ship) == 0);
+    assert(ship.length == 150.0f);
+    assert(ship.width == 25.0f);
+    assert(ship.depth == 14.0f);
+    assert(ship.max_weight == 50000.0f * 1000.0f);
+    printf("OK\n");
+}
+
 int main(void) {
     printf("--- Running Parser Tests ---\n");
     test_rejects_non_numeric_field();
@@ -138,6 +160,8 @@ int main(void) {
     test_duplicate_ids_warn_but_parse();
     test_parses_cargo_attributes();
     test_skips_over_long_line();
+    test_parses_csv_cargo();
+    test_parses_json_config();
     printf("--- All Parser Tests Passed ---\n");
     return 0;
 }

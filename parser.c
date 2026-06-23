@@ -1,6 +1,7 @@
 /*
  * parser.c - File parsing logic for CargoForge-C.
  */
+#include <ctype.h>
 #include <errno.h>
 #include <math.h> // For NAN
 #include <stdlib.h>
@@ -88,8 +89,90 @@ static char *trim(char *s) {
     return s;
 }
 
+// Case-insensitive test that `path` ends with `ext` (e.g. ".csv").
+static bool has_ext(const char *path, const char *ext) {
+    size_t lp = strlen(path), le = strlen(ext);
+    if (lp < le) return false;
+    const char *tail = path + (lp - le);
+    for (size_t i = 0; i < le; i++)
+        if (tolower((unsigned char)tail[i]) != tolower((unsigned char)ext[i])) return false;
+    return true;
+}
+
+// Replaces every comma with a space, so a CSV row reuses the whitespace parser.
+static void csv_to_spaces(char *s) {
+    for (; *s; ++s) if (*s == ',') *s = ' ';
+}
+
+// True if a (space-separated) line is a CSV data row: its 2nd token is numeric.
+// Filters out a header row and blanks/comments without aborting the parse.
+static bool csv_is_data(const char *line) {
+    const char *p = line;
+    while (*p == ' ' || *p == '\t') p++;
+    if (*p == '#' || *p == '\0' || *p == '\n') return false;
+    while (*p && *p != ' ' && *p != '\t') p++; // skip the id token
+    while (*p == ' ' || *p == '\t') p++;
+    return (*p == '-' || *p == '+' || *p == '.' || (*p >= '0' && *p <= '9'));
+}
+
+// Finds `"key": <number>` in a flat JSON buffer. Returns 1 and sets *out on success.
+static int json_number(const char *buf, const char *key, float *out) {
+    char pat[64];
+    snprintf(pat, sizeof(pat), "\"%s\"", key);
+    const char *p = strstr(buf, pat);
+    if (!p) return 0;
+    p += strlen(pat);
+    while (*p == ' ' || *p == '\t' || *p == '\n' || *p == '\r') p++;
+    if (*p != ':') return 0;
+    p++;
+    char *end;
+    errno = 0;
+    float v = strtof(p, &end);
+    if (end == p || errno != 0) return 0;
+    *out = v;
+    return 1;
+}
+
+// Parses a flat JSON ship config: {"length_m": 150, "width_m": 25, ...}.
+static int parse_ship_config_json(const char *filename, Ship *ship) {
+    FILE *file = fopen(filename, "r");
+    if (!file) { perror("Error opening ship config file"); return -1; }
+    fseek(file, 0, SEEK_END);
+    long sz = ftell(file);
+    if (sz < 0 || sz > (1L << 20)) { fclose(file); fprintf(stderr, "Error: JSON config unreadable or too large.\n"); return -1; }
+    rewind(file);
+    char *buf = malloc((size_t)sz + 1);
+    if (!buf) { fclose(file); return -1; }
+    size_t got = fread(buf, 1, (size_t)sz, file);
+    buf[got] = '\0';
+    fclose(file);
+
+    float v;
+    if (json_number(buf, "length_m", &v)) ship->length = v;
+    if (json_number(buf, "width_m", &v)) ship->width = v;
+    if (json_number(buf, "max_weight_tonnes", &v)) ship->max_weight = v * 1000.0f;
+    if (json_number(buf, "lightship_weight_tonnes", &v)) ship->lightship_weight = v * 1000.0f;
+    if (json_number(buf, "lightship_kg_m", &v)) ship->lightship_kg = v;
+    if (json_number(buf, "depth_m", &v)) ship->depth = v;
+    if (json_number(buf, "max_hold_weight_tonnes", &v)) ship->max_hold_weight = v * 1000.0f;
+    if (json_number(buf, "holds", &v)) {
+        int h = (int)v;
+        if (h < 1 || h > MAX_HOLDS) { fprintf(stderr, "Error: holds must be 1..%d.\n", MAX_HOLDS); free(buf); return -1; }
+        ship->hold_count = h;
+    }
+    free(buf);
+
+    if (ship->length < 0.1f || ship->width < 0.1f || ship->max_weight <= 0.0f) {
+        fprintf(stderr, "Error: JSON ship config '%s' is missing length_m, width_m, or max_weight_tonnes.\n", filename);
+        return -1;
+    }
+    return 0;
+}
+
 // Parses ship configuration using the safe parser.
 int parse_ship_config(const char *filename, Ship *ship) {
+    if (has_ext(filename, ".json")) return parse_ship_config_json(filename, ship);
+
     FILE *file = open_input(filename);
     if (!file) {
         perror("Error opening ship config file");
@@ -167,6 +250,10 @@ int parse_cargo_list(const char *filename, Ship *ship) {
         return -1;
     }
 
+    // A .csv manifest reuses the whitespace parser: commas become spaces and the
+    // header row (and any non-data line) is skipped. Dimensions stay one LxWxH cell.
+    bool csv = has_ext(filename, ".csv");
+
     // First pass: count lines to determine memory allocation size. Over-long lines
     // are skipped here too, so the count matches what the second pass will accept.
     int count = 0;
@@ -174,7 +261,12 @@ int parse_cargo_list(const char *filename, Ship *ship) {
     bool truncated;
     while (read_line(file, line, sizeof(line), &truncated)) {
         if (truncated) continue;
-        if (line[0] != '#' && line[0] != '\n') count++;
+        if (csv) {
+            csv_to_spaces(line);
+            if (csv_is_data(line)) count++;
+        } else if (line[0] != '#' && line[0] != '\n') {
+            count++;
+        }
     }
 
     if (count == 0) {
@@ -201,7 +293,12 @@ int parse_cargo_list(const char *filename, Ship *ship) {
             fprintf(stderr, "Warning: Skipping over-long cargo line %d (>%d chars).\n", line_num, MAX_LINE_LENGTH - 1);
             continue;
         }
-        if (line[0] == '#' || line[0] == '\n') continue;
+        if (csv) {
+            csv_to_spaces(line);
+            if (!csv_is_data(line)) continue; // header / blank / comment
+        } else if (line[0] == '#' || line[0] == '\n') {
+            continue;
+        }
 
         char *saveptr;
         char *id = strtok_r(line, " \t", &saveptr);

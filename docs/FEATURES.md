@@ -96,8 +96,8 @@ Tracking 100 features toward a world-class maritime stowage & stability tool.
 82. [x] Required-field validation
 83. [x] Unknown-key warnings
 84. [x] Over-long-line handling
-85. [ ] CSV cargo input
-86. [ ] JSON config input
+85. [x] CSV cargo input (`.csv` manifest)
+86. [x] JSON config input (`.json` ship config)
 87. [x] stdin input (`-`)
 88. [x] `--init` config scaffold
 89. [x] Config echo / dump (`--show-config`)
@@ -117,4 +117,4 @@ Tracking 100 features toward a world-class maritime stowage & stability tool.
 
 ---
 
-**Shipped: 92 / 100.** Updated as features land.
+**Shipped: 94 / 100.** Updated as features land.

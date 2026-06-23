@@ -1,0 +1,5 @@
+id,weight_t,dimensions,type
+HeavyMachinery,550,20x5x3,standard
+SteelBeams,400,18x2x2,bulk
+ContainerA,250,12.2x2.4x2.6,reefer
+SmallCrate,50,2x2x2,general
