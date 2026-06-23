@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Cargo attributes via an optional comma-separated 5th manifest field
+  (`priority`, `reefer`, `fragile`, `nostack`, `oog`, `dg=N`). Drives a new
+  "Cargo Notes" report: reefer power demand, lashing estimate, dangerous-goods
+  classes + hazmat segregation warnings, and priority-unplaced alerts. Plain
+  manifests are unaffected.
 - Stability criteria & compliance: free-surface correction (for liquid/tank/ballast
   cargo) and corrected GM(fluid), righting arm GZ at 30°, GM safety margin, a
   simplified load-line/Plimsoll check, beam-wind heel, deck-edge immersion angle, a

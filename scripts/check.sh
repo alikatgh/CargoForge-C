@@ -76,6 +76,10 @@ cat "$C" | ./cargoforge "$S" - | grep -q "Placed /"                        || { 
 CARGOFORGE_HOLDS=3 ./cargoforge --show-config "$S" | grep -q "^holds=3"     || { echo "FAIL: env override" >&2; exit 1; }
 echo "input modes OK"
 
+# Cargo attributes surface in the Cargo Notes section.
+./cargoforge "$S" tests/fixtures/attrs_cargo.txt 2>/dev/null | grep -q "Reefer power demand" || { echo "FAIL: cargo notes" >&2; exit 1; }
+echo "cargo notes OK"
+
 # 3. Static analysis (Clang static analyzer), if clang is available.
 if command -v clang >/dev/null 2>&1; then
     run "static analysis" make --silent analyze

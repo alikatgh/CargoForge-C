@@ -34,6 +34,13 @@ typedef struct {
     float pos_x, pos_y, pos_z;
     float placed_w; // Actual width after placement (accounts for rotation)
     float placed_h; // Actual height/depth after placement
+    // Optional attributes from the manifest's comma-separated 5th field.
+    bool  fragile;      // must stay on top; nothing stacked on it
+    bool  stackable;    // may bear stacked cargo
+    bool  priority;     // must-load: a prominent warning if it cannot be placed
+    bool  reefer;       // refrigerated: draws reefer power
+    bool  out_of_gauge; // exceeds standard envelope
+    int   dg_class;     // dangerous-goods class 1-9, 0 = none
 } Cargo;
 
 typedef struct {

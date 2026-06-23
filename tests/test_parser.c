@@ -68,6 +68,23 @@ static void test_parses_cargo_and_initializes_sentinels(void) {
     printf("OK\n");
 }
 
+static void test_parses_cargo_attributes(void) {
+    printf("  parse optional cargo attributes (5th field)... ");
+    Ship ship = {0};
+    assert(parse_cargo_list("tests/fixtures/attrs_cargo.txt", &ship) == 0);
+    assert(ship.cargo_count == 4);
+    /* Reefer1 */
+    assert(ship.cargo[0].reefer && !ship.cargo[0].fragile && ship.cargo[0].stackable);
+    /* Hazmat1: dg=3, priority */
+    assert(ship.cargo[1].dg_class == 3 && ship.cargo[1].priority);
+    /* Glass: fragile implies not stackable */
+    assert(ship.cargo[2].fragile && !ship.cargo[2].stackable);
+    /* Plain: defaults — stackable, no flags, no DG */
+    assert(ship.cargo[3].stackable && !ship.cargo[3].priority && ship.cargo[3].dg_class == 0);
+    free(ship.cargo);
+    printf("OK\n");
+}
+
 static void test_rejects_empty_cargo_list(void) {
     printf("  reject empty cargo list... ");
     Ship ship = {0};
@@ -119,6 +136,7 @@ int main(void) {
     test_rejects_empty_cargo_list();
     test_parses_optional_holds_field();
     test_duplicate_ids_warn_but_parse();
+    test_parses_cargo_attributes();
     test_skips_over_long_line();
     printf("--- All Parser Tests Passed ---\n");
     return 0;

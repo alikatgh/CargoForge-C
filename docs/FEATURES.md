@@ -49,14 +49,14 @@ Tracking 100 features toward a world-class maritime stowage & stability tool.
 
 ## Cargo modeling & constraints
 41. [x] Cargo type labels
-42. [ ] Hazmat segregation rules
-43. [ ] Stackability flags
-44. [ ] Must-load / priority flags
-45. [ ] Reefer power demand
+42. [x] Hazmat segregation rules
+43. [x] Stackability flags
+44. [x] Must-load / priority flags
+45. [x] Reefer power demand
 46. [ ] Temperature zones
 47. [ ] Max stack weight
-48. [ ] Fragile-on-top rule
-49. [ ] Out-of-gauge handling
+48. [x] Fragile-on-top rule
+49. [x] Out-of-gauge handling
 50. [ ] Cargo grouping by destination
 51. [ ] Load/discharge port sequencing
 52. [x] Weight-by-type summary (`--verbose` / `--md`)
@@ -64,8 +64,8 @@ Tracking 100 features toward a world-class maritime stowage & stability tool.
 54. [x] Duplicate-ID detection
 55. [x] Manifest statistics (avg/heaviest/lightest in `--md`)
 56. [x] Heavy-item density warnings
-57. [ ] Lashing/securing estimate
-58. [ ] Dangerous-goods class labels
+57. [x] Lashing/securing estimate
+58. [x] Dangerous-goods class labels
 
 ## Output & UX
 59. [x] Human-readable plan
@@ -117,4 +117,4 @@ Tracking 100 features toward a world-class maritime stowage & stability tool.
 
 ---
 
-**Shipped: 69 / 100.** Updated as features land.
+**Shipped: 77 / 100.** Updated as features land.

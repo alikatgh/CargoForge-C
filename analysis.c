@@ -285,6 +285,67 @@ static void print_weight_by_type(const Ship *ship, const char *bullet) {
     }
 }
 
+#define REEFER_POWER_KW 7.5f   /* typical reefer draw per unit */
+#define LASHING_CAP_T   12.0f  /* working load per lashing point (t) */
+
+// Reports cargo-attribute notes: reefer power, lashings, DG classes + segregation,
+// and fragile/out-of-gauge/non-stackable/priority counts. Prints nothing if the
+// manifest carries no attributes (so plain manifests are unaffected).
+static void print_cargo_notes(const Ship *ship, const OutputOptions *opt) {
+    int reefers = 0, fragile = 0, priority = 0, oog = 0, nonstack = 0, dg = 0, unplaced_pri = 0;
+    int lashings = 0;
+    bool seen_class[10] = {false};
+    for (int i = 0; i < ship->cargo_count; i++) {
+        const Cargo *c = &ship->cargo[i];
+        if (c->reefer) reefers++;
+        if (c->fragile) fragile++;
+        if (c->out_of_gauge) oog++;
+        if (!c->stackable) nonstack++;
+        if (c->priority) { priority++; if (c->pos_x < 0.0f) unplaced_pri++; }
+        if (c->dg_class > 0) { dg++; seen_class[c->dg_class] = true; }
+        if (c->pos_x >= 0.0f) {
+            float t = c->weight / 1000.0f;
+            lashings += (int)ceilf(t / LASHING_CAP_T);
+        }
+    }
+    if (reefers + fragile + priority + oog + nonstack + dg == 0) return; // plain manifest
+
+    printf("\nCargo Notes\n");
+    if (reefers)
+        printf("  - Reefer power demand  : %d unit%s, ~%.1f kW\n", reefers, reefers == 1 ? "" : "s", reefers * REEFER_POWER_KW);
+    printf("  - Lashing estimate     : ~%d lashing points (%.0f t each)\n", lashings, LASHING_CAP_T);
+    if (dg) {
+        printf("  - Dangerous goods      : %d item%s, class(es):", dg, dg == 1 ? "" : "s");
+        for (int k = 1; k <= 9; k++) if (seen_class[k]) printf(" %d", k);
+        printf("\n");
+        // Segregation: DG items of different classes sharing a hold.
+        int holds = ship->hold_count > 0 ? ship->hold_count : DEFAULT_HOLDS;
+        float hold_len = ship->length / holds;
+        int conflicts = 0;
+        for (int i = 0; i < ship->cargo_count; i++) {
+            const Cargo *a = &ship->cargo[i];
+            if (a->pos_x < 0.0f || a->pos_z >= 0.0f || a->dg_class == 0) continue;
+            int ha = (int)((a->pos_x + a->placed_w / 2.0f) / hold_len);
+            for (int j = i + 1; j < ship->cargo_count; j++) {
+                const Cargo *b = &ship->cargo[j];
+                if (b->pos_x < 0.0f || b->pos_z >= 0.0f || b->dg_class == 0) continue;
+                int hb = (int)((b->pos_x + b->placed_w / 2.0f) / hold_len);
+                if (ha == hb && a->dg_class != b->dg_class) conflicts++;
+            }
+        }
+        if (conflicts)
+            printf("  - %sSegregation warning%s : %d DG pair(s) of different classes share a hold\n",
+                   col(opt, C_YELLOW), col(opt, C_RESET), conflicts);
+    }
+    if (fragile)  printf("  - Fragile (top-stow)   : %d item%s\n", fragile, fragile == 1 ? "" : "s");
+    if (oog)      printf("  - Out-of-gauge         : %d item%s\n", oog, oog == 1 ? "" : "s");
+    if (nonstack) printf("  - Non-stackable        : %d item%s\n", nonstack, nonstack == 1 ? "" : "s");
+    if (priority) printf("  - Priority / must-load : %d item%s\n", priority, priority == 1 ? "" : "s");
+    if (unplaced_pri)
+        printf("  - %sPRIORITY UNPLACED%s    : %d must-load item(s) could not be placed!\n",
+               col(opt, C_RED), col(opt, C_RESET), unplaced_pri);
+}
+
 void print_loading_plan(const Ship *ship, const OutputOptions *opt) {
     OutputOptions defaults = {false, 0, false};
     if (!opt) opt = &defaults;
@@ -372,6 +433,9 @@ void print_loading_plan(const Ship *ship, const OutputOptions *opt) {
             printf("  - Suggestion           : shift ballast toward %s to correct the %.1f° list\n",
                    analysis.heel_deg > 0.0f ? "port" : "starboard", fabsf(analysis.heel_deg));
     }
+
+    if (opt->verbosity >= 0)
+        print_cargo_notes(ship, opt);
 
     if (opt->verbosity >= 1) {
         printf("\nWeight by Type\n");

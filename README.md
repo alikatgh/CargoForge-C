@@ -131,6 +131,19 @@ StandardCont_1  25         12.2x2.4x2.6       container
 Columns: identifier, weight in tonnes, `LxWxH` dimensions in metres, and a free-form
 type label. Malformed lines are reported and skipped; invalid numbers abort the parse.
 
+An optional **5th field** carries comma-separated attributes:
+
+```
+Explosives  10  5x3x3  hazmat  dg=1,priority
+Bananas     25  12x2x2 reefer  reefer
+Crystal      5  3x3x2  general fragile
+```
+
+Supported: `priority` (must-load), `reefer`, `fragile` (top-stow, non-stackable),
+`nostack`, `stackable`, `oog` (out-of-gauge), and `dg=N` (dangerous-goods class
+1–9). These drive the report's **Cargo Notes** (reefer power, lashing estimate,
+DG segregation warnings, priority-unplaced alerts, …).
+
 ---
 
 ## How it works

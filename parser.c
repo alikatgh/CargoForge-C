@@ -207,6 +207,7 @@ int parse_cargo_list(const char *filename, Ship *ship) {
         char *w_str = strtok_r(NULL, " \t", &saveptr);
         char *dim_str = strtok_r(NULL, " \t", &saveptr);
         char *type = strtok_r(NULL, " \t\n", &saveptr);
+        char *attrs = strtok_r(NULL, " \t\n", &saveptr); // optional 5th field
 
         if (!id || !w_str || !dim_str || !type) {
             fprintf(stderr, "Warning: Skipping malformed cargo data on line %d.\n", line_num);
@@ -221,6 +222,9 @@ int parse_cargo_list(const char *filename, Ship *ship) {
          * behavior that silently corrupts the CG optimizer. */
         c->pos_x = c->pos_y = c->pos_z = -1.0f;
         c->placed_w = c->placed_h = 0.0f;
+        c->fragile = c->priority = c->reefer = c->out_of_gauge = false;
+        c->stackable = true; // most cargo bears stacking unless flagged otherwise
+        c->dg_class = 0;
 
         strncpy(c->id, id, sizeof(c->id) - 1);
         c->id[sizeof(c->id) - 1] = '\0';
@@ -261,6 +265,26 @@ int parse_cargo_list(const char *filename, Ship *ship) {
         if (vol > 0.0f && c->weight / vol > 15000.0f) {
             fprintf(stderr, "Warning: Cargo '%s' has implausibly high density (%.0f kg/m³).\n",
                     id, c->weight / vol);
+        }
+
+        // Optional comma-separated attributes, e.g. "priority,reefer,dg=3,fragile".
+        if (attrs) {
+            char *asave;
+            for (char *a = strtok_r(attrs, ",", &asave); a; a = strtok_r(NULL, ",", &asave)) {
+                if (strcmp(a, "fragile") == 0)        { c->fragile = true; c->stackable = false; }
+                else if (strcmp(a, "nostack") == 0)   c->stackable = false;
+                else if (strcmp(a, "stackable") == 0) c->stackable = true;
+                else if (strcmp(a, "priority") == 0)  c->priority = true;
+                else if (strcmp(a, "reefer") == 0)    c->reefer = true;
+                else if (strcmp(a, "oog") == 0)       c->out_of_gauge = true;
+                else if (strncmp(a, "dg=", 3) == 0) {
+                    int d = atoi(a + 3);
+                    if (d >= 1 && d <= 9) c->dg_class = d;
+                    else fprintf(stderr, "Warning: invalid DG class '%s' for cargo '%s'.\n", a, id);
+                } else {
+                    fprintf(stderr, "Warning: unknown attribute '%s' for cargo '%s'.\n", a, id);
+                }
+            }
         }
 
         ship->cargo_count++;

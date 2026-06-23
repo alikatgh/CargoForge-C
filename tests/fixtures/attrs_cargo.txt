@@ -1,0 +1,5 @@
+# cargo with optional attributes (5th field, comma-separated)
+Reefer1 25 12x2x2 container reefer
+Hazmat1 10 5x3x3 chemical dg=3,priority
+Glass 5 3x3x2 general fragile
+Plain 8 4x4x2 general
