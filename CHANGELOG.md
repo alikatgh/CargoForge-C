@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Cargo logistics: optional `temp=`, `maxstack=`, and `dest=` manifest attributes,
+  reported as a Cargo Logistics section — destination grouping, temperature zones,
+  max-stack ratings, and a port-sequencing (LIFO) restow check.
 - CSV cargo manifests (`*.csv`, header row auto-skipped; dimensions stay one
   `LxWxH` cell) and flat JSON ship configs (`*.json`), auto-detected by extension.
 - `--units=metric|imperial` to display lengths in feet, weights in long tons, and

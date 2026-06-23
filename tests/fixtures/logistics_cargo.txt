@@ -1,0 +1,6 @@
+# id            weight  dims          type       attrs
+ReeferA         60      6x2x2         reefer     temp=-18,dest=ROTTERDAM
+ReeferB         55      6x2x2         reefer     temp=-18,dest=HAMBURG
+ChilledC        40      6x2x2         reefer     temp=4,dest=ROTTERDAM
+HeavyBase       80      8x3x3         breakbulk  maxstack=20,dest=HAMBURG
+GeneralD        30      5x2x2         general    dest=ANTWERP

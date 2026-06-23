@@ -53,12 +53,12 @@ Tracking 100 features toward a world-class maritime stowage & stability tool.
 43. [x] Stackability flags
 44. [x] Must-load / priority flags
 45. [x] Reefer power demand
-46. [ ] Temperature zones
-47. [ ] Max stack weight
+46. [x] Temperature zones (`temp=`)
+47. [x] Max stack weight (`maxstack=`)
 48. [x] Fragile-on-top rule
 49. [x] Out-of-gauge handling
-50. [ ] Cargo grouping by destination
-51. [ ] Load/discharge port sequencing
+50. [x] Cargo grouping by destination (`dest=`)
+51. [x] Load/discharge port sequencing (LIFO check)
 52. [x] Weight-by-type summary (`--verbose` / `--md`)
 53. [x] Per-item CG contribution (`--verbose`)
 54. [x] Duplicate-ID detection
@@ -117,4 +117,4 @@ Tracking 100 features toward a world-class maritime stowage & stability tool.
 
 ---
 
-**Shipped: 94 / 100.** Updated as features land.
+**Shipped: 98 / 100.** Updated as features land.

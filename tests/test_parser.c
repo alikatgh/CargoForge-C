@@ -137,6 +137,23 @@ static void test_parses_csv_cargo(void) {
     printf("OK\n");
 }
 
+static void test_parses_logistics_attributes(void) {
+    printf("  parse temp/maxstack/dest attributes... ");
+    Ship ship = {0};
+    assert(parse_cargo_list("tests/fixtures/logistics_cargo.txt", &ship) == 0);
+    assert(ship.cargo_count == 5);
+    /* ReeferA: temp=-18, dest=ROTTERDAM, reefer set by temp= */
+    assert(ship.cargo[0].temp_c == -18.0f);
+    assert(ship.cargo[0].reefer);
+    assert(strcmp(ship.cargo[0].dest, "ROTTERDAM") == 0);
+    /* HeavyBase: maxstack=20 */
+    assert(ship.cargo[3].max_stack_t == 20.0f);
+    /* GeneralD: no temp set -> NAN */
+    assert(isnan(ship.cargo[4].temp_c));
+    free(ship.cargo);
+    printf("OK\n");
+}
+
 static void test_parses_json_config(void) {
     printf("  parse JSON ship config... ");
     Ship ship = {0};
@@ -162,6 +179,7 @@ int main(void) {
     test_skips_over_long_line();
     test_parses_csv_cargo();
     test_parses_json_config();
+    test_parses_logistics_attributes();
     printf("--- All Parser Tests Passed ---\n");
     return 0;
 }

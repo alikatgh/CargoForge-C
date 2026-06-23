@@ -41,6 +41,9 @@ typedef struct {
     bool  reefer;       // refrigerated: draws reefer power
     bool  out_of_gauge; // exceeds standard envelope
     int   dg_class;     // dangerous-goods class 1-9, 0 = none
+    float temp_c;       // set-point temperature (°C); NAN = not temperature-controlled
+    float max_stack_t;  // max weight it can bear stacked on top (t); NAN = unspecified
+    char  dest[16];     // discharge port code; "" = unset
 } Cargo;
 
 typedef struct {

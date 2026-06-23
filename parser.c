@@ -323,6 +323,8 @@ int parse_cargo_list(const char *filename, Ship *ship) {
         c->fragile = c->priority = c->reefer = c->out_of_gauge = false;
         c->stackable = true; // most cargo bears stacking unless flagged otherwise
         c->dg_class = 0;
+        c->temp_c = c->max_stack_t = NAN;
+        c->dest[0] = '\0';
 
         strncpy(c->id, id, sizeof(c->id) - 1);
         c->id[sizeof(c->id) - 1] = '\0';
@@ -379,6 +381,12 @@ int parse_cargo_list(const char *filename, Ship *ship) {
                     int d = atoi(a + 3);
                     if (d >= 1 && d <= 9) c->dg_class = d;
                     else fprintf(stderr, "Warning: invalid DG class '%s' for cargo '%s'.\n", a, id);
+                }
+                else if (strncmp(a, "temp=", 5) == 0)     { c->temp_c = strtof(a + 5, NULL); c->reefer = true; }
+                else if (strncmp(a, "maxstack=", 9) == 0) { c->max_stack_t = strtof(a + 9, NULL); }
+                else if (strncmp(a, "dest=", 5) == 0) {
+                    strncpy(c->dest, a + 5, sizeof(c->dest) - 1);
+                    c->dest[sizeof(c->dest) - 1] = '\0';
                 } else {
                     fprintf(stderr, "Warning: unknown attribute '%s' for cargo '%s'.\n", a, id);
                 }

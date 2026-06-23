@@ -383,6 +383,80 @@ static void print_cargo_notes(const Ship *ship, const OutputOptions *opt) {
                col(opt, C_RED), col(opt, C_RESET), unplaced_pri);
 }
 
+// Reports destination grouping, temperature zones, max-stack limits, and a simple
+// port-sequencing (LIFO) accessibility check. Prints nothing for a plain manifest.
+static void print_cargo_logistics(const Ship *ship, const OutputOptions *opt) {
+    int with_dest = 0, with_temp = 0, with_stack = 0;
+    for (int i = 0; i < ship->cargo_count; i++) {
+        if (ship->cargo[i].dest[0]) with_dest++;
+        if (!isnan(ship->cargo[i].temp_c)) with_temp++;
+        if (!isnan(ship->cargo[i].max_stack_t)) with_stack++;
+    }
+    if (with_dest + with_temp + with_stack == 0) return;
+
+    printf("\nCargo Logistics\n");
+
+    // #50 Grouping by destination (count + weight per unique port).
+    if (with_dest) {
+        for (int i = 0; i < ship->cargo_count; i++) {
+            const char *d = ship->cargo[i].dest;
+            if (!d[0]) continue;
+            bool seen = false;
+            for (int k = 0; k < i; k++)
+                if (strcmp(ship->cargo[k].dest, d) == 0) { seen = true; break; }
+            if (seen) continue;
+            int n = 0; float t = 0.0f;
+            for (int j = 0; j < ship->cargo_count; j++)
+                if (strcmp(ship->cargo[j].dest, d) == 0) { n++; t += ship->cargo[j].weight / 1000.0f; }
+            printf("  - Destination %-8s : %d item%s, %.1f t\n", d, n, n == 1 ? "" : "s", t);
+        }
+    }
+
+    // #46 Temperature zones (count of controlled items per set-point).
+    if (with_temp) {
+        for (int i = 0; i < ship->cargo_count; i++) {
+            if (isnan(ship->cargo[i].temp_c)) continue;
+            float tc = ship->cargo[i].temp_c;
+            bool seen = false;
+            for (int k = 0; k < i; k++)
+                if (!isnan(ship->cargo[k].temp_c) && ship->cargo[k].temp_c == tc) { seen = true; break; }
+            if (seen) continue;
+            int n = 0;
+            for (int j = 0; j < ship->cargo_count; j++)
+                if (!isnan(ship->cargo[j].temp_c) && ship->cargo[j].temp_c == tc) n++;
+            printf("  - Temp zone %+6.1f °C  : %d reefer item%s\n", tc, n, n == 1 ? "" : "s");
+        }
+    }
+
+    // #47 Max-stack limits — surfaced for stow planning (enforced once cargo stacks).
+    if (with_stack)
+        printf("  - Stack-weight limits  : %d item%s %s a max-stack rating\n",
+               with_stack, with_stack == 1 ? "" : "s", with_stack == 1 ? "carries" : "carry");
+
+    // #51 Port sequencing (LIFO): discharge order is the destination code order;
+    // count placed items stowed aft of cargo bound for a later port in the same
+    // layer — those must be restowed to reach the earlier-discharge cargo.
+    if (with_dest) {
+        int blocked = 0;
+        for (int i = 0; i < ship->cargo_count; i++) {
+            const Cargo *a = &ship->cargo[i];
+            if (a->pos_x < 0.0f || !a->dest[0]) continue;
+            for (int j = 0; j < ship->cargo_count; j++) {
+                const Cargo *b = &ship->cargo[j];
+                if (b->pos_x < 0.0f || !b->dest[0]) continue;
+                // a discharged before b, but a is stowed aft of b on the same level.
+                if (strcmp(a->dest, b->dest) < 0 && a->pos_z == b->pos_z && a->pos_x > b->pos_x) {
+                    blocked++;
+                    break;
+                }
+            }
+        }
+        if (blocked)
+            printf("  - %sPort sequencing%s      : %d item%s blocked by later-discharge cargo (restow)\n",
+                   col(opt, C_YELLOW), col(opt, C_RESET), blocked, blocked == 1 ? "" : "s");
+    }
+}
+
 // Draws a box-drawing rule with the given left/middle/right junctions.
 static void table_rule(const char *l, const char *m, const char *r) {
     static const int w[] = {17, 9, 9, 9, 12};
@@ -530,8 +604,10 @@ void print_loading_plan(const Ship *ship, const OutputOptions *opt) {
                    analysis.heel_deg > 0.0f ? "port" : "starboard", fabsf(analysis.heel_deg));
     }
 
-    if (opt->verbosity >= 0)
+    if (opt->verbosity >= 0) {
         print_cargo_notes(ship, opt);
+        print_cargo_logistics(ship, opt);
+    }
 
     if (opt->verbosity >= 1) {
         printf("\nWeight by Type\n");
