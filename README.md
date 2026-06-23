@@ -4,10 +4,15 @@
 ![C99](https://img.shields.io/badge/C-C99-blue.svg)
 ![Dependencies](https://img.shields.io/badge/dependencies-none-brightgreen.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+![Features](https://img.shields.io/badge/features-100-blueviolet.svg)
 
 A small, dependency-free **maritime cargo-stowage simulator** written in pure C99.
 Give it a ship and a cargo manifest; it decides where each item goes, then reports
 whether the resulting load is **stable enough to sail**.
+
+It ships **100 tracked features** ([docs/FEATURES.md](docs/FEATURES.md)) — from a
+full hydrostatics report to vertical stacking — all behind a gcc+clang `-Werror`,
+sanitizer, static-analysis, and fuzz gate.
 
 It is a compact, readable model of two real problems naval architects solve every
 day: **bin packing** (fit the cargo) and **ship stability** (don't capsize).
@@ -165,7 +170,10 @@ DG segregation warnings, priority-unplaced alerts, …).
 4. **Transverse trim:** center each bin's loaded band on the beam so mass isn't
    piled against one side (a uniform per-bin shift, so it never overlaps cargo or
    exceeds the hull).
-5. Compute CG and GM and print the plan with a stability verdict.
+5. **Vertical stacking** (when `hold_depth_m` is set): cargo that overflows the
+   floors is stacked onto stackable hold cargo, within the clear height and each
+   base's max-stack rating — which raises KG in the stability math.
+6. Compute CG and GM and print the plan with a stability verdict.
 
 See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the module/data-flow and
 math details, and [`docs/BUG_JOURNAL.md`](docs/BUG_JOURNAL.md) for fixes and invariants.
