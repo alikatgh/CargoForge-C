@@ -145,13 +145,15 @@ docs/              bug journal and notes
 ```sh
 make WERROR=1 test   # build the suite with warnings promoted to errors (CI default)
 make sanitize        # build ./cargoforge-san with AddressSanitizer + UBSan
+make analyze         # run the Clang static analyzer
 make debug           # -g -O0 build for a debugger
 make format          # apply .clang-format (if clang-format is installed)
 ```
 
 The CI pipeline ([`.github/workflows/c-build.yml`](.github/workflows/c-build.yml))
-builds with **both gcc and clang** under `-Werror`, runs the full test suite, and
-runs every example scenario under AddressSanitizer + UndefinedBehaviorSanitizer.
+builds with **both gcc and clang** under `-Werror`, runs the full test suite, the
+Clang static analyzer, and every example scenario under AddressSanitizer +
+UndefinedBehaviorSanitizer.
 
 The tests assert **invariants** (every item placed, in bounds, no overlap; CG/GM
 match hand-computed values), not frozen output — so the heuristic can improve

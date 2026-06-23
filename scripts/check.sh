@@ -35,7 +35,12 @@ printf '\n=== CLI flags ===\n'
 if ./cargoforge >/dev/null 2>&1; then echo "FAIL: no-args should exit non-zero" >&2; exit 1; fi
 echo "--version / --help / no-args OK"
 
-# 3. Sanitizers over the examples and a deliberately-bad manifest (error path).
+# 3. Static analysis (Clang static analyzer), if clang is available.
+if command -v clang >/dev/null 2>&1; then
+    run "static analysis" make --silent analyze
+fi
+
+# 4. Sanitizers over the examples and a deliberately-bad manifest (error path).
 run "build sanitizer" make sanitize
 # Note: LeakSanitizer (detect_leaks) is Linux-only; CI enables it there. Locally we
 # rely on ASan's use-after-free / double-free / OOB checks, which work everywhere.

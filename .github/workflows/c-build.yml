@@ -32,6 +32,16 @@ jobs:
       - name: Run realistic scenario
         run: ./cargoforge examples/realistic_ship.cfg examples/realistic_cargo.txt
 
+  static-analysis:
+    name: Clang static analyzer
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Run the Clang static analyzer
+        run: make analyze
+
   sanitizers:
     name: AddressSanitizer + UBSan
     runs-on: ubuntu-latest

@@ -4,6 +4,7 @@
 #   make            build the optimized release binary (./cargoforge)
 #   make debug      build with -g -O0 for a debugger
 #   make sanitize   build ./cargoforge-san with AddressSanitizer + UBSan
+#   make analyze    run the Clang static analyzer over the sources
 #   make test       build and run the unit-test suite
 #   make run        build and run on the bundled sample scenario
 #   make format     run clang-format over all sources (if installed)
@@ -52,6 +53,11 @@ debug:
 sanitize:
 	$(CC) $(STD) $(WARN) $(SAN_FLAGS) $(SRCS) -o $(TARGET)-san $(LDFLAGS)
 
+# Static analysis via the Clang static analyzer (no extra tooling needed).
+analyze:
+	clang --analyze -Xclang -analyzer-output=text $(STD) $(WARN) $(SRCS)
+	@echo "Static analysis clean."
+
 run: $(TARGET)
 	./$(TARGET) examples/sample_ship.cfg examples/sample_cargo.txt
 
@@ -61,9 +67,9 @@ format:
 		|| echo "clang-format not installed; skipping."
 
 clean:
-	rm -f $(OBJS) $(TARGET) $(TARGET)-san $(TESTS)
+	rm -f $(OBJS) $(TARGET) $(TARGET)-san $(TESTS) *.plist
 
-.PHONY: all debug sanitize run format clean test
+.PHONY: all debug sanitize analyze run format clean test
 
 # ---- unit-test targets ----
 test: $(TESTS)
