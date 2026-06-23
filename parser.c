@@ -9,6 +9,29 @@
 #include "cargoforge.h"
 
 /**
+ * @brief Opens a path for reading, or stdin when the path is "-".
+ *
+ * The cargo parser makes two passes (rewind), but stdin is not seekable, so for
+ * "-" we copy stdin into an anonymous temp file (auto-deleted on close) and return
+ * that — giving a seekable stream for both real files and stdin. Only one input
+ * may be "-" per run (there is a single stdin).
+ *
+ * @return an open, seekable FILE* (fclose when done), or NULL on failure.
+ */
+static FILE *open_input(const char *path) {
+    if (strcmp(path, "-") != 0) return fopen(path, "r");
+    FILE *tmp = tmpfile();
+    if (!tmp) return NULL;
+    char buf[4096];
+    size_t n;
+    while ((n = fread(buf, 1, sizeof buf, stdin)) > 0) {
+        if (fwrite(buf, 1, n, tmp) != n) { fclose(tmp); return NULL; }
+    }
+    rewind(tmp);
+    return tmp;
+}
+
+/**
  * @brief Safely parses a string into a positive float within a given range.
  *
  * Uses strtof for robust error checking against malformed strings and overflows.
@@ -56,9 +79,18 @@ static char *read_line(FILE *file, char *buf, size_t size, bool *truncated) {
     return buf;
 }
 
+// Trims leading and trailing whitespace in place, returning the trimmed start.
+static char *trim(char *s) {
+    while (*s == ' ' || *s == '\t' || *s == '\r' || *s == '\n') s++;
+    size_t n = strlen(s);
+    while (n > 0 && (s[n - 1] == ' ' || s[n - 1] == '\t' || s[n - 1] == '\r' || s[n - 1] == '\n'))
+        s[--n] = '\0';
+    return s;
+}
+
 // Parses ship configuration using the safe parser.
 int parse_ship_config(const char *filename, Ship *ship) {
-    FILE *file = fopen(filename, "r");
+    FILE *file = open_input(filename);
     if (!file) {
         perror("Error opening ship config file");
         return -1;
@@ -81,6 +113,13 @@ int parse_ship_config(const char *filename, Ship *ship) {
         char *key = strtok(line, "=");
         char *value = strtok(NULL, "\n");
         if (!key || !value) continue;
+
+        // Allow `key = value   # inline comment` and surrounding whitespace.
+        char *hash = strchr(value, '#');
+        if (hash) *hash = '\0';
+        key = trim(key);
+        value = trim(value);
+        if (*value == '\0') continue; // nothing but a comment after '='
 
         float v = safe_atof(value, 0.1f, 1e9f, key);
         if (isnan(v)) {
@@ -121,7 +160,7 @@ int parse_ship_config(const char *filename, Ship *ship) {
 
 // Parses a cargo list using the safe parser.
 int parse_cargo_list(const char *filename, Ship *ship) {
-    FILE *file = fopen(filename, "r");
+    FILE *file = open_input(filename);
     if (!file) {
         perror("Error opening cargo list file");
         return -1;

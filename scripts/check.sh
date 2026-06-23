@@ -70,6 +70,12 @@ if ./cargoforge --color=never "$S" "$C" | grep -q "$ESC"; then echo "FAIL: --col
 ./cargoforge --md  "$S" "$C" | grep -q "^# CargoForge Stowage Plan" || { echo "FAIL: --md" >&2; exit 1; }
 echo "output modes OK"
 
+# Input flexibility: --init round-trips through --show-config on stdin; stdin cargo; env override.
+./cargoforge --init | ./cargoforge --show-config - | grep -q "^length_m=150" || { echo "FAIL: --init/--show-config" >&2; exit 1; }
+cat "$C" | ./cargoforge "$S" - | grep -q "Placed /"                        || { echo "FAIL: stdin cargo" >&2; exit 1; }
+CARGOFORGE_HOLDS=3 ./cargoforge --show-config "$S" | grep -q "^holds=3"     || { echo "FAIL: env override" >&2; exit 1; }
+echo "input modes OK"
+
 # 3. Static analysis (Clang static analyzer), if clang is available.
 if command -v clang >/dev/null 2>&1; then
     run "static analysis" make --silent analyze

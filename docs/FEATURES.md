@@ -98,10 +98,10 @@ Tracking 100 features toward a world-class maritime stowage & stability tool.
 84. [x] Over-long-line handling
 85. [ ] CSV cargo input
 86. [ ] JSON config input
-87. [ ] stdin input (`-`)
-88. [ ] `--init` config scaffold
-89. [ ] Config echo / dump
-90. [ ] Environment-variable overrides
+87. [x] stdin input (`-`)
+88. [x] `--init` config scaffold
+89. [x] Config echo / dump (`--show-config`)
+90. [x] Environment-variable overrides
 
 ## Engineering & tooling
 91. [x] Unit tests (parser/placement/analysis)
@@ -117,4 +117,4 @@ Tracking 100 features toward a world-class maritime stowage & stability tool.
 
 ---
 
-**Shipped: 57 / 100.** Updated as features land.
+**Shipped: 61 / 100.** Updated as features land.

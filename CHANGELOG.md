@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Input flexibility: read any file from stdin with `-`; `--init` prints a sample
+  config; `--show-config` echoes the parsed config; `CARGOFORGE_HOLDS` /
+  `CARGOFORGE_DEPTH_M` environment overrides. Config now also accepts inline
+  `# comments` and surrounding whitespace.
 - Cargo validation & reporting: duplicate-ID detection, implausible-density
   warnings, and a weight-by-type summary (in `--verbose` and `--md`).
 - `--csv` (RFC-4180 placements) and `--md` (Markdown report with a placements

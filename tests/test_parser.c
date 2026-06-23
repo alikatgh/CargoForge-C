@@ -29,6 +29,17 @@ static void test_accepts_valid_config_and_parses_values(void) {
     printf("OK\n");
 }
 
+static void test_inline_comments_and_whitespace(void) {
+    printf("  config tolerates inline comments + whitespace... ");
+    Ship ship = {0};
+    assert(parse_ship_config("tests/fixtures/inline_comment_ship.cfg", &ship) == 0);
+    assert(ship.length == 120.0f);
+    assert(ship.width == 18.0f);
+    assert(ship.max_weight == 9000.0f * 1000.0f);
+    assert(ship.hold_count == 3);
+    printf("OK\n");
+}
+
 static void test_rejects_missing_required_field(void) {
     printf("  reject config missing width_m... ");
     Ship ship = {0};
@@ -102,6 +113,7 @@ int main(void) {
     printf("--- Running Parser Tests ---\n");
     test_rejects_non_numeric_field();
     test_accepts_valid_config_and_parses_values();
+    test_inline_comments_and_whitespace();
     test_rejects_missing_required_field();
     test_parses_cargo_and_initializes_sentinels();
     test_rejects_empty_cargo_list();
