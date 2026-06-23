@@ -7,6 +7,7 @@
 #include <math.h>     /* for the sentinel checks */
 #include <stdio.h>
 #include <stdlib.h>   /* free */
+#include <string.h>   /* strcmp */
 
 #include "../cargoforge.h"
 
@@ -63,6 +64,19 @@ static void test_rejects_empty_cargo_list(void) {
     printf("OK\n");
 }
 
+static void test_skips_over_long_line(void) {
+    printf("  skip over-long line, parse the rest... ");
+    Ship ship = {0};
+    /* Fixture: GoodA, a >255-char pathological line, GoodB. The long line must be
+     * skipped (not misparsed as a phantom second line), leaving exactly 2 items. */
+    assert(parse_cargo_list("tests/fixtures/longline_cargo.txt", &ship) == 0);
+    assert(ship.cargo_count == 2);
+    assert(strcmp(ship.cargo[0].id, "GoodA") == 0);
+    assert(strcmp(ship.cargo[1].id, "GoodB") == 0);
+    free(ship.cargo);
+    printf("OK\n");
+}
+
 int main(void) {
     printf("--- Running Parser Tests ---\n");
     test_rejects_non_numeric_field();
@@ -70,6 +84,7 @@ int main(void) {
     test_rejects_missing_required_field();
     test_parses_cargo_and_initializes_sentinels();
     test_rejects_empty_cargo_list();
+    test_skips_over_long_line();
     printf("--- All Parser Tests Passed ---\n");
     return 0;
 }

@@ -34,6 +34,28 @@
     return val;
 }
 
+/**
+ * @brief Reads one logical line into buf, draining any overflow.
+ *
+ * If a line is longer than the buffer, fgets would leave the remainder in the
+ * stream to be returned as a phantom second line and misparsed. This helper
+ * detects that case, discards the rest of the over-long line, and sets
+ * *truncated so the caller can skip the record cleanly. First and second parse
+ * passes therefore see an identical sequence of logical lines.
+ *
+ * @return buf on success, or NULL at end of file.
+ */
+static char *read_line(FILE *file, char *buf, size_t size, bool *truncated) {
+    *truncated = false;
+    if (!fgets(buf, (int)size, file)) return NULL;
+    if (!strchr(buf, '\n') && !feof(file)) {
+        *truncated = true; // line didn't fit; drain it to the newline (or EOF)
+        int ch;
+        while ((ch = fgetc(file)) != '\n' && ch != EOF) { /* discard */ }
+    }
+    return buf;
+}
+
 // Parses ship configuration using the safe parser.
 int parse_ship_config(const char *filename, Ship *ship) {
     FILE *file = fopen(filename, "r");
@@ -48,7 +70,12 @@ int parse_ship_config(const char *filename, Ship *ship) {
     bool seen_length = false, seen_width = false, seen_max_weight = false;
 
     char line[MAX_LINE_LENGTH];
-    while (fgets(line, sizeof(line), file)) {
+    bool truncated;
+    while (read_line(file, line, sizeof(line), &truncated)) {
+        if (truncated) {
+            fprintf(stderr, "Warning: Skipping over-long config line (>%d chars).\n", MAX_LINE_LENGTH - 1);
+            continue;
+        }
         if (line[0] == '#' || line[0] == '\n') continue;
 
         char *key = strtok(line, "=");
@@ -90,10 +117,13 @@ int parse_cargo_list(const char *filename, Ship *ship) {
         return -1;
     }
 
-    // First pass: count lines to determine memory allocation size
+    // First pass: count lines to determine memory allocation size. Over-long lines
+    // are skipped here too, so the count matches what the second pass will accept.
     int count = 0;
     char line[MAX_LINE_LENGTH];
-    while (fgets(line, sizeof(line), file)) {
+    bool truncated;
+    while (read_line(file, line, sizeof(line), &truncated)) {
+        if (truncated) continue;
         if (line[0] != '#' && line[0] != '\n') count++;
     }
 
@@ -115,8 +145,12 @@ int parse_cargo_list(const char *filename, Ship *ship) {
     // Second pass: parse data into structs
     rewind(file);
     int line_num = 0;
-    while (fgets(line, sizeof(line), file) && ship->cargo_count < ship->cargo_capacity) {
+    while (read_line(file, line, sizeof(line), &truncated) && ship->cargo_count < ship->cargo_capacity) {
         line_num++;
+        if (truncated) {
+            fprintf(stderr, "Warning: Skipping over-long cargo line %d (>%d chars).\n", line_num, MAX_LINE_LENGTH - 1);
+            continue;
+        }
         if (line[0] == '#' || line[0] == '\n') continue;
 
         char *saveptr;
