@@ -85,3 +85,66 @@ void print_loading_plan(const Ship *ship) {
     printf("  - CG (Lon / Trans)    : %.1f %% / %.1f %% | Balance: %s\n", analysis.cg.perc_x, analysis.cg.perc_y, cg_stability_str);
     printf("  - Metacentric Height (GM): %.2f m | Stability: %s\n", analysis.gm, gm_stability_str);
 }
+
+// Writes a minimally-escaped JSON string literal (handles " \ and control chars).
+static void print_json_string(const char *s) {
+    putchar('"');
+    for (; *s; ++s) {
+        unsigned char ch = (unsigned char)*s;
+        if (ch == '"' || ch == '\\') { putchar('\\'); putchar(ch); }
+        else if (ch < 0x20) printf("\\u%04x", ch);
+        else putchar(ch);
+    }
+    putchar('"');
+}
+
+// Emits the loading plan and stability summary as a single JSON object on stdout,
+// so the tool can be composed into scripts and pipelines.
+void print_loading_plan_json(const Ship *ship) {
+    AnalysisResult a = perform_analysis(ship);
+    bool rejected = isnan(a.gm);
+
+    printf("{\n");
+    printf("  \"ship\": {\"length_m\": %.2f, \"width_m\": %.2f, \"max_weight_t\": %.2f},\n",
+           ship->length, ship->width, ship->max_weight / 1000.0f);
+
+    printf("  \"placements\": [");
+    int printed = 0;
+    for (int i = 0; i < ship->cargo_count; ++i) {
+        const Cargo *c = &ship->cargo[i];
+        if (c->pos_x < 0.0f) continue;
+        printf("%s\n    {\"id\": ", printed ? "," : "");
+        print_json_string(c->id);
+        printf(", \"x\": %.2f, \"y\": %.2f, \"z\": %.2f, \"weight_t\": %.2f}",
+               c->pos_x, c->pos_y, c->pos_z, c->weight / 1000.0f);
+        ++printed;
+    }
+    printf("%s],\n", printed ? "\n  " : "");
+
+    bool balanced = (a.cg.perc_x >= 45.0f && a.cg.perc_x <= 55.0f &&
+                     a.cg.perc_y >= 45.0f && a.cg.perc_y <= 55.0f);
+    bool stable = (a.gm > 0.15f);
+    float pct_max = (ship->lightship_weight + a.total_cargo_weight_kg) / ship->max_weight * 100.0f;
+
+    printf("  \"summary\": {\n");
+    printf("    \"placed\": %d,\n", a.placed_item_count);
+    printf("    \"total\": %d,\n", ship->cargo_count);
+    printf("    \"rejected\": %s,\n", rejected ? "true" : "false");
+    printf("    \"loaded_weight_t\": %.2f,\n", a.total_cargo_weight_kg / 1000.0f);
+    printf("    \"percent_of_max\": %.1f,\n", pct_max);
+    if (rejected) {
+        printf("    \"cg_longitudinal_pct\": null,\n");
+        printf("    \"cg_transverse_pct\": null,\n");
+        printf("    \"gm_m\": null,\n");
+        printf("    \"balanced\": false,\n");
+        printf("    \"stable\": false\n");
+    } else {
+        printf("    \"cg_longitudinal_pct\": %.1f,\n", a.cg.perc_x);
+        printf("    \"cg_transverse_pct\": %.1f,\n", a.cg.perc_y);
+        printf("    \"gm_m\": %.2f,\n", a.gm);
+        printf("    \"balanced\": %s,\n", balanced ? "true" : "false");
+        printf("    \"stable\": %s\n", stable ? "true" : "false");
+    }
+    printf("  }\n");
+    printf("}\n");
+}

@@ -35,6 +35,17 @@ printf '\n=== CLI flags ===\n'
 if ./cargoforge >/dev/null 2>&1; then echo "FAIL: no-args should exit non-zero" >&2; exit 1; fi
 echo "--version / --help / no-args OK"
 
+# --json must emit valid, parseable JSON.
+if command -v python3 >/dev/null 2>&1; then
+    ./cargoforge --json examples/realistic_ship.cfg examples/realistic_cargo.txt \
+        | python3 -m json.tool >/dev/null || { echo "FAIL: --json not valid JSON" >&2; exit 1; }
+    echo "--json valid JSON OK"
+else
+    ./cargoforge --json examples/realistic_ship.cfg examples/realistic_cargo.txt \
+        | grep -q '"summary"' || { echo "FAIL: --json missing summary" >&2; exit 1; }
+    echo "--json OK (python3 unavailable; key-checked only)"
+fi
+
 # 3. Static analysis (Clang static analyzer), if clang is available.
 if command -v clang >/dev/null 2>&1; then
     run "static analysis" make --silent analyze

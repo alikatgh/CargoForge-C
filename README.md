@@ -48,9 +48,14 @@ Run it directly:
 
 ```sh
 ./cargoforge examples/realistic_ship.cfg examples/realistic_cargo.txt
+./cargoforge --json examples/realistic_ship.cfg examples/realistic_cargo.txt  # machine-readable
 ./cargoforge --help        # usage and options
 ./cargoforge --version     # print version
 ```
+
+The `--json` flag emits the plan and stability summary as a single JSON object
+(ship specs, a `placements` array, and a `summary` with CG, GM, and `stable` /
+`balanced` / `rejected` booleans) so the tool composes into scripts and pipelines.
 
 ### Example output
 
