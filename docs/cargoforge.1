@@ -1,0 +1,66 @@
+.TH CARGOFORGE 1 "2026-06-23" "cargoforge 1.0.0" "User Commands"
+.SH NAME
+cargoforge \- maritime cargo-stowage and stability simulator
+.SH SYNOPSIS
+.B cargoforge
+.RB [ --json ]
+.RB [ --strict ]
+.I ship_config_file cargo_list_file
+.br
+.B cargoforge
+.BR --help | --version
+.SH DESCRIPTION
+.B cargoforge
+reads a ship configuration and a cargo manifest, places each cargo item
+across the ship's holds and deck using a 2D shelf bin-packing heuristic that
+keeps the center of gravity near amidships, and reports the resulting
+stability \(em center of gravity (CG) and metacentric height (GM).
+.PP
+A plan whose total weight exceeds the ship's maximum is rejected. A positive
+GM means the ship self-rights when heeled; GM at or below zero means it
+capsizes.
+.SH OPTIONS
+.TP
+.B --json
+Emit the loading plan and stability summary as a single JSON object on
+standard output (machine-readable).
+.TP
+.B --strict
+Exit non-zero if the plan is not fully successful \(em any cargo unplaced,
+the plan overweight, or the ship unstable (GM \(<= 0.15 m).
+.TP
+.BR -h ", " --help
+Print usage and exit.
+.TP
+.BR -v ", " --version
+Print the version and exit.
+.SH "FILE FORMATS"
+.SS "Ship config (key=value, # comments)"
+Required keys:
+.BR length_m ", " width_m ", " max_weight_tonnes .
+Optional:
+.BR lightship_weight_tonnes ", " lightship_kg_m ", and " holds
+(number of below-deck holds, 1\(en50, default 2).
+.SS "Cargo manifest (whitespace-separated, # comments)"
+Columns: identifier, weight in tonnes, LxWxH dimensions in metres, and a
+type label.
+.SH "EXIT STATUS"
+.TP
+.B 0
+Success (and, with
+.BR --strict ,
+a fully successful plan).
+.TP
+.B 1
+A parse error, bad arguments, or \(em under
+.BR --strict
+\(em an unplaced, overweight, or unstable plan.
+.SH EXAMPLES
+.nf
+cargoforge examples/sample_ship.cfg examples/sample_cargo.txt
+cargoforge --json examples/realistic_ship.cfg examples/realistic_cargo.txt
+.fi
+.SH AUTHORS
+CargoForge-C contributors:
+.br
+https://github.com/alikatgh/CargoForge-C

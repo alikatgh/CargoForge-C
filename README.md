@@ -42,6 +42,7 @@ An overweight plan (total weight beyond the ship's maximum) is rejected outright
 make                 # build ./cargoforge (optimized)
 make run             # build and run on the bundled sample scenario
 make test            # build and run the unit-test suite
+sudo make install    # install the binary + man page (PREFIX=/usr/local)
 ```
 
 Run it directly:

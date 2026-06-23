@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   key (1–50, default 2). Holds split the ship's length evenly fore-to-aft.
 - `--strict` flag: exit non-zero when a plan isn't fully successful (any cargo
   unplaced, overweight, or unstable), for use in CI and automation.
+- Man page (`docs/cargoforge.1`) and `make install` / `make uninstall` targets
+  (PREFIX/DESTDIR aware).
 
 ## [1.0.0] - 2026-06-23
 

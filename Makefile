@@ -6,6 +6,7 @@
 #   make sanitize   build ./cargoforge-san with AddressSanitizer + UBSan
 #   make analyze    run the Clang static analyzer over the sources
 #   make test       build and run the unit-test suite
+#   make install    install the binary + man page (PREFIX=/usr/local, DESTDIR-aware)
 #   make run        build and run on the bundled sample scenario
 #   make format     run clang-format over all sources (if installed)
 #   make clean      remove build artifacts
@@ -32,6 +33,11 @@ OBJS = $(SRCS:.c=.o)
 HDRS = cargoforge.h placement_2d.h
 
 TARGET = cargoforge
+
+# Install locations (override with `make PREFIX=/opt install`; honours DESTDIR).
+PREFIX ?= /usr/local
+BINDIR  = $(DESTDIR)$(PREFIX)/bin
+MANDIR  = $(DESTDIR)$(PREFIX)/share/man/man1
 
 TESTS = tests/test_parser tests/test_placement_2d tests/test_analysis
 
@@ -66,10 +72,19 @@ format:
 		&& clang-format -i $(SRCS) $(HDRS) tests/*.c && echo "Formatted." \
 		|| echo "clang-format not installed; skipping."
 
+# Install the binary and man page (PREFIX/DESTDIR aware).
+install: $(TARGET)
+	install -d $(BINDIR) $(MANDIR)
+	install -m 755 $(TARGET) $(BINDIR)/$(TARGET)
+	install -m 644 docs/$(TARGET).1 $(MANDIR)/$(TARGET).1
+
+uninstall:
+	rm -f $(BINDIR)/$(TARGET) $(MANDIR)/$(TARGET).1
+
 clean:
 	rm -f $(OBJS) $(TARGET) $(TARGET)-san $(TESTS) *.plist
 
-.PHONY: all debug sanitize analyze run format clean test
+.PHONY: all debug sanitize analyze run format install uninstall clean test
 
 # ---- unit-test targets ----
 test: $(TESTS)
