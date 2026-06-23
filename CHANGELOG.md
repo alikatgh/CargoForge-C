@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Engine as a static library: `make lib` builds `libcargoforge.a` against the
+  public `cargoforge.h` API, so the placement/analysis engine can be embedded.
+- `make bench` (throughput benchmark on a synthetic large manifest) and
+  `make coverage` (per-file line coverage via gcov).
 - More output modes: `--summary` (one-line status), `--table` (box-drawing
   placements table), `--progress` (stage messages on stderr), and a consolidated
   "⚠ Warnings" recap at the end of the report.

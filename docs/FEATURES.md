@@ -111,10 +111,10 @@ Tracking 100 features toward a world-class maritime stowage & stability tool.
 95. [x] Parser fuzzer
 96. [x] Man page
 97. [x] `make install` / `uninstall`
-98. [ ] Benchmark harness
-99. [ ] Code-coverage reporting
-100. [ ] Library mode + public API
+98. [x] Benchmark harness (`make bench`)
+99. [x] Code-coverage reporting (`make coverage`)
+100. [x] Library mode + public API (`make lib`)
 
 ---
 
-**Shipped: 86 / 100.** Updated as features land.
+**Shipped: 90 / 100.** Updated as features land.

@@ -190,6 +190,9 @@ make WERROR=1 test   # build the suite with warnings promoted to errors (CI defa
 make sanitize        # build ./cargoforge-san with AddressSanitizer + UBSan
 make analyze         # run the Clang static analyzer
 ./scripts/fuzz.sh    # fuzz the parser under sanitizers (random adversarial input)
+make bench           # throughput benchmark on a synthetic large manifest
+make coverage        # per-file line coverage via gcov
+make lib             # build libcargoforge.a (embed the engine; see cargoforge.h)
 make debug           # -g -O0 build for a debugger
 make format          # apply .clang-format (if clang-format is installed)
 ```

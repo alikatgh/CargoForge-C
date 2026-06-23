@@ -1,9 +1,16 @@
 # Build artifacts
 *.o
 *.out
+*.a
 cargoforge
 cargoforge-san
+cargoforge-cov
 *.dSYM/
+
+# Coverage artifacts
+*.gcno
+*.gcda
+*.gcov
 
 # Test binaries
 tests/test_parser
