@@ -43,6 +43,7 @@ Checklist:
 - [ ] If you fixed a bug, add a 5-line entry to `docs/BUG_JOURNAL.md` **in the same
       commit as the fix** (newest first), and a "patterns to scan for" bullet if
       the lesson generalizes.
+- [ ] Note user-facing changes under `## [Unreleased]` in `CHANGELOG.md`.
 
 ## Testing philosophy
 
