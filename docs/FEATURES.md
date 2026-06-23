@@ -60,7 +60,7 @@ Tracking 100 features toward a world-class maritime stowage & stability tool.
 50. [ ] Cargo grouping by destination
 51. [ ] Load/discharge port sequencing
 52. [ ] Weight-by-type summary
-53. [ ] Per-item CG contribution
+53. [x] Per-item CG contribution (`--verbose`)
 54. [ ] Duplicate-ID detection
 55. [ ] Manifest statistics
 56. [ ] Heavy-item density warnings
@@ -71,12 +71,12 @@ Tracking 100 features toward a world-class maritime stowage & stability tool.
 59. [x] Human-readable plan
 60. [x] JSON output (`--json`)
 61. [ ] CSV output (`--csv`)
-62. [ ] Colored output (ANSI)
-63. [ ] `--color=auto|always|never`
-64. [ ] TTY auto-detection
+62. [x] Colored output (ANSI)
+63. [x] `--color=auto|always|never`
+64. [x] TTY auto-detection (+ NO_COLOR)
 65. [ ] ASCII top-down ship diagram
-66. [ ] `--quiet` mode
-67. [ ] `--verbose` mode
+66. [x] `--quiet` mode
+67. [x] `--verbose` mode
 68. [ ] Output sorting (`--sort`)
 69. [ ] Box-drawing tables
 70. [ ] Aligned tabular columns
@@ -117,4 +117,4 @@ Tracking 100 features toward a world-class maritime stowage & stability tool.
 
 ---
 
-**Shipped: 42 / 100.** Updated as features land.
+**Shipped: 48 / 100.** Updated as features land.

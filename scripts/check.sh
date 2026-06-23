@@ -58,6 +58,15 @@ fi
 rm -f /tmp/cf_tiny.cfg /tmp/cf_heavy.txt
 echo "--strict OK"
 
+# Output modes: quiet/verbose and color control.
+ESC=$(printf '\033')
+S=examples/sample_ship.cfg; C=examples/sample_cargo.txt
+./cargoforge --quiet   "$S" "$C" | grep -q "Load Summary" || { echo "FAIL: --quiet"   >&2; exit 1; }
+./cargoforge --verbose "$S" "$C" | grep -q "of cargo"     || { echo "FAIL: --verbose" >&2; exit 1; }
+./cargoforge --color=always "$S" "$C" | grep -q "$ESC"    || { echo "FAIL: --color=always emitted no ANSI" >&2; exit 1; }
+if ./cargoforge --color=never "$S" "$C" | grep -q "$ESC"; then echo "FAIL: --color=never emitted ANSI" >&2; exit 1; fi
+echo "output modes OK"
+
 # 3. Static analysis (Clang static analyzer), if clang is available.
 if command -v clang >/dev/null 2>&1; then
     run "static analysis" make --silent analyze

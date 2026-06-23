@@ -2,6 +2,7 @@
 #ifndef CARGOFORGE_H
 #define CARGOFORGE_H
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -63,13 +64,19 @@ typedef struct {
     int   placed_item_count;
 } AnalysisResult;
 
+/* CLI output preferences for the human-readable report. */
+typedef struct {
+    bool color;      /* wrap verdicts in ANSI color */
+    int  verbosity;  /* -1 = quiet (summary only), 0 = normal, 1 = verbose */
+} OutputOptions;
+
 
 /* FUNCTION PROTOTYPES */
 int parse_ship_config(const char *filename, Ship *ship);
 int parse_cargo_list(const char *filename, Ship *ship);
 void optimize_cargo_placement(Ship *ship);
 AnalysisResult perform_analysis(const Ship *ship);
-void print_loading_plan(const Ship *ship);
+void print_loading_plan(const Ship *ship, const OutputOptions *opt);
 void print_loading_plan_json(const Ship *ship);
 void usage(const char *prog_name);
 void place_cargo_2d(Ship *ship);

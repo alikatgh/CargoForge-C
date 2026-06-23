@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Colored terminal output with `--color=auto|always|never` (and `--no-color`),
+  auto-detecting a TTY and honoring the `NO_COLOR` convention.
+- `--quiet` (summary only) and `--verbose` (per-item CG contribution) output modes.
 - Full hydrostatics report: vertical CG (KG), centre of buoyancy (KB), metacentric
   radius (BM), mean/fore/aft draft, trim, static heel, longitudinal metacentric
   height (GML), displacement, deadweight, displaced volume, and freeboard (when the

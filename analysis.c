@@ -102,44 +102,78 @@ AnalysisResult perform_analysis(const Ship *ship) {
     return result;
 }
 
-void print_loading_plan(const Ship *ship) {
+/* ANSI color codes — only emitted when OutputOptions.color is set. */
+#define C_RESET  "\033[0m"
+#define C_BOLD   "\033[1m"
+#define C_RED    "\033[1;31m"
+#define C_GREEN  "\033[32m"
+#define C_YELLOW "\033[33m"
+#define C_DIM    "\033[2m"
+
+// Returns `code` when color is enabled, otherwise the empty string.
+static const char *col(const OutputOptions *o, const char *code) {
+    return o->color ? code : "";
+}
+
+void print_loading_plan(const Ship *ship, const OutputOptions *opt) {
+    OutputOptions defaults = {false, 0};
+    if (!opt) opt = &defaults;
     AnalysisResult analysis = perform_analysis(ship);
 
-    printf("\n--- CargoForge Stability Analysis ---\n\n");
+    printf("\n%s--- CargoForge Stability Analysis ---%s\n\n", col(opt, C_BOLD), col(opt, C_RESET));
     printf("Ship Specs: %.2f m × %.2f m | Max Weight: %.2f t\n", ship->length, ship->width, ship->max_weight / 1000.0f);
     printf("----------------------------------------------------------------------\n");
 
     if (isnan(analysis.gm)) {
-        printf("  - 🔴 PLAN REJECTED: Total weight exceeds ship's maximum capacity.\n");
+        printf("  - %s🔴 PLAN REJECTED: Total weight exceeds ship's maximum capacity.%s\n",
+               col(opt, C_RED), col(opt, C_RESET));
         return;
     }
 
-    for (int i = 0; i < ship->cargo_count; ++i) {
-        const Cargo *c = &ship->cargo[i];
-        if (c->pos_x >= 0.0f) {
-            printf("  - %-15s | Pos (X,Y,Z): (%7.2f, %7.2f, %7.2f) | %.2f t\n", c->id, c->pos_x, c->pos_y, c->pos_z, c->weight / 1000.0f);
+    // Per-item placement list (suppressed in quiet mode).
+    if (opt->verbosity >= 0) {
+        for (int i = 0; i < ship->cargo_count; ++i) {
+            const Cargo *c = &ship->cargo[i];
+            if (c->pos_x < 0.0f) continue;
+            printf("  - %-15s | Pos (X,Y,Z): (%7.2f, %7.2f, %7.2f) | %.2f t",
+                   c->id, c->pos_x, c->pos_y, c->pos_z, c->weight / 1000.0f);
+            if (opt->verbosity >= 1 && analysis.total_cargo_weight_kg > 0.0f) {
+                float share = c->weight / analysis.total_cargo_weight_kg * 100.0f;
+                float lon = (c->pos_x + c->placed_w / 2.0f) / ship->length * 100.0f;
+                printf("  %s[%.1f%% of cargo, Lon %.0f%%]%s", col(opt, C_DIM), share, lon, col(opt, C_RESET));
+            }
+            printf("\n");
         }
     }
 
-    // Use a slightly wider range for "Good" balance
-    const char *cg_stability_str = (analysis.cg.perc_x >= 45 && analysis.cg.perc_x <= 55 && analysis.cg.perc_y >= 45 && analysis.cg.perc_y <= 55) ? "Good" : "Warning";
-    const char *gm_stability_str = (analysis.gm > 0.15f) ? "Stable" : "UNSTABLE";
+    // Use a slightly wider range for "Good" balance.
+    bool balanced = (analysis.cg.perc_x >= 45 && analysis.cg.perc_x <= 55 &&
+                     analysis.cg.perc_y >= 45 && analysis.cg.perc_y <= 55);
+    bool stable = (analysis.gm > 0.15f);
+    const char *bal_col = balanced ? C_GREEN : C_YELLOW;
+    const char *stab_col = stable ? C_GREEN : C_RED;
 
     printf("\nLoad Summary\n");
     printf("  - Placed / Total items : %d / %d\n", analysis.placed_item_count, ship->cargo_count);
     printf("  - Total loaded weight  : %.2f t (%.1f %% of max)\n", analysis.total_cargo_weight_kg / 1000.0f, (ship->lightship_weight + analysis.total_cargo_weight_kg) / ship->max_weight * 100.0f);
     printf("  - Displacement / DWT   : %.2f t / %.2f t\n", analysis.displacement_t, analysis.deadweight_t);
-    printf("  - CG (Lon / Trans)     : %.1f %% / %.1f %% | Balance: %s\n", analysis.cg.perc_x, analysis.cg.perc_y, cg_stability_str);
+    printf("  - CG (Lon / Trans)     : %.1f %% / %.1f %% | Balance: %s%s%s\n",
+           analysis.cg.perc_x, analysis.cg.perc_y, col(opt, bal_col), balanced ? "Good" : "Warning", col(opt, C_RESET));
 
-    printf("\nHydrostatics & Stability\n");
-    printf("  - Draft (mean)         : %.2f m  (fore %.2f / aft %.2f)\n", analysis.draft_mean, analysis.draft_fore, analysis.draft_aft);
-    printf("  - Displaced volume     : %.1f m³\n", analysis.volume_m3);
-    printf("  - KG / KB / BM         : %.2f / %.2f / %.2f m\n", analysis.kg, analysis.kb, analysis.bm);
-    printf("  - Trim / Heel          : %.2f m / %.1f°\n", analysis.trim, analysis.heel_deg);
-    if (!isnan(analysis.freeboard))
-        printf("  - Freeboard            : %.2f m\n", analysis.freeboard);
-    printf("  - GM (transverse)      : %.2f m | Stability: %s\n", analysis.gm, gm_stability_str);
-    printf("  - GML (longitudinal)   : %.2f m\n", analysis.gml);
+    // Full hydrostatics block (suppressed in quiet mode).
+    if (opt->verbosity >= 0) {
+        printf("\nHydrostatics & Stability\n");
+        printf("  - Draft (mean)         : %.2f m  (fore %.2f / aft %.2f)\n", analysis.draft_mean, analysis.draft_fore, analysis.draft_aft);
+        printf("  - Displaced volume     : %.1f m³\n", analysis.volume_m3);
+        printf("  - KG / KB / BM         : %.2f / %.2f / %.2f m\n", analysis.kg, analysis.kb, analysis.bm);
+        printf("  - Trim / Heel          : %.2f m / %.1f°\n", analysis.trim, analysis.heel_deg);
+        if (!isnan(analysis.freeboard))
+            printf("  - Freeboard            : %.2f m\n", analysis.freeboard);
+    }
+    printf("  - GM (transverse)      : %.2f m | Stability: %s%s%s\n",
+           analysis.gm, col(opt, stab_col), stable ? "Stable" : "UNSTABLE", col(opt, C_RESET));
+    if (opt->verbosity >= 0)
+        printf("  - GML (longitudinal)   : %.2f m\n", analysis.gml);
 }
 
 // Prints `    "key": <value>,\n`, emitting JSON null when the value is NaN.

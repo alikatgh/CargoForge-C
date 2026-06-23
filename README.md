@@ -51,6 +51,8 @@ Run it directly:
 ./cargoforge examples/realistic_ship.cfg examples/realistic_cargo.txt
 ./cargoforge --json examples/realistic_ship.cfg examples/realistic_cargo.txt  # machine-readable
 ./cargoforge --strict examples/realistic_ship.cfg examples/realistic_cargo.txt  # non-zero exit on a bad plan
+./cargoforge --quiet examples/sample_ship.cfg examples/sample_cargo.txt       # summary only
+./cargoforge --verbose --color=always examples/sample_ship.cfg examples/sample_cargo.txt
 ./cargoforge --help        # usage and options
 ./cargoforge --version     # print version
 ```
