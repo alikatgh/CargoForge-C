@@ -26,7 +26,7 @@ int main(int argc, char *argv[]) {
     }
 
     // 2. Parse arguments: optional flags (any position) + two file paths.
-    bool json = false, strict = false;
+    bool json = false, strict = false, diagram = false;
     int verbosity = 0;
     enum { COLOR_AUTO, COLOR_ALWAYS, COLOR_NEVER } color_mode = COLOR_AUTO;
     const char *config_file = NULL, *cargo_file = NULL;
@@ -39,6 +39,8 @@ int main(int argc, char *argv[]) {
             verbosity = -1;
         } else if (strcmp(argv[i], "--verbose") == 0) {
             verbosity = 1;
+        } else if (strcmp(argv[i], "--diagram") == 0) {
+            diagram = true;
         } else if (strcmp(argv[i], "--no-color") == 0) {
             color_mode = COLOR_NEVER;
         } else if (strncmp(argv[i], "--color=", 8) == 0) {
@@ -83,7 +85,7 @@ int main(int argc, char *argv[]) {
 
     // 5. Run the optimization and analysis.
     optimize_cargo_placement(&ship);
-    OutputOptions opt = { use_color, verbosity };
+    OutputOptions opt = { use_color, verbosity, diagram };
     if (json) print_loading_plan_json(&ship);
     else print_loading_plan(&ship, &opt);
 
@@ -125,6 +127,7 @@ void usage(const char *prog_name) {
         "      --strict          Exit non-zero if any cargo is unplaced, overweight, or unstable\n"
         "  -q, --quiet           Print only the load summary\n"
         "      --verbose         Print extra per-item detail\n"
+        "      --diagram         Draw an ASCII stowage plan, utilization bars, and GM gauge\n"
         "      --color=WHEN      Colorize output: auto (default), always, or never\n"
         "      --no-color        Disable colored output\n"
         "  -h, --help            Show this help and exit\n"

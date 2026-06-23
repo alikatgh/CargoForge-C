@@ -65,6 +65,7 @@ S=examples/sample_ship.cfg; C=examples/sample_cargo.txt
 ./cargoforge --verbose "$S" "$C" | grep -q "of cargo"     || { echo "FAIL: --verbose" >&2; exit 1; }
 ./cargoforge --color=always "$S" "$C" | grep -q "$ESC"    || { echo "FAIL: --color=always emitted no ANSI" >&2; exit 1; }
 if ./cargoforge --color=never "$S" "$C" | grep -q "$ESC"; then echo "FAIL: --color=never emitted ANSI" >&2; exit 1; fi
+./cargoforge --diagram "$S" "$C" | grep -q "Stowage Plan" || { echo "FAIL: --diagram" >&2; exit 1; }
 echo "output modes OK"
 
 # 3. Static analysis (Clang static analyzer), if clang is available.

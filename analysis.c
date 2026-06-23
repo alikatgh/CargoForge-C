@@ -115,8 +115,121 @@ static const char *col(const OutputOptions *o, const char *code) {
     return o->color ? code : "";
 }
 
+// Renders one top-down layer (holds when deck=false, the deck when deck=true) as
+// an ASCII grid, scaling the ship's length to ~58 columns and preserving aspect.
+static void render_layer(const Ship *ship, bool deck) {
+    const int cols = 58;
+    int rows = (int)(cols * ship->width / ship->length + 0.5f);
+    if (rows < 4) rows = 4;
+    if (rows > 16) rows = 16;
+
+    char grid[16][59]; // cols (58) + NUL; fixed size avoids a VLA
+    for (int r = 0; r < rows; r++) {
+        for (int c = 0; c < cols; c++) grid[r][c] = ' ';
+        grid[r][cols] = '\0';
+    }
+
+    float sx = cols / ship->length, sy = rows / ship->width;
+
+    // Hold dividers (only on the below-deck layer).
+    if (!deck) {
+        int holds = ship->hold_count > 0 ? ship->hold_count : DEFAULT_HOLDS;
+        for (int h = 1; h < holds; h++) {
+            int x = (int)(h * (ship->length / holds) * sx);
+            if (x >= 0 && x < cols)
+                for (int r = 0; r < rows; r++) grid[r][x] = ':';
+        }
+    }
+
+    // Cargo footprints, labelled by the item's first character.
+    for (int i = 0; i < ship->cargo_count; i++) {
+        const Cargo *c = &ship->cargo[i];
+        if (c->pos_x < 0.0f || (c->pos_z >= 0.0f) != deck) continue;
+        int x0 = (int)(c->pos_x * sx), x1 = (int)((c->pos_x + c->placed_w) * sx);
+        int y0 = (int)(c->pos_y * sy), y1 = (int)((c->pos_y + c->placed_h) * sy);
+        if (x1 <= x0) x1 = x0 + 1;
+        if (y1 <= y0) y1 = y0 + 1;
+        char ch = c->id[0];
+        if (ch >= 'a' && ch <= 'z') ch = (char)(ch - 32);
+        for (int y = y0; y < y1 && y < rows; y++)
+            for (int x = x0; x < x1 && x < cols; x++) grid[y][x] = ch;
+    }
+
+    printf("   +"); for (int c = 0; c < cols; c++) putchar('-'); printf("+\n");
+    for (int r = 0; r < rows; r++) printf("   |%s|\n", grid[r]);
+    printf("   +"); for (int c = 0; c < cols; c++) putchar('-'); printf("+\n");
+}
+
+// Prints a `[####    ] NN%` bar, optionally colored by fill level.
+static void print_bar(const OutputOptions *opt, float pct) {
+    const int width = 20;
+    int filled = (int)(pct / 100.0f * width + 0.5f);
+    if (filled > width) filled = width;
+    if (filled < 0) filled = 0;
+    const char *c = pct > 90.0f ? C_RED : (pct > 60.0f ? C_YELLOW : C_GREEN);
+    printf("[%s", col(opt, c));
+    for (int i = 0; i < width; i++) putchar(i < filled ? '#' : ' ');
+    printf("%s] %3.0f%%\n", col(opt, C_RESET), pct);
+}
+
+// Top-down stowage plan + per-hold utilization bars + a GM stability gauge.
+static void print_ship_diagram(const Ship *ship, const OutputOptions *opt, const AnalysisResult *a) {
+    int holds = ship->hold_count > 0 ? ship->hold_count : DEFAULT_HOLDS;
+
+    printf("\nStowage Plan (top-down, bow → stern left→right)\n");
+    printf(" Holds (below deck):\n");
+    render_layer(ship, false);
+
+    // Only draw the deck panel if anything is stowed on deck.
+    int deck_items = 0;
+    for (int i = 0; i < ship->cargo_count; i++)
+        if (ship->cargo[i].pos_x >= 0.0f && ship->cargo[i].pos_z >= 0.0f) deck_items++;
+    if (deck_items > 0) {
+        printf(" Deck:\n");
+        render_layer(ship, true);
+    }
+
+    // Per-hold (and deck) area utilization.
+    printf("\nUtilization\n");
+    float hold_len = ship->length / holds;
+    float hold_area = hold_len * ship->width;
+    for (int h = 0; h < holds; h++) {
+        float used = 0.0f;
+        for (int i = 0; i < ship->cargo_count; i++) {
+            const Cargo *c = &ship->cargo[i];
+            if (c->pos_x < 0.0f || c->pos_z >= 0.0f) continue;
+            float cx = c->pos_x + c->placed_w / 2.0f;
+            if (cx >= h * hold_len && cx < (h + 1) * hold_len) used += c->placed_w * c->placed_h;
+        }
+        printf("  Hold %-2d ", h + 1);
+        print_bar(opt, hold_area > 0.0f ? used / hold_area * 100.0f : 0.0f);
+    }
+    if (deck_items > 0) {
+        float used = 0.0f, deck_area = ship->length * ship->width;
+        for (int i = 0; i < ship->cargo_count; i++) {
+            const Cargo *c = &ship->cargo[i];
+            if (c->pos_x >= 0.0f && c->pos_z >= 0.0f) used += c->placed_w * c->placed_h;
+        }
+        printf("  Deck    ");
+        print_bar(opt, deck_area > 0.0f ? used / deck_area * 100.0f : 0.0f);
+    }
+
+    // GM stability gauge: fill toward a comfortable 5 m, marker '>' clamps at top.
+    if (!isnan(a->gm)) {
+        const int width = 20;
+        float frac = a->gm / 5.0f;
+        if (frac < 0.0f) frac = 0.0f;
+        if (frac > 1.0f) frac = 1.0f;
+        int filled = (int)(frac * width + 0.5f);
+        bool stable = a->gm > 0.15f;
+        printf("  GM      [%s", col(opt, stable ? C_GREEN : C_RED));
+        for (int i = 0; i < width; i++) putchar(i < filled ? '=' : ' ');
+        printf("%s] %.2f m %s\n", col(opt, C_RESET), a->gm, stable ? "Stable" : "UNSTABLE");
+    }
+}
+
 void print_loading_plan(const Ship *ship, const OutputOptions *opt) {
-    OutputOptions defaults = {false, 0};
+    OutputOptions defaults = {false, 0, false};
     if (!opt) opt = &defaults;
     AnalysisResult analysis = perform_analysis(ship);
 
@@ -174,6 +287,9 @@ void print_loading_plan(const Ship *ship, const OutputOptions *opt) {
            analysis.gm, col(opt, stab_col), stable ? "Stable" : "UNSTABLE", col(opt, C_RESET));
     if (opt->verbosity >= 0)
         printf("  - GML (longitudinal)   : %.2f m\n", analysis.gml);
+
+    if (opt->diagram && opt->verbosity >= 0)
+        print_ship_diagram(ship, opt, &analysis);
 }
 
 // Prints `    "key": <value>,\n`, emitting JSON null when the value is NaN.

@@ -74,7 +74,7 @@ Tracking 100 features toward a world-class maritime stowage & stability tool.
 62. [x] Colored output (ANSI)
 63. [x] `--color=auto|always|never`
 64. [x] TTY auto-detection (+ NO_COLOR)
-65. [ ] ASCII top-down ship diagram
+65. [x] ASCII top-down ship diagram (`--diagram`)
 66. [x] `--quiet` mode
 67. [x] `--verbose` mode
 68. [ ] Output sorting (`--sort`)
@@ -85,8 +85,8 @@ Tracking 100 features toward a world-class maritime stowage & stability tool.
 73. [x] Strict exit codes (`--strict`)
 74. [ ] Progress / status messages
 75. [ ] Imperial/metric unit toggle
-76. [ ] Per-hold utilization bars
-77. [ ] Stability gauge visualization
+76. [x] Per-hold utilization bars (`--diagram`)
+77. [x] Stability gauge visualization (`--diagram`)
 78. [ ] Markdown report (`--md`)
 
 ## Input & configuration
@@ -117,4 +117,4 @@ Tracking 100 features toward a world-class maritime stowage & stability tool.
 
 ---
 
-**Shipped: 48 / 100.** Updated as features land.
+**Shipped: 51 / 100.** Updated as features land.

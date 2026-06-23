@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- `--diagram`: an ASCII top-down stowage plan (holds + deck, cargo footprints),
+  per-hold utilization bars, and a GM stability gauge.
 - Colored terminal output with `--color=auto|always|never` (and `--no-color`),
   auto-detecting a TTY and honoring the `NO_COLOR` convention.
 - `--quiet` (summary only) and `--verbose` (per-item CG contribution) output modes.

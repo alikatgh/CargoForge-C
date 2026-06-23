@@ -68,6 +68,7 @@ typedef struct {
 typedef struct {
     bool color;      /* wrap verdicts in ANSI color */
     int  verbosity;  /* -1 = quiet (summary only), 0 = normal, 1 = verbose */
+    bool diagram;    /* render the ASCII stowage plan + utilization + gauge */
 } OutputOptions;
 
 
