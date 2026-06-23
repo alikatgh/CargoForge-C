@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Vertical stacking: with the optional `hold_depth_m` config key, cargo that
+  overflows the floors is stacked on top of stackable hold cargo (respecting
+  footprint, the hold's clear height, and each base's `maxstack=`), raising KG in
+  the stability math. Fully backward-compatible — no `hold_depth_m`, no stacking.
 - Cargo logistics: optional `temp=`, `maxstack=`, and `dest=` manifest attributes,
   reported as a Cargo Logistics section — destination grouping, temperature zones,
   max-stack ratings, and a port-sequencing (LIFO) restow check.

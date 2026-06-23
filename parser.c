@@ -154,6 +154,7 @@ static int parse_ship_config_json(const char *filename, Ship *ship) {
     if (json_number(buf, "lightship_weight_tonnes", &v)) ship->lightship_weight = v * 1000.0f;
     if (json_number(buf, "lightship_kg_m", &v)) ship->lightship_kg = v;
     if (json_number(buf, "depth_m", &v)) ship->depth = v;
+    if (json_number(buf, "hold_depth_m", &v)) ship->hold_depth = v;
     if (json_number(buf, "max_hold_weight_tonnes", &v)) ship->max_hold_weight = v * 1000.0f;
     if (json_number(buf, "holds", &v)) {
         int h = (int)v;
@@ -216,6 +217,7 @@ int parse_ship_config(const char *filename, Ship *ship) {
         else if (strcmp(key, "lightship_weight_tonnes") == 0) ship->lightship_weight = v * 1000.0f;
         else if (strcmp(key, "lightship_kg_m") == 0)       ship->lightship_kg = v;
         else if (strcmp(key, "depth_m") == 0)              ship->depth = v;
+        else if (strcmp(key, "hold_depth_m") == 0)         ship->hold_depth = v;
         else if (strcmp(key, "max_hold_weight_tonnes") == 0) ship->max_hold_weight = v * 1000.0f;
         else if (strcmp(key, "holds") == 0) {
             int h = (int)v;

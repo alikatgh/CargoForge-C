@@ -113,6 +113,7 @@ lightship_weight_tonnes=5000   # empty-ship weight
 lightship_kg_m=8               # empty-ship vertical CG above keel
 holds=2                        # optional: number of below-deck holds (default 2)
 depth_m=14                     # optional: moulded hull depth, enables freeboard
+hold_depth_m=12                # optional: clear hold height, enables vertical stacking
 max_hold_weight_tonnes=8000    # optional: per-hold weight cap (deck is exempt)
 ```
 

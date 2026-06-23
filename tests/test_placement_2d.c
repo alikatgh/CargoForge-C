@@ -7,7 +7,9 @@
  * improves; its invariants must not.
  */
 #include <assert.h>
+#include <math.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "../cargoforge.h"
 #include "../placement_2d.h"
@@ -191,12 +193,56 @@ static void test_per_hold_weight_limit(void) {
     printf("OK\n");
 }
 
+/* With a hold depth, items that overflow the floors should stack and place; the
+ * 2D model (no hold_depth) must place strictly fewer. Stacking only adds. */
+static void test_vertical_stacking_adds_capacity(void) {
+    printf("  vertical stacking adds capacity (hold_depth)... ");
+
+    Ship ship = {0};
+    ship.length = 20.0f;
+    ship.width = 8.0f;
+    ship.hold_count = 1;
+
+    Cargo items[14];
+    for (int i = 0; i < 14; i++) {
+        memset(&items[i], 0, sizeof(Cargo));
+        snprintf(items[i].id, sizeof(items[i].id), "Box%d", i);
+        items[i].weight = 10000.0f;
+        items[i].dimensions[0] = 8.0f;
+        items[i].dimensions[1] = 4.0f;
+        items[i].dimensions[2] = 3.0f;
+        items[i].pos_x = items[i].pos_y = items[i].pos_z = -1.0f;
+        items[i].stackable = true;
+        items[i].temp_c = items[i].max_stack_t = NAN;
+    }
+    ship.cargo = items;
+    ship.cargo_count = 14;
+
+    ship.hold_depth = 0.0f; // 2D model
+    place_cargo_2d(&ship);
+    int base = 0;
+    for (int i = 0; i < 14; i++) if (items[i].pos_x >= 0.0f) base++;
+
+    for (int i = 0; i < 14; i++) {
+        items[i].pos_x = items[i].pos_y = items[i].pos_z = -1.0f;
+        items[i].placed_w = items[i].placed_h = 0.0f;
+    }
+    ship.hold_depth = 12.0f; // allow stacking
+    place_cargo_2d(&ship);
+    int stacked = 0;
+    for (int i = 0; i < 14; i++) if (items[i].pos_x >= 0.0f) stacked++;
+
+    assert(stacked > base && "hold depth should let extra cargo stack and place");
+    printf("OK (%d -> %d placed)\n", base, stacked);
+}
+
 int main(void) {
     printf("--- Running Placement Tests ---\n");
     test_all_placed_in_bounds_no_overlap();
     test_oversize_item_is_not_placed();
     test_transverse_load_is_centered();
     test_configurable_holds();
+    test_vertical_stacking_adds_capacity();
     test_per_hold_weight_limit();
     printf("--- All Placement Tests Passed ---\n");
     return 0;

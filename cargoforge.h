@@ -54,6 +54,7 @@ typedef struct {
     int   hold_count;   /* below-deck holds; 0 means "use DEFAULT_HOLDS" */
     float depth;        /* moulded hull depth (m), optional; enables freeboard. 0 = unset */
     float max_hold_weight; /* per-hold weight cap (kg); 0 = unlimited */
+    float hold_depth;   /* clear vertical room in a hold (m) for stacking; 0 = no stacking */
 } Ship;
 
 typedef struct { float perc_x, perc_y; } CG;

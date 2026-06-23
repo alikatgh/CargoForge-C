@@ -19,6 +19,7 @@ typedef struct {
 static int cargo_cmp_by_weight_desc(const void *a, const void *b);
 static Placement find_placement(const Bin *bin, const Cargo *c);
 static void commit_placement(Bin *bin, const Placement *p);
+static void stack_cargo(Ship *ship);
 Point calculate_cg_for_placement(const Ship *ship, const Cargo *new_item, Point new_pos, float item_w, float item_h);
 
 
@@ -117,6 +118,8 @@ void place_cargo_2d(Ship *ship) {
     }
 
     if (bins != fallback) free(bins);
+
+    stack_cargo(ship); // vertical stacking pass (no-op unless hold_depth is set)
 }
 
 // THIS IS THE FINAL, CORRECTED CG CALCULATION
@@ -192,4 +195,68 @@ static void commit_placement(Bin *bin, const Placement *p) {
     Shelf new_shelf = {bin->used_height, p->h, p->w};
     bin->shelves[bin->shelf_count++] = new_shelf;
     bin->used_height += p->h;
+}
+
+/* Vertical stacking pass — runs only when ship->hold_depth > 0, so the 2D model is
+ * untouched by default. Each still-unplaced item is stacked on top of an already-
+ * placed, stackable item in a hold column whose footprint can support it, within
+ * the hold's clear height and the base's max-stack-weight. It is purely additive:
+ * no placed item is ever moved, so existing placements (and tests) are unchanged.
+ * Stacked items get a higher pos_z, which correctly raises KG in the analysis. */
+static void stack_cargo(Ship *ship) {
+    if (ship->hold_depth <= 0.0f) return;
+
+    /* Per item: the current top of its column, and that column's hold-floor z (for
+     * the clear-height budget). Only items in a hold column (floor z < 0) are bases. */
+    float *col_top = malloc((size_t)ship->cargo_count * sizeof(float));
+    float *floor_z = malloc((size_t)ship->cargo_count * sizeof(float));
+    if (!col_top || !floor_z) { free(col_top); free(floor_z); return; }
+    for (int i = 0; i < ship->cargo_count; i++) {
+        const Cargo *c = &ship->cargo[i];
+        col_top[i] = (c->pos_x >= 0.0f) ? c->pos_z + c->dimensions[2] : 0.0f;
+        floor_z[i] = c->pos_z;
+    }
+
+    for (int u = 0; u < ship->cargo_count; u++) {
+        Cargo *item = &ship->cargo[u];
+        if (item->pos_x >= 0.0f) continue; // already placed on a floor
+
+        int best = -1;
+        float best_fw = 0.0f, best_fh = 0.0f;
+        for (int b = 0; b < ship->cargo_count; b++) {
+            const Cargo *base = &ship->cargo[b];
+            if (base->pos_x < 0.0f || floor_z[b] >= 0.0f) continue; // placed hold columns only
+            if (!base->stackable || base->fragile) continue;
+
+            // Footprint must fit on the base (try both orientations).
+            float w0 = item->dimensions[0], h0 = item->dimensions[1], fw, fh;
+            if (w0 <= base->placed_w && h0 <= base->placed_h) { fw = w0; fh = h0; }
+            else if (h0 <= base->placed_w && w0 <= base->placed_h) { fw = h0; fh = w0; }
+            else continue;
+
+            // Respect the base's max-stack-weight (if specified).
+            if (!isnan(base->max_stack_t) && item->weight / 1000.0f > base->max_stack_t) continue;
+
+            // Clear-height budget: stack top above the column's hold floor.
+            if ((col_top[b] + item->dimensions[2]) - floor_z[b] > ship->hold_depth) continue;
+
+            // Prefer the lowest available column top (denser, lower KG).
+            if (best < 0 || col_top[b] < col_top[best]) { best = b; best_fw = fw; best_fh = fh; }
+        }
+
+        if (best >= 0) {
+            Cargo *base = &ship->cargo[best];
+            item->pos_x = base->pos_x;
+            item->pos_y = base->pos_y;
+            item->pos_z = col_top[best];        // rest on the current column top
+            item->placed_w = best_fw;
+            item->placed_h = best_fh;
+            float top = item->pos_z + item->dimensions[2];
+            col_top[best] = top;                // column grows
+            col_top[u] = top;                   // this item can now bear more
+            floor_z[u] = floor_z[best];         // same column floor
+        }
+    }
+    free(col_top);
+    free(floor_z);
 }
