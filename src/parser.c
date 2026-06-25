@@ -331,7 +331,10 @@ int parse_cargo_list(const char *filename, Ship *ship) {
 
         float weight_t = safe_atof(w_str, 0.1f, 1e6f, "weight");
         if (isnan(weight_t)) {
+            for (int j = 0; j < ship->cargo_count; j++) free(ship->cargo[j].dg);
             free(ship->cargo);
+            ship->cargo = NULL;   // avoid a dangling pointer -> use-after-free/double-free in ship_cleanup
+            ship->cargo_count = 0;
             if (use_stdin) {
                 for (int j = 0; j < line_count; j++) free(lines[j]);
                 free(lines);
@@ -356,7 +359,10 @@ int parse_cargo_list(const char *filename, Ship *ship) {
 
         if (!dims_ok) {
             fprintf(stderr, "Error: Incomplete or invalid dimensions for cargo '%s' on line %d\n", id, line_num);
+            for (int j = 0; j < ship->cargo_count; j++) free(ship->cargo[j].dg);
             free(ship->cargo);
+            ship->cargo = NULL;   // avoid a dangling pointer -> use-after-free/double-free in ship_cleanup
+            ship->cargo_count = 0;
             if (use_stdin) {
                 for (int j = 0; j < line_count; j++) free(lines[j]);
                 free(lines);
