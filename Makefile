@@ -87,7 +87,7 @@ clean:
 	       $(TEST_DIR)/test_library examples/library_example \
 	       validation/validate_benchmark
 
-.PHONY: all lib clean install test test-asan test-valgrind wasm example validate
+.PHONY: all lib clean install test test-asan test-valgrind fuzz wasm example validate
 
 # --- Sanitizer builds ---
 
@@ -95,6 +95,11 @@ test-asan: CFLAGS += -fsanitize=address -fsanitize=undefined -fno-omit-frame-poi
 test-asan: LDFLAGS += -fsanitize=address -fsanitize=undefined
 test-asan: clean all test
 	@echo "=== Memory safety tests (ASAN/UBSAN) passed ==="
+
+# Random-input fuzzer: builds an ASan+UBSan binary and throws malformed configs
+# and manifests at `optimize`/`validate`, failing on any crash or sanitizer error.
+fuzz:
+	@./scripts/fuzz.sh
 
 test-valgrind: all test
 	@echo "=== Running tests with Valgrind ==="

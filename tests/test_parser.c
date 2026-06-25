@@ -29,6 +29,26 @@ int main() {
     printf(" OK\n");
 
 
+    // Test 3: a cargo parse error must leave ship->cargo NULL, not dangling.
+    // A dangling pointer makes ship_cleanup() read/free freed memory (a
+    // heap-use-after-free + double-free found by scripts/fuzz.sh). We assert the
+    // invariant that prevents it; the fuzzer exercises the full cleanup path under ASan.
+    printf("Testing cargo parse-error leaves no dangling pointer...");
+    {
+        Ship s = {0};
+        assert(parse_ship_config("examples/sample_ship.cfg", &s) == 0);
+        const char *path = "build/_bad_cargo_test.txt";
+        FILE *f = fopen(path, "w");
+        assert(f != NULL);
+        fputs("GoodItem 10 5x5x5 standard\nBadItem notanumber 5x5x5 reefer\n", f);
+        fclose(f);
+        assert(parse_cargo_list(path, &s) == -1); // bad weight on line 2
+        assert(s.cargo == NULL && s.cargo_count == 0); // freed AND cleared
+        remove(path);
+    }
+    printf(" OK\n");
+
+
     printf("--- All Parser Tests Passed ---\n");
     return 0;
 }

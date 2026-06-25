@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Heap use-after-free / double-free in `validate` and `optimize`: a cargo manifest
+  with an invalid weight or dimensions freed `ship->cargo` but left it dangling,
+  which `ship_cleanup()` then read and freed again. The parser now NULLs the pointer
+  and frees already-parsed DG records on the error path. Found by the new fuzzer.
+
+### Added - Tooling
+- `scripts/fuzz.sh` + `make fuzz`: a seeded AddressSanitizer/UBSan fuzzer that throws
+  malformed ship configs and cargo manifests (incl. DG attributes) at `optimize` and
+  `validate`, failing on any crash or sanitizer error.
+
 ### Added - Phase 1: Maritime Calculation Engine
 - **Hydrostatic Table Interpolation** — Load real stability booklet data from CSV
   - Linear interpolation for draft, KB, BM, KM, TPC, MTC, waterplane area, LCB
