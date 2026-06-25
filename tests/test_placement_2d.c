@@ -236,6 +236,50 @@ static void test_vertical_stacking_adds_capacity(void) {
     printf("OK (%d -> %d placed)\n", base, stacked);
 }
 
+/* A floor base's max-stack-weight must bound the CUMULATIVE column load, not just
+ * each single item placed directly on it. A base rated 8 t fed 5 t items must take
+ * only one of them, not an unbounded pile. (Without the cumulative check this
+ * placed 4; with it, 1.) */
+static void test_cumulative_stack_weight(void) {
+    printf("  cumulative stack weight respects floor capacity... ");
+
+    Ship ship = {0};
+    ship.length = 20.0f;
+    ship.width = 8.0f;
+    ship.hold_count = 1;
+    ship.hold_depth = 12.0f;
+
+    Cargo items[6];
+    for (int i = 0; i < 6; i++) {
+        memset(&items[i], 0, sizeof(Cargo));
+        snprintf(items[i].id, sizeof(items[i].id), "I%d", i);
+        items[i].pos_x = items[i].pos_y = items[i].pos_z = -1.0f;
+        items[i].stackable = true;
+        items[i].temp_c = items[i].max_stack_t = NAN;
+    }
+    // Two floor-filling bases (hold + deck); the hold base bears at most 8 t.
+    items[0].weight = 100000.0f; items[0].dimensions[0] = 20; items[0].dimensions[1] = 8;
+    items[0].dimensions[2] = 3;  items[0].max_stack_t = 8.0f;
+    items[1].weight = 90000.0f;  items[1].dimensions[0] = 20; items[1].dimensions[1] = 8;
+    items[1].dimensions[2] = 3;
+    // Four light stackable items (5 t each); only the hold column can accept them.
+    for (int i = 2; i < 6; i++) {
+        items[i].weight = 5000.0f;
+        items[i].dimensions[0] = 4; items[i].dimensions[1] = 4; items[i].dimensions[2] = 2;
+    }
+    ship.cargo = items;
+    ship.cargo_count = 6;
+
+    place_cargo_2d(&ship); // note: reorders items by weight
+
+    int lights_placed = 0;
+    for (int i = 0; i < 6; i++)
+        if (items[i].weight < 6000.0f && items[i].pos_x >= 0.0f) lights_placed++;
+
+    assert(lights_placed == 1 && "cumulative stacked weight must not exceed the floor's max_stack_t");
+    printf("OK (%d light item stacked)\n", lights_placed);
+}
+
 int main(void) {
     printf("--- Running Placement Tests ---\n");
     test_all_placed_in_bounds_no_overlap();
@@ -244,6 +288,7 @@ int main(void) {
     test_configurable_holds();
     test_vertical_stacking_adds_capacity();
     test_per_hold_weight_limit();
+    test_cumulative_stack_weight();
     printf("--- All Placement Tests Passed ---\n");
     return 0;
 }

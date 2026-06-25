@@ -30,6 +30,33 @@ new symptom. Newest entries first.
 
 ## Chronological log (newest first)
 
+### 2026-06-25 — JSON ship config bypassed the numeric validation the text path enforces
+- **Symptom:** `{"holds": 1e30}` → UB on the `(int)v` cast; `{"length_m": -5}` or NaN
+  flowed unchecked into the stability math (the `length < 0.1f` guard is false for NaN).
+- **Cause:** `parse_ship_config_json` read fields with `json_number` only; the text path
+  validates every field via `safe_atof` (finite + range). Found by the Opus parser audit.
+- **Fix:** `json_field()` helper validates finiteness + [0.1, 1e9] (holds 1..MAX_HOLDS)
+  for every JSON numeric field; non-finite/out-of-range now aborts. parser.c.
+- **Lesson:** a second parser for the same data must reuse the SAME validation. UBSan
+  catches the `(int)` cast of a non-finite float — run it on the new path.
+
+### 2026-06-25 — Stacking enforced only per-item weight, not cumulative column load
+- **Symptom:** a floor crate rated `maxstack=8` accepted an unbounded pile of 5 t items
+  (each ≤ 8 individually); cumulative load was never checked.
+- **Cause:** `stack_cargo` checked `item->weight` vs the immediate base only. placement_2d.c.
+- **Fix:** track per-column cumulative load keyed by the floor index; reject when
+  `col_load[floor] + item > floor.max_stack_t`. Plus an `isfinite` guard on stack height.
+- **Lesson:** "max stack weight" is a column constraint, not a point constraint. Test
+  the cumulative case (regression test asserts 1 stacks, not 4).
+
+### 2026-06-25 — Cargo `temp=`/`maxstack=` used unvalidated strtof
+- **Symptom:** `maxstack=abc` silently became 0.0 → that base forbids ALL stacking;
+  `temp=abc` became 0.0 °C while still flagging the item reefer.
+- **Cause:** `strtof(a+N, NULL)` ignored conversion failure. parser.c.
+- **Fix:** check the end pointer + finiteness (+ non-negative for maxstack); warn & skip.
+- **Lesson:** never `strtof(..., NULL)` on user input — always inspect `endptr`.
+
+
 ### 2026-06-23 — Transverse CG skewed (load piled against one side of the beam)
 - **Symptom:** sample scenario reported `Balance: Warning` (transverse CG 31%); the
   shelf packer stacks rows from y=0 upward, so mass sat against one side.

@@ -134,6 +134,19 @@ static int json_number(const char *buf, const char *key, float *out) {
 }
 
 // Parses a flat JSON ship config: {"length_m": 150, "width_m": 25, ...}.
+/* Reads a numeric JSON field and validates it like the text parser's safe_atof:
+ * returns 1 (present & valid, written to *out), 0 (absent), or -1 (present but not
+ * a finite, in-range number — the caller must abort). This closes the gap where
+ * the JSON path accepted NaN/inf/negative values the text path rejects. */
+static int json_field(const char *buf, const char *key, float min, float max, float *out) {
+    if (!json_number(buf, key, out)) return 0;
+    if (!isfinite(*out) || *out < min || *out > max) {
+        fprintf(stderr, "Error: JSON field '%s' must be a finite number in [%g, %g].\n", key, min, max);
+        return -1;
+    }
+    return 1;
+}
+
 static int parse_ship_config_json(const char *filename, Ship *ship) {
     FILE *file = fopen(filename, "r");
     if (!file) { perror("Error opening ship config file"); return -1; }
@@ -147,19 +160,28 @@ static int parse_ship_config_json(const char *filename, Ship *ship) {
     buf[got] = '\0';
     fclose(file);
 
+    /* Every numeric field is validated for finiteness and range (mirrors the text
+     * parser's 0.1..1e9 bounds), so NaN/inf/negative inputs are rejected instead of
+     * flowing into the stability math or an undefined (int) cast. */
     float v;
-    if (json_number(buf, "length_m", &v)) ship->length = v;
-    if (json_number(buf, "width_m", &v)) ship->width = v;
-    if (json_number(buf, "max_weight_tonnes", &v)) ship->max_weight = v * 1000.0f;
-    if (json_number(buf, "lightship_weight_tonnes", &v)) ship->lightship_weight = v * 1000.0f;
-    if (json_number(buf, "lightship_kg_m", &v)) ship->lightship_kg = v;
-    if (json_number(buf, "depth_m", &v)) ship->depth = v;
-    if (json_number(buf, "hold_depth_m", &v)) ship->hold_depth = v;
-    if (json_number(buf, "max_hold_weight_tonnes", &v)) ship->max_hold_weight = v * 1000.0f;
-    if (json_number(buf, "holds", &v)) {
-        int h = (int)v;
-        if (h < 1 || h > MAX_HOLDS) { fprintf(stderr, "Error: holds must be 1..%d.\n", MAX_HOLDS); free(buf); return -1; }
-        ship->hold_count = h;
+#define READ(key, assign) do { \
+        int _r = json_field(buf, key, 0.1f, 1e9f, &v); \
+        if (_r < 0) { free(buf); return -1; } \
+        if (_r > 0) { assign; } \
+    } while (0)
+    READ("length_m", ship->length = v);
+    READ("width_m", ship->width = v);
+    READ("max_weight_tonnes", ship->max_weight = v * 1000.0f);
+    READ("lightship_weight_tonnes", ship->lightship_weight = v * 1000.0f);
+    READ("lightship_kg_m", ship->lightship_kg = v);
+    READ("depth_m", ship->depth = v);
+    READ("hold_depth_m", ship->hold_depth = v);
+    READ("max_hold_weight_tonnes", ship->max_hold_weight = v * 1000.0f);
+#undef READ
+    {
+        int _r = json_field(buf, "holds", 1.0f, (float)MAX_HOLDS, &v);
+        if (_r < 0) { free(buf); return -1; }
+        if (_r > 0) ship->hold_count = (int)v;
     }
     free(buf);
 
@@ -384,8 +406,18 @@ int parse_cargo_list(const char *filename, Ship *ship) {
                     if (d >= 1 && d <= 9) c->dg_class = d;
                     else fprintf(stderr, "Warning: invalid DG class '%s' for cargo '%s'.\n", a, id);
                 }
-                else if (strncmp(a, "temp=", 5) == 0)     { c->temp_c = strtof(a + 5, NULL); c->reefer = true; }
-                else if (strncmp(a, "maxstack=", 9) == 0) { c->max_stack_t = strtof(a + 9, NULL); }
+                else if (strncmp(a, "temp=", 5) == 0) {
+                    char *end; float t = strtof(a + 5, &end);
+                    if (end == a + 5 || *end != '\0' || !isfinite(t))
+                        fprintf(stderr, "Warning: invalid temp '%s' for cargo '%s'.\n", a, id);
+                    else { c->temp_c = t; c->reefer = true; }
+                }
+                else if (strncmp(a, "maxstack=", 9) == 0) {
+                    char *end; float m = strtof(a + 9, &end);
+                    if (end == a + 9 || *end != '\0' || !isfinite(m) || m < 0.0f)
+                        fprintf(stderr, "Warning: invalid maxstack '%s' for cargo '%s'.\n", a, id);
+                    else c->max_stack_t = m;
+                }
                 else if (strncmp(a, "dest=", 5) == 0) {
                     strncpy(c->dest, a + 5, sizeof(c->dest) - 1);
                     c->dest[sizeof(c->dest) - 1] = '\0';

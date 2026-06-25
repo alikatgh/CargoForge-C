@@ -76,6 +76,14 @@ if ./cargoforge --color=never "$S" "$C" | grep -q "$ESC"; then echo "FAIL: --col
 if ./cargoforge --units=furlongs "$S" "$C" >/dev/null 2>&1; then echo "FAIL: bad --units accepted" >&2; exit 1; fi
 echo "output modes OK"
 
+# JSON config validation: non-finite / out-of-range numbers must be rejected.
+printf '{"length_m": 150, "width_m": 25, "max_weight_tonnes": 50000, "holds": 1e30}\n' > /tmp/cf_badj.json
+if ./cargoforge /tmp/cf_badj.json "$C" >/dev/null 2>&1; then echo "FAIL: JSON holds=1e30 accepted" >&2; rm -f /tmp/cf_badj.json; exit 1; fi
+printf '{"length_m": -5, "width_m": 25, "max_weight_tonnes": 50000}\n' > /tmp/cf_badj.json
+if ./cargoforge /tmp/cf_badj.json "$C" >/dev/null 2>&1; then echo "FAIL: JSON length_m=-5 accepted" >&2; rm -f /tmp/cf_badj.json; exit 1; fi
+rm -f /tmp/cf_badj.json
+echo "JSON validation OK"
+
 # Input flexibility: --init round-trips through --show-config on stdin; stdin cargo; env override.
 ./cargoforge --init | ./cargoforge --show-config - | grep -q "^length_m=150" || { echo "FAIL: --init/--show-config" >&2; exit 1; }
 cat "$C" | ./cargoforge "$S" - | grep -q "Placed /"                        || { echo "FAIL: stdin cargo" >&2; exit 1; }

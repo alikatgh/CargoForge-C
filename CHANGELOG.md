@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- JSON ship configs now validate every numeric field for finiteness and range
+  (matching the text parser), closing a UB `(int)` cast on a non-finite `holds`
+  and a NaN/negative bypass into the stability math.
+- Vertical stacking now enforces a floor base's max-stack-weight against the
+  **cumulative** column load, not just each single item on top.
+- Cargo `temp=` / `maxstack=` attributes validate their numbers instead of
+  silently treating bad input as `0`.
+
 ### Added
 - Vertical stacking: with the optional `hold_depth_m` config key, cargo that
   overflows the floors is stacked on top of stackable hold cargo (respecting

@@ -210,11 +210,17 @@ static void stack_cargo(Ship *ship) {
      * the clear-height budget). Only items in a hold column (floor z < 0) are bases. */
     float *col_top = malloc((size_t)ship->cargo_count * sizeof(float));
     float *floor_z = malloc((size_t)ship->cargo_count * sizeof(float));
-    if (!col_top || !floor_z) { free(col_top); free(floor_z); return; }
+    int   *floor_idx = malloc((size_t)ship->cargo_count * sizeof(int));
+    float *col_load = malloc((size_t)ship->cargo_count * sizeof(float));
+    if (!col_top || !floor_z || !floor_idx || !col_load) {
+        free(col_top); free(floor_z); free(floor_idx); free(col_load); return;
+    }
     for (int i = 0; i < ship->cargo_count; i++) {
         const Cargo *c = &ship->cargo[i];
         col_top[i] = (c->pos_x >= 0.0f) ? c->pos_z + c->dimensions[2] : 0.0f;
         floor_z[i] = c->pos_z;
+        floor_idx[i] = i;     // each item is, until stacked, its own column floor
+        col_load[i] = 0.0f;   // weight stacked ON TOP of floor item i (kg)
     }
 
     for (int u = 0; u < ship->cargo_count; u++) {
@@ -234,10 +240,18 @@ static void stack_cargo(Ship *ship) {
             else if (h0 <= base->placed_w && w0 <= base->placed_h) { fw = h0; fh = w0; }
             else continue;
 
-            // Respect the base's max-stack-weight (if specified).
+            // Respect the immediate base's max-stack-weight (point load on its lid).
             if (!isnan(base->max_stack_t) && item->weight / 1000.0f > base->max_stack_t) continue;
 
-            // Clear-height budget: stack top above the column's hold floor.
+            // Respect the column FLOOR's capacity against the CUMULATIVE stacked load
+            // (not just the single item directly above it).
+            const Cargo *fc = &ship->cargo[floor_idx[b]];
+            if (!isnan(fc->max_stack_t) &&
+                (col_load[floor_idx[b]] + item->weight) / 1000.0f > fc->max_stack_t) continue;
+
+            // Clear-height budget: stack top above the column's hold floor. Guard a
+            // non-finite height (NaN compares false and would slip through).
+            if (!isfinite(item->dimensions[2])) continue;
             if ((col_top[b] + item->dimensions[2]) - floor_z[b] > ship->hold_depth) continue;
 
             // Prefer the lowest available column top (denser, lower KG).
@@ -255,8 +269,12 @@ static void stack_cargo(Ship *ship) {
             col_top[best] = top;                // column grows
             col_top[u] = top;                   // this item can now bear more
             floor_z[u] = floor_z[best];         // same column floor
+            floor_idx[u] = floor_idx[best];     // inherit the column's floor index
+            col_load[floor_idx[best]] += item->weight; // accumulate cumulative load
         }
     }
     free(col_top);
     free(floor_z);
+    free(floor_idx);
+    free(col_load);
 }
