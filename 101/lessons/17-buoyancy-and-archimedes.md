@@ -2,6 +2,26 @@
 
 Steel is about eight times denser than water, yet a ship made of steel floats. Understanding why is not a physics curiosity — it is the prerequisite for every stability number CargoForge-C computes. `perform_analysis` in `src/analysis.c` derives draft, KB, BM, and ultimately GM from a single foundational calculation: how much water does the ship displace, and what does that tell us?
 
+<svg viewBox="0 0 600 232" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:560px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+<title>Why a steel ship floats: buoyancy equals the weight of the displaced water</title>
+<desc>The ship's submerged hull pushes aside a volume of water V. The upward buoyant force equals the weight of that displaced water. The ship floats at the draft where buoyancy up balances the ship's weight down.</desc>
+<defs>
+<marker id="bw-dn" viewBox="0 0 10 10" refX="5" refY="9" markerWidth="7" markerHeight="7" orient="auto"><path d="M5 10 L1 1 L9 1 Z" fill="#D05663"/></marker>
+<marker id="bw-up" viewBox="0 0 10 10" refX="5" refY="1" markerWidth="7" markerHeight="7" orient="auto"><path d="M5 0 L9 9 L1 9 Z" fill="#12A594"/></marker>
+</defs>
+<rect x="40" y="120" width="520" height="90" fill="#12A594" fill-opacity="0.07"/>
+<line x1="40" y1="120" x2="560" y2="120" stroke="#12A594" stroke-width="1.2" opacity="0.5"/>
+<text x="48" y="114" fill="#12A594" font-size="10.5" opacity="0.75">waterline</text>
+<path d="M190,72 L214,176 Q224,188 252,186 L348,186 Q376,188 386,176 L410,72" fill="currentColor" fill-opacity="0.05" stroke="currentColor" stroke-width="1.4" opacity="0.8"/>
+<line x1="190" y1="72" x2="410" y2="72" stroke="currentColor" stroke-width="1.4" opacity="0.8"/>
+<text x="300" y="166" fill="#12A594" font-size="10.5" text-anchor="middle" opacity="0.9">displaced water · volume V</text>
+<line x1="268" y1="150" x2="268" y2="92" stroke="#D05663" stroke-width="1.8" marker-end="url(#bw-dn)"/>
+<text x="268" y="86" fill="#D05663" font-size="11" text-anchor="middle">weight</text>
+<line x1="332" y1="100" x2="332" y2="184" stroke="#12A594" stroke-width="1.8" marker-end="url(#bw-up)"/>
+<text x="332" y="206" fill="#12A594" font-size="11" text-anchor="middle">buoyancy</text>
+<text x="300" y="226" fill="currentColor" font-size="11.5" text-anchor="middle" opacity="0.65">Buoyancy = weight of the water pushed aside (ρ·g·V) — it floats when buoyancy balances weight.</text>
+</svg>
+
 ---
 
 ## The Principle

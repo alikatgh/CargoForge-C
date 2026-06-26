@@ -2,6 +2,27 @@
 
 A ship is never perfectly level. Cargo placed too far forward or aft causes one end to sink deeper than the other — that is **trim**. Cargo placed off the centreline causes one side to dip — that is **heel**. CargoForge-C computes both quantities inside `perform_analysis` in `src/analysis.c`, and both appear in the printed loading plan and in every output format. Understanding how the code derives them turns stability numbers from opaque floats into quantities you can reason about and trust.
 
+<svg viewBox="0 0 600 200" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:580px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+<title>Trim is fore-aft tilt; heel is side-to-side tilt</title>
+<desc>Left, a side view: the ship sits deeper aft than forward — trim by the stern, draft aft greater than draft fore. Right, a front view: the ship leans to one side — heel, or list. The waterline stays horizontal in both; it is the ship that tilts.</desc>
+<text x="40" y="30" fill="currentColor" font-size="12" font-weight="600">TRIM · side view</text>
+<text x="370" y="30" fill="currentColor" font-size="12" font-weight="600">HEEL · front view</text>
+<!-- TRIM panel -->
+<rect x="40" y="116" width="244" height="62" fill="#12A594" fill-opacity="0.06"/>
+<line x1="40" y1="116" x2="284" y2="116" stroke="#12A594" stroke-width="1.1" opacity="0.5"/>
+<path d="M58,100 L262,86 L258,140 L62,156 Z" fill="currentColor" fill-opacity="0.05" stroke="currentColor" stroke-width="1.3" opacity="0.8"/>
+<line x1="74" y1="116" x2="74" y2="153" stroke="#12A594" stroke-width="2"/><text x="74" y="170" fill="#12A594" font-size="10" text-anchor="middle">aft</text>
+<line x1="246" y1="116" x2="246" y2="129" stroke="#12A594" stroke-width="2"/><text x="246" y="170" fill="#12A594" font-size="10" text-anchor="middle">fore</text>
+<text x="162" y="60" fill="currentColor" font-size="10.5" text-anchor="middle" opacity="0.65">draft aft &gt; draft fore</text>
+<!-- HEEL panel -->
+<rect x="320" y="116" width="244" height="62" fill="#12A594" fill-opacity="0.06"/>
+<line x1="320" y1="116" x2="564" y2="116" stroke="#12A594" stroke-width="1.1" opacity="0.5"/>
+<path d="M372,78 L398,148 Q430,170 466,158 Q506,146 516,110" fill="currentColor" fill-opacity="0.05" stroke="currentColor" stroke-width="1.3" opacity="0.8"/>
+<line x1="372" y1="78" x2="516" y2="110" stroke="currentColor" stroke-width="1.3" opacity="0.8"/>
+<text x="444" y="60" fill="currentColor" font-size="10.5" text-anchor="middle" opacity="0.65">lists to one side</text>
+<text x="300" y="194" fill="currentColor" font-size="11" text-anchor="middle" opacity="0.6">The waterline stays horizontal — it is the ship that tilts. Both come from where the cargo sits.</text>
+</svg>
+
 ---
 
 ## The two axes of imbalance

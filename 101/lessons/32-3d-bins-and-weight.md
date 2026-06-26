@@ -6,6 +6,35 @@ criteria, every cargo item needs a position in 3D space. `place_cargo_3d` in
 **bins**, then assigns each piece of cargo to a position inside one of them while
 tracking how much weight each bin is already carrying.
 
+<svg viewBox="0 0 600 210" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:580px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+<title>The ship is divided into bins, each with a weight cap, and cargo is dropped into a position that fits</title>
+<desc>A side view of the ship split into three bins: the deck across the top, and two below-deck holds fore and aft. Each bin holds cargo boxes and tracks its used weight against a maximum. place_cargo_3d assigns every item a 3D position inside the first bin where it fits without exceeding the cap.</desc>
+<!-- hull -->
+<path d="M44,44 L520,44 Q566,46 566,96 L560,150 Q556,170 522,172 L78,172 Q48,170 44,140 Z" fill="currentColor" fill-opacity="0.03" stroke="currentColor" stroke-width="1.4" opacity="0.8"/>
+<!-- bin dividers -->
+<line x1="44" y1="104" x2="560" y2="104" stroke="currentColor" stroke-width="1" stroke-dasharray="4 3" opacity="0.5"/>
+<line x1="300" y1="104" x2="300" y2="170" stroke="currentColor" stroke-width="1" stroke-dasharray="4 3" opacity="0.5"/>
+<!-- labels -->
+<text x="300" y="62" fill="currentColor" font-size="11" text-anchor="middle" opacity="0.7">Deck</text>
+<text x="172" y="98" fill="currentColor" font-size="11" text-anchor="middle" opacity="0.7">Aft hold</text>
+<text x="430" y="98" fill="currentColor" font-size="11" text-anchor="middle" opacity="0.7">Fore hold</text>
+<!-- cargo boxes: deck -->
+<rect x="244" y="72" width="34" height="24" rx="2" fill="#12A594" fill-opacity="0.14" stroke="#12A594" stroke-width="1"/>
+<rect x="284" y="72" width="44" height="24" rx="2" fill="#12A594" fill-opacity="0.14" stroke="#12A594" stroke-width="1"/>
+<!-- aft hold boxes (stacked) -->
+<rect x="92" y="140" width="40" height="26" rx="2" fill="#12A594" fill-opacity="0.14" stroke="#12A594" stroke-width="1"/>
+<rect x="140" y="140" width="40" height="26" rx="2" fill="#12A594" fill-opacity="0.14" stroke="#12A594" stroke-width="1"/>
+<rect x="92" y="112" width="40" height="26" rx="2" fill="#12A594" fill-opacity="0.14" stroke="#12A594" stroke-width="1"/>
+<!-- fore hold boxes -->
+<rect x="330" y="140" width="52" height="26" rx="2" fill="#12A594" fill-opacity="0.14" stroke="#12A594" stroke-width="1"/>
+<rect x="392" y="140" width="36" height="26" rx="2" fill="#12A594" fill-opacity="0.14" stroke="#12A594" stroke-width="1"/>
+<!-- weight gauge on fore hold -->
+<text x="476" y="138" fill="currentColor" font-size="10" opacity="0.7">390 / 500 t</text>
+<rect x="476" y="144" width="74" height="8" rx="2" fill="none" stroke="currentColor" stroke-width="0.8" opacity="0.5"/>
+<rect x="477" y="145" width="56" height="6" rx="1.5" fill="#12A594" fill-opacity="0.45"/>
+<text x="300" y="198" fill="currentColor" font-size="11" text-anchor="middle" opacity="0.65"><tspan font-family="var(--md-code-font,monospace)">place_cargo_3d</tspan> drops each item into the first bin where it fits without exceeding the cap.</text>
+</svg>
+
 ---
 
 ## What a bin is

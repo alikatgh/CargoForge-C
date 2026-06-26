@@ -2,6 +2,31 @@
 
 A ship's tanks are rarely empty or brim-full. When a tank is partially filled, the liquid inside sloshes — and that sloshing effectively raises the vessel's centre of gravity even though no mass has moved upward. CargoForge-C models this effect through the **free-surface correction** computed in `src/tanks.c`, then tests the corrected stability against six mandatory IMO thresholds checked in `src/analysis.c`.
 
+<svg viewBox="0 0 600 220" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:580px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+<title>Free surface effect: sloshing liquid raises the effective centre of gravity</title>
+<desc>A partly filled tank. Upright, the liquid's centroid sits on the centreline. When the ship heels, the liquid surface stays horizontal so the liquid forms a wedge toward the low side and its centroid shifts there. That shift acts like raising the ship's centre of gravity, which reduces GM. CargoForge-C subtracts a virtual rise computed from the free-surface moment.</desc>
+<defs><marker id="fs-ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 1 L9 5 L0 9 Z" fill="#D05663"/></marker></defs>
+<text x="40" y="30" fill="currentColor" font-size="12" font-weight="600">upright</text>
+<text x="330" y="30" fill="currentColor" font-size="12" font-weight="600">heeled</text>
+<!-- upright tank -->
+<rect x="48" y="48" width="180" height="110" rx="3" fill="none" stroke="currentColor" stroke-width="1.3" opacity="0.8"/>
+<rect x="49" y="106" width="178" height="51" fill="#12A594" fill-opacity="0.18"/>
+<line x1="49" y1="106" x2="227" y2="106" stroke="#12A594" stroke-width="1.3"/>
+<circle cx="138" cy="130" r="4" fill="#D05663"/><text x="138" y="148" fill="#D05663" font-size="10" text-anchor="middle">g</text>
+<!-- heeled tank -->
+<g transform="rotate(13 420 110)">
+<rect x="330" y="48" width="180" height="110" rx="3" fill="none" stroke="currentColor" stroke-width="1.3" opacity="0.8"/>
+</g>
+<!-- liquid surface stays horizontal -> wedge; draw shifted liquid + g -->
+<path d="M338,150 L500,113 L500,158 L338,170 Z" fill="#12A594" fill-opacity="0.18"/>
+<line x1="338" y1="150" x2="500" y2="113" stroke="#12A594" stroke-width="1.3"/>
+<circle cx="452" cy="142" r="4" fill="#D05663"/><text x="452" y="160" fill="#D05663" font-size="10" text-anchor="middle">g</text>
+<line x1="392" y1="132" x2="446" y2="142" stroke="#D05663" stroke-width="1.4" stroke-dasharray="3 2" marker-end="url(#fs-ar)"/>
+<text x="540" y="100" fill="currentColor" font-size="10.5" opacity="0.7" text-anchor="end">g shifts low</text>
+<text x="300" y="196" fill="currentColor" font-size="11" text-anchor="middle" opacity="0.7">The shift acts like raising KG, so <tspan font-family="var(--md-code-font,monospace)">GM</tspan> drops:</text>
+<text x="300" y="213" fill="#12A594" font-size="11.5" text-anchor="middle" font-weight="600">GM_corrected = GM − FSC,  FSM = ρ·l·b³⁄12  (src/tanks.c)</text>
+</svg>
+
 ---
 
 ## Why partial fill is dangerous
