@@ -1,0 +1,69 @@
+/* Sakha-LLM 101 — restrained editorial overrides on Material.
+   Goals: hairline borders, no card shadows, hierarchy in weight/size not color,
+   one quiet accent, comfortable reading measure, tabular numbers. */
+
+:root {
+  --md-accent-fg-color: #9e1c17;          /* one quiet brick accent */
+  --md-typeset-a-color: #9e1c17;
+}
+[data-md-color-scheme="slate"] {
+  --md-accent-fg-color: #e07a73;
+  --md-typeset-a-color: #e89992;
+  --md-default-bg-color: #0e1116;
+  --md-default-fg-color--lightest: #232a35;
+}
+
+/* Reading column + rhythm */
+.md-grid { max-width: 56rem; }
+.md-typeset { line-height: 1.75; font-feature-settings: "tnum" 1, "kern" 1, "liga" 1; }
+.md-typeset p, .md-typeset li { letter-spacing: -0.003em; }
+
+/* Headings: weight + size do the work, not color */
+.md-typeset h1 { font-weight: 700; letter-spacing: -0.02em; }
+.md-typeset h2 { font-weight: 650; letter-spacing: -0.01em; margin-top: 2.4em;
+  padding-top: 1.2em; border-top: 1px solid var(--md-default-fg-color--lightest); }
+.md-typeset h3 { font-weight: 600; }
+
+/* Flat surfaces — kill shadows, hairline everything */
+.md-header { box-shadow: none; border-bottom: 1px solid var(--md-default-fg-color--lightest); }
+.md-typeset .admonition, .md-typeset details {
+  box-shadow: none;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 8px;
+  font-size: 0.95em;
+}
+.md-typeset pre > code { border-radius: 8px; }
+[data-md-color-scheme="default"] .md-typeset pre > code { border: 1px solid #ececec; }
+
+/* Objectives blockquote: quiet, no loud fill — a thin rule + muted text */
+.md-typeset blockquote {
+  border-left: 2px solid var(--md-default-fg-color--lighter);
+  color: var(--md-default-fg-color--light);
+  margin-left: 0;
+}
+
+/* Tables: hairline, tabular */
+.md-typeset table:not([class]) { box-shadow: none; border: 1px solid var(--md-default-fg-color--lightest); }
+.md-typeset table:not([class]) th { font-weight: 600; }
+
+/* "Try it" / "Check yourself" headings sit a little quieter */
+.md-typeset h2[id^="try-it"], .md-typeset h2[id^="check-yourself"] { border-top-style: dashed; }
+
+/* ── Collapsible sidebars (custom header toggles) ───────────────────
+   Two header buttons hide the left (navigation) and right (contents)
+   sidebars; the freed width flows into the reading column. */
+.sl-toggle { display: none; cursor: pointer; }
+.sl-toggle svg { width: 1.2rem; height: 1.2rem; }
+.sl-toggle.sl-active { color: var(--md-accent-fg-color); }   /* lit when its panel is hidden */
+
+/* Left toggle + hide the navigation sidebar — only where it's a real sidebar
+   (below this width Material already turns it into the hamburger drawer). */
+@media screen and (min-width: 76.25em) {
+  .sl-toggle--nav { display: inline-flex; }
+  html.sl-nav-hidden .md-sidebar--primary { display: none; }
+}
+/* Right toggle + hide the table-of-contents sidebar. */
+@media screen and (min-width: 60em) {
+  .sl-toggle--toc { display: inline-flex; }
+  html.sl-toc-hidden .md-sidebar--secondary { display: none; }
+}

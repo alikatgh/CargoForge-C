@@ -1,0 +1,251 @@
+# CLI, git, and reproducible builds
+
+Every program you write eventually has to be compiled, versioned, tested, and shipped — in a way that anyone can reproduce exactly. This lesson walks through how CargoForge-C handles all three: the shell commands you use day-to-day, the `Makefile` that automates building, and the GitHub Actions workflow that re-runs those same steps on every change. Understanding this infrastructure is what separates "code that works on my machine" from code you can trust in production.
+
+---
+
+## The shell and the binary
+
+CargoForge-C compiles to a single executable called `cargoforge`. Once built, you run it from the terminal (also called a shell or command line). A shell is a text interface to your operating system: you type a command, press Enter, and the OS executes it.
+
+The most basic interaction looks like this:
+
+```bash
+./cargoforge optimize examples/sample_ship.cfg examples/sample_cargo.txt
+```
+
+Breaking this down:
+
+- `./cargoforge` — the `./` prefix means "look in the current directory for a file named `cargoforge` and run it". Without `./`, the shell would search the system-wide `PATH` instead.
+- `optimize` — a **subcommand**. CargoForge-C uses the same pattern as tools like `git` or `docker`: the first argument selects what the program does. Other subcommands are `validate`, `info`, `serve`, `version`, and `help`.
+- `examples/sample_ship.cfg` and `examples/sample_cargo.txt` — arguments to the subcommand: the ship configuration file and the cargo manifest.
+
+Other output formats are available via a flag:
+
+```bash
+./cargoforge optimize examples/sample_ship.cfg examples/sample_cargo.txt --format json
+```
+
+Valid formats are `human` (default), `json`, `csv`, `table`, and `markdown`. The `json` format is what the HTTP server and library consumers receive.
+
+!!! note "Stdin as input"
+    Both the ship config and cargo manifest parsers accept `"-"` as the filename, which means "read from standard input." This lets you pipe data without touching the filesystem:
+    ```bash
+    cat examples/sample_cargo.txt | ./cargoforge optimize examples/sample_ship.cfg -
+    ```
+
+---
+
+## What `make` does
+
+Compiling a C program by hand means invoking `gcc` with a list of source files, flags, and output names. For a project with ten source files and eight test binaries, that list becomes unmanageable — and you'd have to recompile everything even if only one file changed. `make` solves both problems.
+
+The `Makefile` at the root of CargoForge-C is a set of **rules**. Each rule says: "to produce target X, you need files Y and Z; if any of them are newer than X, run this command." `make` compares timestamps and only recompiles what changed.
+
+### The compiler flags
+
+Every object file and binary is compiled with the same flags, declared at the top of the `Makefile`:
+
+```makefile
+CC = gcc
+CFLAGS = -O3 -Wall -Wextra -std=c99 -D_POSIX_C_SOURCE=200809L -Iinclude
+LDFLAGS = -lm
+```
+
+What each flag does:
+
+| Flag | Meaning |
+|------|---------|
+| `-O3` | Optimize aggressively for speed (three levels above none) |
+| `-Wall -Wextra` | Enable a broad set of compiler warnings; warnings are treated as useful diagnostics |
+| `-std=c99` | Require strict C99 conformance — no compiler-specific extensions |
+| `-D_POSIX_C_SOURCE=200809L` | Expose POSIX.1-2008 functions (like `strtok_r`, `open_memstream`) |
+| `-Iinclude` | Add the `include/` directory to the header search path |
+| `-lm` | Link the math library (`libm`) for `sin`, `cos`, `atan`, etc. |
+
+The `-std=c99` and `-D_POSIX_C_SOURCE` flags together define a precise dialect of C. Any code that compiles under these flags will compile identically on any conforming C99 implementation — Linux, macOS, or Windows with a POSIX layer. That is what "portable" means in practice.
+
+### Source file groups
+
+The `Makefile` splits sources into two groups:
+
+```makefile
+LIB_SRCS = $(SRC_DIR)/parser.c $(SRC_DIR)/analysis.c $(SRC_DIR)/placement_3d.c \
+           $(SRC_DIR)/constraints.c $(SRC_DIR)/json_output.c \
+           $(SRC_DIR)/hydrostatics.c $(SRC_DIR)/tanks.c \
+           $(SRC_DIR)/longitudinal_strength.c $(SRC_DIR)/imdg.c \
+           $(SRC_DIR)/libcargoforge.c
+
+CLI_SRCS = $(SRC_DIR)/main.c $(SRC_DIR)/cli.c $(SRC_DIR)/visualization.c \
+           $(SRC_DIR)/server.c
+```
+
+`LIB_SRCS` is the pure engine — the stability physics, parser, placement algorithm, and public API. It has no `main()` function and no terminal output. `CLI_SRCS` is the thin shell that wraps it: argument parsing, output formatting, the HTTP server. This separation is intentional: the same `LIB_SRCS` are compiled into `libcargoforge.a` and `libcargoforge.dylib`/`.so` for use by other programs, without dragging in any CLI behaviour.
+
+### The main targets
+
+```makefile
+all: $(BUILD_DIR) $(TARGET)
+
+$(TARGET): $(ALL_OBJS)
+    $(CC) $(CFLAGS) -o $(TARGET) $(ALL_OBJS) $(LDFLAGS)
+
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c $(HDRS)
+    $(CC) $(CFLAGS) -fPIC -c $< -o $@
+```
+
+The pattern rule `$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c` compiles any `.c` file in `src/` to a `.o` (object file) in `build/`. The `-fPIC` flag ("position-independent code") is required for shared libraries; it costs nothing for a binary.
+
+The `$(TARGET)` rule then **links** all the object files into the final executable. Linking is the step where all the separately compiled pieces are joined together and external libraries (like `-lm`) are resolved.
+
+### Platform detection
+
+```makefile
+UNAME := $(shell uname -s)
+ifeq ($(UNAME),Darwin)
+  SHARED_EXT = dylib
+  SHARED_FLAGS = -dynamiclib -install_name @rpath/libcargoforge.$(SHARED_EXT)
+else
+  SHARED_EXT = so
+  SHARED_FLAGS = -shared -Wl,-soname,libcargoforge.$(SHARED_EXT)
+endif
+```
+
+macOS uses `.dylib` for shared libraries; Linux uses `.so`. The `Makefile` queries the OS at build time with `$(shell uname -s)` and sets the right extension automatically. This is a simple but real example of cross-platform portability handled in the build system rather than the source code.
+
+### Other useful targets
+
+| Target | What it does |
+|--------|--------------|
+| `make` | Build `cargoforge` (the default `all` target) |
+| `make lib` | Build `libcargoforge.a` and the shared library only |
+| `make test` | Build and run all 8 test binaries |
+| `make test-asan` | Rebuild with AddressSanitizer + UBSan, then run tests |
+| `make test-valgrind` | Run each test binary under Valgrind memory checker |
+| `make fuzz` | Run the random-input fuzzer (`scripts/fuzz.sh`) |
+| `make clean` | Delete `build/`, the binary, libs, and all test binaries |
+| `make install` | Copy binary, libs, and header to `/usr/local` (configurable via `PREFIX`) |
+| `make validate` | Run the DNV-SE-0475 benchmark vessel validation |
+| `make wasm` | Compile to WebAssembly with Emscripten (`emcc` required) |
+
+!!! tip "Always run `make clean` before a sanitizer build"
+    The `test-asan` target does this for you — notice the rule: `test-asan: clean all test`. This is because object files compiled without sanitizer flags cannot be mixed with ones compiled with them. A partial rebuild would silently skip the sanitizer on older files.
+
+---
+
+## git basics
+
+`git` is a version control system. It records every change to your code as a **commit** — a snapshot with a unique ID (a 40-character hash), a message, an author, and a timestamp. A collection of commits forms a **repository**.
+
+The most important commands:
+
+```bash
+git status          # what files have changed since the last commit?
+git diff            # what exactly changed in those files?
+git add src/parser.c  # stage a file (mark it for inclusion in the next commit)
+git commit -m "fix: null-out cargo pointer on parse error"
+git log --oneline   # one-line summary of recent commits
+git push            # send commits to the remote repository (GitHub)
+```
+
+### Why commit messages matter
+
+A commit message is a permanent record of *why* a change was made. The fix described in the digest — nulling out `ship->cargo` after freeing it to prevent a heap-use-after-free — belongs in a commit message, not just a code comment. Future developers (including your future self) will read it and understand the intent without reconstructing it from the diff.
+
+A common convention: start with a short prefix that classifies the change. For example:
+- `fix:` — a bug fix
+- `feat:` — a new feature
+- `test:` — adding or changing tests
+- `docs:` — documentation only
+
+### Branches and pull requests
+
+When you want to work on a new feature or a fix without disturbing the main history, you create a **branch** — a parallel line of commits. When the work is ready, you open a **pull request** (PR) on GitHub, which asks for the branch to be merged into `main`. This is where CI runs (see next section).
+
+---
+
+## Why deterministic builds matter
+
+"Deterministic" means: given the same source code and the same flags, the compiler always produces the same binary. CargoForge-C achieves this by:
+
+1. **Pinning the C standard.** `-std=c99` excludes any GCC-specific behaviour that might vary between versions.
+2. **Explicit POSIX level.** `-D_POSIX_C_SOURCE=200809L` is the same constant on any POSIX-conformant system. If this were unset, different Linux distributions might expose different sets of functions.
+3. **No generated code.** There is no code-generation step — every `.c` file is hand-written and committed. Nothing in the build is random or time-dependent.
+
+This matters for safety-critical software. If a stability calculation gives a different answer on the port authority's server than on your laptop, you cannot trust either. Determinism is the foundation of correctness.
+
+---
+
+## Continuous Integration (CI)
+
+Continuous Integration (CI) means: every time someone pushes code or opens a pull request, an automated system checks whether the code still builds and passes tests. If it does not, the PR is blocked.
+
+CargoForge-C uses GitHub Actions. The workflow is defined in `.github/workflows/c-build.yml`:
+
+```yaml
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Compile the project
+        run: make
+
+      - name: Run a basic test
+        run: ./cargoforge examples/sample_ship.cfg examples/sample_cargo.txt
+```
+
+### Reading the workflow
+
+- **`on:`** — when to run. This workflow runs on every push to `main` and on every PR that targets `main`.
+- **`jobs: build:`** — a single job named `build`. A job is a sequence of steps that runs on one machine.
+- **`runs-on: ubuntu-latest`** — GitHub provides a fresh Ubuntu virtual machine for each run. "Fresh" matters: the machine has no state from previous runs, so if something only works because a file was left over from last time, CI will catch it.
+- **`actions/checkout@v4`** — a pre-built action that clones the repository into the VM.
+- **`run: make`** — exactly the same command you type locally. If the compiler flags, source list, or any header has a problem, this step fails and the PR is blocked.
+- **`run: ./cargoforge examples/sample_ship.cfg examples/sample_cargo.txt`** — a smoke test: run the binary on the sample files and verify it exits cleanly (exit code 0). A non-zero exit code fails the step.
+
+### What CI cannot replace
+
+The CI workflow above is a minimal smoke test — it verifies compilation and a basic end-to-end run, but it does not run the eight unit test binaries (`make test`), the memory-safety suite (`make test-asan`), or the benchmark validation (`make validate`). Those are available locally and can be added to the workflow as additional steps. The lesson: CI is only as thorough as the commands you put in it.
+
+!!! warning "The environment is always clean"
+    Local development accumulates state: cached binaries, leftover files, environment variables set in your shell profile. CI starts clean every time. A build that passes locally but fails in CI almost always means the local build relied on something not committed to the repository — a missing `make clean`, an untracked file, or a system library that is not standard.
+
+---
+
+## Putting it together: a complete workflow
+
+Here is what happens from a code change to a merged PR:
+
+1. You edit `src/parser.c` to fix a bug.
+2. `make test-asan` — rebuild with sanitizers, run all 8 tests. Fix any failures.
+3. `git add src/parser.c` — stage the changed file only.
+4. `git commit -m "fix: null cargo pointer on parse error to prevent UAF"` — commit with a clear message.
+5. `git push origin my-fix-branch` — push to GitHub.
+6. Open a pull request. GitHub Actions automatically starts the CI job.
+7. CI runs `make` then `./cargoforge examples/...` on a clean Ubuntu VM.
+8. If both steps pass, the PR shows a green check. A reviewer can then merge it to `main`.
+
+---
+
+## Recap
+
+- `cargoforge` is invoked as `./cargoforge <subcommand> <ship_cfg> <cargo_manifest>`, with optional `--format` for output style.
+- The `Makefile` encodes the complete build recipe: compiler, flags, source groups, test binaries, and platform detection. `make` only recompiles what changed.
+- `-std=c99 -D_POSIX_C_SOURCE=200809L` pins the language dialect exactly, making the build portable and deterministic across systems.
+- `git` records every change as a committed snapshot with a message; branches and pull requests gate changes through review and CI.
+- The GitHub Actions workflow in `.github/workflows/c-build.yml` re-runs `make` and a smoke test on a clean Ubuntu VM on every push and PR, catching regressions before they reach `main`.
+- CI is only as thorough as its step list — `make test`, `make test-asan`, and `make validate` are available but must be added explicitly to gain their protection in CI.
+
+*Next: [Lab 1 — Build and Run It](lab-01-foundations.md).*

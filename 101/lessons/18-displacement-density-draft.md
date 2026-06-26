@@ -1,0 +1,278 @@
+# Displacement, density, and draft
+
+Every stability number in CargoForge-C — GM, trim, heel, the IMO criteria — depends on knowing
+how deep the ship sits in the water. That depth is **draft**, and it follows directly from two
+physical quantities: how much the ship weighs (its **displacement**) and how dense the water is.
+This lesson walks through the physics and then traces exactly how `perform_analysis` in
+`src/analysis.c` derives draft from first principles, with a real hydrostatic table as the
+preferred path and a box-hull formula as the fallback.
+
+---
+
+## What displacement means
+
+The word "displacement" comes from Archimedes: a floating body displaces a volume of water
+equal in *weight* to the body itself. So a ship that weighs 15 000 tonnes displaces exactly
+15 000 tonnes of water, regardless of its shape.
+
+In CargoForge-C the displacement in kilograms is assembled in `perform_analysis`
+(`src/analysis.c`):
+
+```c
+float displacement_kg = ship->lightship_weight + r.total_cargo_weight_kg;
+
+/* Include tank weight in displacement if tanks are loaded */
+float tank_weight_t = 0.0f;
+if (ship->tanks && ship->tanks->count > 0) {
+    tank_weight_t = calculate_tank_weight(ship->tanks);
+    displacement_kg += tank_weight_t * 1000.0f;
+}
+```
+
+Three contributors, always:
+
+| Term | Source |
+|---|---|
+| `ship->lightship_weight` | Ship config key `lightship_weight_tonnes` × 1000 (kg) |
+| `r.total_cargo_weight_kg` | Sum of placed cargo items only (`pos_x >= 0`) |
+| `tank_weight_t * 1000` | Sum of (length × breadth × height × fill × density) for each tank |
+
+The guard `if (c->pos_x < 0) continue;` in the cargo accumulation loop means unplaced items do
+not contribute to displacement. A container sitting on the dock weighs nothing for purposes of
+how deep the ship floats.
+
+!!! note "Tonnes versus kilograms"
+    The code stores all weights internally in **kilograms** but the physics of buoyancy works
+    more naturally in **tonnes** (1 t = 1000 kg). You will see `displacement_t =
+    displacement_kg / 1000.0f` immediately after the accumulation. Both variables live together
+    for the rest of `perform_analysis`; always check the suffix (`_kg` vs `_t`) before using one
+    in a formula.
+
+---
+
+## From mass to volume: the density step
+
+A tonne of seawater and a tonne of fresh water occupy different volumes. CargoForge-C uses the
+standard oceanographic value at 15 °C:
+
+```c
+#define SEAWATER_DENSITY    1.025f  /* t/m3 at 15C */
+```
+
+The **displaced volume** is:
+
+$$V = \frac{\Delta}{\rho}$$
+
+where $\Delta$ is displacement in tonnes and $\rho$ is seawater density in t/m³. In code
+(`src/analysis.c`):
+
+```c
+float displacement_t = displacement_kg / 1000.0f;
+float displaced_vol  = displacement_t / SEAWATER_DENSITY;
+```
+
+If the ship displaces 10 000 t, it displaces $10\,000 / 1.025 \approx 9756\,\text{m}^3$ of
+water. This volume is the geometric quantity that determines how deep the hull must sit.
+
+!!! tip "Why 1.025 and not 1.000?"
+    Pure fresh water is 1.000 t/m³. Seawater carries dissolved salts — roughly 35 grams per
+    litre at open-ocean salinity — raising its density to about 1.025 t/m³. A ship loaded to
+    its freshwater marks will sink slightly deeper than at its saltwater marks. CargoForge-C
+    uses the seawater value throughout.
+
+---
+
+## Draft: how deep the hull sits
+
+Given the displaced volume, draft $T$ can be found if you know the shape of the underwater
+hull. CargoForge-C supports two modes.
+
+### Box-hull fallback
+
+When no hydrostatic CSV is loaded (`ship->hydro` is NULL), the code treats the hull as a
+rectangular box scaled by two empirical coefficients:
+
+$$T = \frac{V}{L \times B \times C_b}$$
+
+```c
+#define BLOCK_COEFF  0.75f   /* Cb: underwater hull vol / bounding box */
+
+/* ---- Legacy box-hull fallback ---- */
+r.hydro_table_used = 0;
+r.draft = displaced_vol / (ship->length * ship->width * BLOCK_COEFF);
+```
+
+The **block coefficient** $C_b = 0.75$ accounts for the fact that a real hull is not a
+perfect rectangular prism — the bow tapers, the bilge rounds, the stern narrows. A typical
+cargo ship has $C_b$ between 0.65 and 0.85; 0.75 is a reasonable midpoint for a first
+approximation.
+
+| Quantity | Symbol | Value in code |
+|---|---|---|
+| Displaced volume | $V$ | `displaced_vol` (m³) |
+| Ship length | $L$ | `ship->length` (m) |
+| Ship beam | $B$ | `ship->width` (m) |
+| Block coefficient | $C_b$ | `BLOCK_COEFF = 0.75` |
+
+!!! warning "Approximation, not precision"
+    The box-hull formula ignores hull form entirely. It can over- or under-estimate draft by
+    10–20 % on a real ship. Use it only when no hydrostatic table is available, and always
+    prefer the table path in production.
+
+### Table-based draft (preferred path)
+
+A hydrostatic table is a pre-computed lookup: at each possible draft, a naval architect has
+calculated displacement (and KB, BM, MTC, and so on) from the actual hull geometry. Loading
+one with the ship config key `hydrostatic_table` switches `perform_analysis` to the accurate
+path:
+
+```c
+if (ship->hydro && ship->hydro->loaded) {
+    r.hydro_table_used = 1;
+    r.draft = hydro_draft_from_displacement(ship->hydro, displacement_t);
+
+    HydroEntry he;
+    hydro_interpolate(ship->hydro, r.draft, &he);
+
+    r.kb = he.kb;
+    r.bm = he.bm;
+    /* ... */
+}
+```
+
+Two functions in `src/hydrostatics.c` do the work.
+
+#### `hydro_draft_from_displacement` — inverse interpolation
+
+The table is indexed by draft, but here we know displacement and need draft. The function
+searches the table for the two rows that bracket the target displacement, then interpolates:
+
+```c
+float hydro_draft_from_displacement(const HydroTable *table, float displacement_t) {
+    for (int i = 0; i < table->count - 1; i++) {
+        float disp_lo = table->entries[i].displacement;
+        float disp_hi = table->entries[i + 1].displacement;
+
+        if (displacement_t >= disp_lo && displacement_t <= disp_hi) {
+            float range = disp_hi - disp_lo;
+            float t = (range > 1e-6f) ? (displacement_t - disp_lo) / range : 0.0f;
+            return lerp(table->entries[i].draft, table->entries[i + 1].draft, t);
+        }
+    }
+    return table->entries[table->count - 1].draft;
+}
+```
+
+The interpolation fraction $t$ is:
+
+$$t = \frac{\Delta - \Delta_{\text{lo}}}{\Delta_{\text{hi}} - \Delta_{\text{lo}}}$$
+
+and draft is then $T = T_{\text{lo}} + t \times (T_{\text{hi}} - T_{\text{lo}})$. The guard
+`range > 1e-6f` avoids a divide-by-zero if two consecutive rows happen to have identical
+displacement.
+
+#### `hydro_interpolate` — forward interpolation at that draft
+
+Once draft is known, `hydro_interpolate` returns KB, BM, MTC, and the other properties for
+that exact draft by the same linear approach:
+
+```c
+float range = hi->draft - lo->draft;
+float t = (range > 1e-6f) ? (draft - lo->draft) / range : 0.0f;
+interpolate_entries(lo, hi, t, result);
+```
+
+`interpolate_entries` applies `lerp` component-by-component to every field of `HydroEntry`.
+
+#### The CSV format
+
+A hydrostatic table CSV requires at least 7 columns per row, in ascending draft order:
+
+```
+# draft_m, displacement_t, km_m, kb_m, bm_m, tpc_t_per_cm, mtc_tm_per_cm
+3.0,  4200, 5.80, 1.59, 4.21, 8.4,  55.2
+4.0,  5800, 5.72, 2.12, 3.60, 8.7,  58.6
+5.0,  7500, 5.68, 2.65, 3.03, 9.1,  62.1
+```
+
+`parse_hydro_table` (`src/hydrostatics.c`) rejects rows with fewer than 7 fields and enforces
+the ascending-draft invariant:
+
+```c
+if (table->count > 0 &&
+    e->draft <= table->entries[table->count - 1].draft) {
+    fprintf(stderr, "Error: Hydrostatic table not in ascending draft order ...\n");
+    return -1;
+}
+```
+
+A minimum of 2 rows is required — you cannot interpolate with only one point.
+
+---
+
+## Overweight rejection
+
+Before any draft or stability calculation is attempted, `perform_analysis` checks whether the
+total displacement exceeds the ship's structural limit:
+
+```c
+if (displacement_kg > ship->max_weight) {
+    r.gm = NAN;
+    return r;
+}
+```
+
+Returning `NAN` in `r.gm` is the signal used throughout the codebase (including JSON output
+and the CLI report) that the loading plan is invalid. No further physics is computed.
+
+---
+
+## How the pieces connect
+
+The chain from loading plan to draft is short and clean:
+
+$$\underbrace{\text{cargo weights + lightship + tanks}}_{\text{displacement}_{\,\Delta\,\text{(kg)}}}
+\xrightarrow{\div 1000}
+\Delta\,\text{(t)}
+\xrightarrow{\div \rho}
+V\,\text{(m}^3\text{)}
+\xrightarrow{\text{hull geometry}}
+T\,\text{(m)}$$
+
+Draft $T$ then feeds into every subsequent calculation: KB depends on $T$, BM depends on the
+displaced volume, trim uses the hydrostatic MTC at $T$, and longitudinal strength integrates
+over the load at each of 20 hull stations spaced along the full length.
+
+!!! example "Concrete numbers"
+    A ship with $L = 150\,\text{m}$, $B = 22\,\text{m}$, lightship 8 000 t, carrying
+    4 500 t of placed cargo and 200 t in tanks:
+
+    $$\Delta = 8000 + 4500 + 200 = 12\,700\,\text{t}$$
+
+    $$V = \frac{12700}{1.025} \approx 12\,390\,\text{m}^3$$
+
+    Box-hull draft: $T = \frac{12390}{150 \times 22 \times 0.75} \approx 5.02\,\text{m}$
+
+    If a hydrostatic table bracketed this displacement between 12 500 t at 5.05 m and
+    13 000 t at 5.30 m, the table path would give:
+    $t = (12700 - 12500)/(13000 - 12500) = 0.40$,
+    $T = 5.05 + 0.40 \times 0.25 = 5.15\,\text{m}$ — a 13 cm difference, which matters for
+    GM and for checking freeboard limits.
+
+---
+
+## Recap
+
+- **Displacement** is the total weight of ship + cargo + tanks, measured in tonnes. A floating
+  body displaces its own weight in water.
+- **Displaced volume** = displacement (t) / seawater density (1.025 t/m³). This is the
+  geometric quantity that determines how deep the hull sits.
+- **Draft (box-hull fallback)** = displaced volume / (L × B × $C_b$), with $C_b = 0.75$.
+  Fast but approximate.
+- **Draft (table path)** uses `hydro_draft_from_displacement` to inverse-interpolate the
+  ship's pre-computed hydrostatic table — accurate because it reflects the real hull form.
+- Once draft is known, `hydro_interpolate` returns KB, BM, MTC and the rest, which feed
+  every downstream stability calculation.
+- An overweight loading plan is caught before any physics: `r.gm = NAN` signals rejection.
+
+*Next: [The box-hull model](19-the-box-hull-model.md).*
