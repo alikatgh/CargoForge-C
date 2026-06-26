@@ -2,6 +2,20 @@
 
 [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c) is the mathematical heart of CargoForge-C. It takes a fully populated `Ship` struct — loaded cargo, tanks, hull data — and produces a single `AnalysisResult` that answers the question every naval architect asks: *is this loading condition safe?* Understanding how `perform_analysis` is structured teaches you both the naval architecture and how a real C program organises a multi-step computation into one clean function.
 
+## What this actually means (plain English)
+
+No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
+
+- **`perform_analysis`** = "the single function that does all the stability maths in one clean sweep" — it takes the fully loaded `Ship` struct and returns a complete `AnalysisResult` by value, reading everything and changing nothing, so the same ship always produces the same answer.
+- **GM (metacentric height)** = "how strongly the ship wants to snap back upright when it tilts" — computed as `KB + BM - KG`; a positive GM means self-righting, a negative GM means capsize, and `gm_corrected` (after free-surface adjustment) is what every IMO criterion actually checks.
+- **Free-surface correction** = "a penalty applied to GM because liquid in a partly-filled tank sloshes sideways and acts like extra topweight" — `calculate_virtual_kg_rise` sums each tank's `ρ·l·b³/12` term (breadth cubed, because a wider tank shifts more per degree), then subtracts the result from GM before any safety check.
+- **Sentinel values** = "special marker values that signal 'skip this' or 'something went wrong' without crashing" — `pos_x < 0` marks cargo that `place_cargo_3d` could not fit and should be ignored in the cargo loop; `NAN` in `r.gm` signals an overweight rejection and propagates cleanly through all downstream code.
+- **GZ (righting lever) and the wall-sided formula** = "GZ is the horizontal distance that acts like a spring pulling a heeled ship back upright, and the wall-sided formula approximates it with just GM and BM" — `gz_at_angle` uses `sin θ · (GM + BM·tan²θ/2)` and is valid to roughly 40°, which is exactly where the six IMO area/height thresholds sit.
+- **Hydrostatic table vs. box-hull fallback** = "two modes for finding draft, KB, and BM — real measured hull geometry from a CSV, or a rectangle approximation using `BLOCK_COEFF`, `WATERPLANE_COEFF`, and `KB_FACTOR`" — the table path calls `hydro_interpolate`; the fallback uses the three constants and is fine for planning but not for final certification.
+- **`imo_compliant`** = "a single 0-or-1 flag that is 1 only when all six IMO thresholds from MSC.267(85) pass simultaneously" — GM ≥ 0.15 m, GZ at 30° ≥ 0.20 m, maximum GZ angle ≥ 25°, and three area-under-GZ-curve limits; five out of six still means 0.
+
+**Why it matters:** if you misread a sentinel (`NAN` treated as zero, or a negative-position item counted), your stability numbers will be wrong in ways the code cannot detect — a ship could appear IMO-compliant while carrying phantom cargo or using an uncorrected GM, and a real vessel loaded on those numbers would be unsafe at sea.
+
 ---
 
 ## The conductor function

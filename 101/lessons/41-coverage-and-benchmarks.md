@@ -2,6 +2,22 @@
 
 Writing tests is one thing; knowing whether your tests exercise the code that actually matters is another. This lesson covers two complementary tools CargoForge-C uses to answer that question: `gcov` for line coverage and a purpose-built benchmark harness ([`validation/validate_benchmark.c`](https://github.com/alikatgh/CargoForge-C/blob/main/validation/validate_benchmark.c)) that validates the calculation engine against known good values for three vessel types, meeting the requirements of DNV-SE-0475 type approval.
 
+## What this actually means (plain English)
+
+No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
+
+- **Line coverage** = "a count of which source lines the CPU actually ran during your tests" — `gcov` instruments the compiled object files so that every executed line increments a counter; unexecuted lines show up as `#####` in the `.gcov` report, telling you exactly where your tests have blind spots.
+- **`-O0` when building for coverage** = "turn off the compiler's shortcuts so every line stays visible" — optimisation can inline or merge lines until they vanish from the coverage map, making the report lie; `-O0` keeps the source and the binary in one-to-one correspondence.
+- **Coverage as a gap-finder, not a quality certificate** = "knowing a line ran is not the same as knowing it ran correctly" — `perform_analysis` could execute every branch of `hydro_interpolate` and still return a wrong GM if the interpolation arithmetic has a sign error; coverage catches the silence, not the lie.
+- **`validate_benchmark.c` / `make validate`** = "run the real engine on three real ships and check the physics" — unlike unit tests that feed synthetic inputs to isolated functions, the benchmark harness calls `perform_analysis` on a general cargo ship, a container ship, and a bulk carrier, then compares hydrostatics, GZ values, and IMO criteria against stability-booklet reference values required by DNV-SE-0475 type approval.
+- **`CHECK_ABS` vs `CHECK_REL` tolerance modes** = "pick the ruler that fits the size of the number" — a GZ area of 0.055 m·rad is checked with an absolute tolerance (±0.001 m·rad) because the number is inherently small; a displacement of 42,550 tonnes is checked with a relative tolerance (0.5%) because small absolute differences are meaningless at that scale.
+- **Manually positioned cargo in the harness (`add_cargo`)** = "fix the inputs so the benchmark never silently changes" — instead of calling the 3D bin-packer, the harness sets `pos_x`, `pos_y`, `pos_z` directly (mirroring what `parse_cargo_list` stores in the `Cargo` struct); if the packer's heuristic ever changes, the reference numbers stay stable.
+- **Wall-sided formula cross-check (Test 4)** = "recompute GZ independently in the test and demand the engine agrees" — the harness calculates $GZ(\theta)=\sin\theta(GM + BM\tan^2\theta/2)$ itself and asserts it matches `r.gz_at_30` from `perform_analysis` to within 0.01 m, catching unit or sign errors in `gz_at_angle` without needing an external reference value.
+
+**Why it matters:** if coverage gaps go unnoticed, error-handling paths like the malformed-DG branch in `parse_dg_field` are never exercised and can silently misbehave in production; if the benchmark isn't run in CI, a change to `hydrostatics.c` or `analysis.c` can drift outside physical tolerance and break DNV type-approval compliance before anyone notices.
+
+---
+
 ## What is line coverage?
 
 Every time the CPU executes a line of your program, a coverage tool can record that fact. After a full test run, you get a report: which lines were reached and how many times, which lines were never reached at all.

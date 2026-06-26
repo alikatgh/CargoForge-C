@@ -2,6 +2,19 @@
 
 A ship tilted by a wave, a gust of wind, or a shifting load must develop a force that pushes it back upright. Whether that force exists — and how strong it is — reduces to a single number: the **metacentric height**, GM. This lesson unpacks what GM means physically, how the equation $GM = KB + BM - KG$ is derived from first principles, and how `perform_analysis` in [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c) computes and judges it.
 
+## What this actually means (plain English)
+
+No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
+
+- **GM (metacentric height)** = "a single number that tells you whether a tilted ship will push itself back upright or keep tipping over" — if `r.gm` (computed in `perform_analysis`) is positive, the restoring force wins; if it is zero or negative, the ship is in trouble.
+- **KB, BM, KG** = "three heights measured from the ship's keel, whose difference gives you GM" — `KB` is where buoyancy acts, `KG` is where weight acts, and `BM` is the geometry bonus from hull width; `perform_analysis` computes each one before adding them with `r.gm = r.kb + r.bm - r.kg`.
+- **Righting lever GZ** = "the horizontal gap between where buoyancy pushes up and where gravity pulls down" — the larger this gap at a given heel angle, the harder the ship fights to come back; `gz_at_angle` computes it for the full GZ curve beyond small angles.
+- **Free-surface correction** = "a penalty on GM because sloshing liquid in a half-full tank acts like raising the centre of gravity" — `calculate_virtual_kg_rise` sums this penalty across all partially filled tanks and subtracts it to give `gm_corrected`, the value every subsequent check uses.
+- **Too tender / too stiff** = "two opposite loading mistakes" — a tender ship (low GM, below 0.3 m) rolls slowly but has almost no reserve against capsize; a stiff ship (GM above 3.0 m) snaps back so violently it damages cargo and crew; `print_loading_plan` flags both conditions by name.
+- **IMO criteria** = "six regulatory minimums a loaded ship must clear before sailing" — `perform_analysis` sets `imo_compliant = 1` only when `gm_corrected` and the GZ curve areas all exceed every threshold simultaneously; failing even one means the loading plan must change.
+
+**Why it matters:** A loading plan that looks fine on paper can produce a negative GM when heavy cargo is stowed too high or tanks are left half-full — the ship becomes a capsizing risk before it leaves port. `perform_analysis` exists precisely to catch this before it happens.
+
 ---
 
 ## The three heights

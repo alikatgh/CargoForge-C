@@ -26,6 +26,19 @@ C gives you two fundamentally different places to store data: the **stack**, whe
 <path d="M262,107 C322,107 338,132 394,132" fill="none" stroke="#12A594" stroke-width="1.6" marker-end="url(#sh-ar)"/>
 </svg>
 
+## What this actually means (plain English)
+
+No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
+
+- **Stack** = "a scratchpad that the CPU cleans up for you when a function finishes" — every local variable in `safe_atof` (like `end` and `val`) lives here; they vanish automatically on return, so you never have to think about them.
+- **Heap** = "a warehouse you rent yourself and must vacate yourself" — `parse_cargo_list` uses `malloc(count * sizeof(Cargo))` to rent exactly the right space for the cargo array after counting lines in the manifest; no one frees it for you.
+- **Why the cargo array must be on the heap** = "the size isn't known until you read the file, so you can't declare it at compile time" — the stack requires the size to be a constant; because a manifest can have any number of cargo items, only a runtime `malloc` call can create the right-sized array.
+- **`calloc` vs `malloc`** = "`calloc` hands you zeroed-out memory; `malloc` hands you whatever bytes were there before" — `parse_dg_field` uses `calloc` so that every field in the new `DGInfo` struct starts at zero, meaning absent manifest fields default to empty strings rather than garbage.
+- **Dangling pointer / use-after-free** = "you freed the memory but forgot to stop pointing at it, so later code reads recycled bytes it doesn't own" — the bug in `parse_cargo_list` left `ship->cargo` pointing at freed memory after an error; the fix sets `ship->cargo = NULL` and `ship->cargo_count = 0` so `ship_cleanup`'s loop never touches it.
+- **`realloc` for growing the stdin buffer** = "ask for a bigger room and move your stuff there if needed" — because stdin can't be rewound, `parse_cargo_list` starts with a small heap array and doubles it with `realloc` as lines arrive; the result is assigned to a temporary `new_lines` pointer first so the original isn't lost if the call fails.
+
+**Why it matters:** getting the stack/heap boundary wrong in C is silent — the program compiles and sometimes even runs, but corrupts memory or crashes unpredictably later. Every rule in this lesson (check `malloc`'s return, `NULL` the pointer after `free`, zero the count) exists because the consequence of skipping it is a bug that only appears in production under the right input.
+
 ---
 
 ## Two memory regions, two lifetimes

@@ -22,6 +22,19 @@ Steel is about eight times denser than water, yet a ship made of steel floats. U
 <text x="300" y="226" fill="currentColor" font-size="11.5" text-anchor="middle" opacity="0.65">Buoyancy = weight of the water pushed aside (ρ·g·V) — it floats when buoyancy balances weight.</text>
 </svg>
 
+## What this actually means (plain English)
+
+No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
+
+- **Buoyancy** = "the upward push a fluid gives anything that shoves it aside" — a steel ship floats not because steel is light but because the hollow hull pushes aside enough water that the water's weight equals the ship's; `perform_analysis` opens with exactly this balance before computing anything else.
+- **Displaced volume** = "the underwater space the hull occupies, measured in cubic metres" — once `perform_analysis` divides total displacement (tonnes) by `SEAWATER_DENSITY = 1.025`, every stability number that follows is derived from this single volume.
+- **Draft** = "how deep the hull sits in the water" — the box-hull branch finds draft by dividing displaced volume by the footprint of the hull shrunk by `BLOCK_COEFF = 0.75`; the table branch does it by searching the hydrostatic CSV with `hydro_draft_from_displacement` and linear interpolation.
+- **KB** = "height of the buoyancy force's sweet spot above the keel" — for the box-hull approximation it is `0.53 × draft`; from a real hydrostatic table it is read directly from the interpolated `HydroEntry`, because the centroid of the displaced water depends on hull shape.
+- **BM (metacentric radius)** = "how wide the waterplane is, converted into a stabilising height" — computed as waterplane inertia ($L B^3 / 12$, adjusted by `WATERPLANE_COEFF`) divided by displaced volume; a wider ship cubes its beam in this formula, which is why beam is the dominant lever for initial stability.
+- **GM** = "the safety margin that keeps the ship from rolling over" — `perform_analysis` assembles it as `r.kb + r.bm - r.kg`; a positive value means the virtual pivot point (metacentre M) sits above the centre of gravity, so any tilt generates a righting force, and the IMO minimum is 0.15 m (`IMO_GM_MIN`).
+
+**Why it matters:** if you get the displaced-volume calculation wrong — wrong density constant, wrong block coefficient, corrupted hydrostatic table — every downstream number (KB, BM, GM, free-surface correction) is wrong too, and the ship's certified stability margin is fiction.
+
 ---
 
 ## The Principle

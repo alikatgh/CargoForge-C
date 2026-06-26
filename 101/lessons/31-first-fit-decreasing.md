@@ -2,6 +2,20 @@
 
 Cargo does not arrange itself. Given a manifest of containers, machinery, and bulk bags, someone — or some algorithm — must decide which item goes where. CargoForge-C solves this with a classical combinatorial heuristic called **First-Fit Decreasing** (FFD), implemented in [`src/placement_3d.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/placement_3d.c). This lesson walks through why FFD exists, how the code applies it in three dimensions, and why the sort order matters for stability as much as it matters for packing efficiency.
 
+## What this actually means (plain English)
+
+No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
+
+- **First-Fit Decreasing (FFD)** = "sort biggest items first, then slot each one into the first place it fits" — CargoForge-C uses this as the top-level strategy in `place_cargo_3d`, sorting the entire `ship->cargo` array with `qsort` before touching a single bin.
+- **Bin** = "one named stowage zone with its own size and weight budget" — the code creates three concrete bins — `ForwardHold`, `AftHold`, and `Deck` — each modelled as a 3D box with a maximum weight; cargo must satisfy both a geometric fit and a weight check to land in a bin.
+- **`cargo_cmp_by_volume_desc`** = "a referee function that tells `qsort` which cargo item is bigger" — it multiplies each `Cargo`'s three `dimensions[]` values to get cubic metres and returns descending order, so the heaviest-footprint items go first and are never squeezed out by earlier smaller items.
+- **Six orientations** = "try rotating the box every which way before giving up" — `find_best_fit_3d` calls `get_orientation_dims` for all six permutations of length/width/height, so a container that doesn't fit standing up may still fit on its side.
+- **Tightest-fit selection** = "prefer the space that wastes the least room" — among all valid bin/space/orientation combinations, `find_best_fit_3d` keeps the one with the smallest free-space volume, which is why the lesson calls it a Best-Fit variant of FFD rather than pure FFD.
+- **`pos_x = -1.0f` sentinel** = "this item has no home yet" — when no bin can accept a cargo piece, `place_cargo_3d` marks it with negative coordinates and prints a warning; `perform_analysis` then skips it entirely so an unplaceable item never corrupts the stability numbers.
+- **Sort order as a stability policy** = "large items land in the holds, which keeps the ship's centre of gravity low" — because holds are tried before the deck and have higher headroom, the FFD sort naturally drives heavy cargo down to where it lowers KG, raises GM, and keeps the ship within the IMO 0.15 m minimum.
+
+**Why it matters:** if you sort small items first, the holds fragment early and large machinery ends up on deck, raising KG and potentially pushing GM below the safety limit — a packing algorithm that ignores sort order is also a hidden stability risk.
+
 ---
 
 ## The Problem: Bin Packing

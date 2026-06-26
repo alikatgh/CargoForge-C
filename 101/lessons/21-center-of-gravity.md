@@ -7,6 +7,19 @@ using moments, why the vertical component (KG) is the one that dominates safety
 decisions, and how `perform_analysis` in [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c) translates those
 principles into the code that runs on every voyage plan.
 
+## What this actually means (plain English)
+
+No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
+
+- **Centre of gravity** = "the single point where the whole ship's weight effectively acts" — not a physical object you can touch, but a calculated balance point that moves every time you load or shift a cargo item.
+- **Moment** = "weight multiplied by height (or distance)" — it captures how much a heavy object at a given position "pulls" the balance point; a 20 t container high on deck contributes far more to the vertical moment than the same container sitting on the keel, because its arm (`cz`) is larger in `perform_analysis`'s accumulation loop.
+- **KG** = "how high above the keel the ship's combined centre of gravity sits, in metres" — it is the single number that most directly controls whether the ship is safe, because it appears with a minus sign in `GM = KB + BM − KG`; every extra metre of KG shrinks GM by exactly one metre.
+- **GM (metacentric height)** = "the gap between where gravity pulls and where the hull's buoyancy pushes back" — `perform_analysis` computes it as `r.gm = r.kb + r.bm - r.kg`; when that gap reaches zero the ship has no self-righting ability and will capsize.
+- **`cz` = `pos_z + dimensions[2] / 2`** = "the arm used for each cargo box's vertical moment" — because a box's centre of gravity is at its geometric middle, not its bottom face; placing a 2 m box at z = 0 gives an arm of 1 m, not 0.
+- **Free-surface correction** = "a penalty subtracted from GM to account for liquid sloshing in tanks" — `perform_analysis` applies it as `r.gm_corrected = r.gm - r.free_surface_correction`, and every downstream IMO check uses the corrected value, never the raw one.
+
+**Why it matters:** if KG is computed incorrectly — wrong arm, skipped lightship seed, or an unplaced item sneaking into the loop — the GM the code reports will be wrong, and a ship that looks stable on screen may capsize at sea; the `pos_x < 0` guard in `perform_analysis` exists precisely to prevent unplaced cargo from corrupting this number.
+
 ---
 
 ## What is a centre of gravity?

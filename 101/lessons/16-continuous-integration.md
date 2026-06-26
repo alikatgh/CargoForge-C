@@ -2,6 +2,19 @@
 
 Every time a developer pushes code to CargoForge-C, a server on the internet automatically compiles the project, runs every test, and reports whether anything broke — before a single human reviewer reads a line. That automated pipeline is **continuous integration** (CI). This lesson explains what CI is, why it matters, and how CargoForge-C's workflow file encodes the exact gates every push must pass.
 
+## What this actually means (plain English)
+
+No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
+
+- **Continuous integration (CI)** = "a robot that compiles and tests your code automatically every time you push" — it catches breakage the moment it is introduced, not weeks later when a user reports a crash.
+- **Trigger (`on: push / pull_request`)** = "the list of events that wake the robot up" — CargoForge-C's workflow only fires on pushes and pull requests aimed at `main`, so experimental branches stay out of the gate.
+- **`runs-on: ubuntu-latest`** = "a brand-new Linux machine that has never seen your laptop's quirks" — if the code fails there, "works on my machine" is never a valid excuse, because the VM has no local environment assumptions baked in.
+- **Integration smoke test (`./cargoforge examples/sample_ship.cfg examples/sample_cargo.txt`)** = "run the whole program end-to-end on known-good files" — it exercises `parse_ship_config`, `parse_cargo_list`, `place_cargo_3d`, `perform_analysis`, and `print_loading_plan` in one shot, so a crash anywhere in that chain fails the pipeline.
+- **Non-zero exit code** = "any step that returns failure immediately kills the remaining steps" — if `make` cannot produce the `cargoforge` binary, the smoke-test step is skipped automatically; there is nothing to run.
+- **`make test-asan`** = "rebuild everything with AddressSanitizer and replay every unit test" — this is the gate that would have caught the heap-use-after-free in `parse_cargo_list` (freed `ship->cargo` but left `ship->cargo_count` non-zero) before the bug ever reached `main`.
+
+**Why it matters:** a one-character typo in the $GM$ accumulation loop — `+=` becoming `-=` — produces a plausible-looking stability number that manual review easily misses; CI with a regression test catches it on the exact commit that introduced it. Without CI, bugs from parallel changes (stability fix meets new parsing feature) hide until a user reports a crash weeks later.
+
 ---
 
 ## What CI actually does

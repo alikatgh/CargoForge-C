@@ -2,6 +2,19 @@
 
 Every calculation this course has covered — displacement, GM, bin-packing, IMDG checks — reaches the user through a single entry point: the command-line interface in [`src/cli.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/cli.c). This lesson explains how the CLI is structured, how `getopt_long` turns raw `argv` into structured decisions, and why CargoForge-C offers five distinct output formats for the same underlying data.
 
+## What this actually means (plain English)
+
+No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
+
+- **Subcommand dispatch** = "one binary that behaves differently depending on the first word you type after its name" — CargoForge-C reads `argv[1]` before anything else and routes it to one of six `cmd_*` functions (`cmd_optimize`, `cmd_validate`, `cmd_info`, etc.), exactly the way `git commit` and `git push` are the same binary doing different jobs.
+- **`getopt_long`** = "the standard C machinery that turns `--format=json` into a variable you can use in your code" — CargoForge-C sets `optind = 2` before the parse loop so the library skips past the subcommand token and only sees the flags that follow it.
+- **Configuration cascade** = "settings applied in layers, where later layers win" — CargoForge-C first reads `~/.cargoforgerc` (your global preferences), then `.cargoforgerc` in the current directory (project overrides), then honours whatever you typed on the command line; the CLI flag always beats the file.
+- **`FORMAT_JSON` with `null` sentinels** = "a deliberate signal that says 'the ship was overweight so no stability numbers exist'" — when `perform_analysis` sets `result->gm` to `NAN`, `fprint_json_output` emits `"overweight": true` and replaces every hydrostatic field with `null`, so a downstream program never has to guess whether a zero means "zero" or "not computed".
+- **stdout vs. stderr separation** = "data goes one place, status messages go another" — CargoForge-C writes all `[OK]` / `[WARNING]` / `[ERROR]` chatter to stderr and all formatted results to stdout, so you can pipe `cargoforge optimize ... --format json | jq` without the diagnostic lines polluting the JSON stream.
+- **`--only-placed` / `--only-failed` filters** = "a way to narrow the table view to just the cargo rows you care about" — these flags are checked inside `output_table` before each `Cargo` item is printed, and they only apply to the `table` format because JSON and CSV are meant to be filtered programmatically by the consumer.
+
+**Why it matters:** if you mix up which format to use — piping `human` output to `jq`, or checking the terminal when JSON has already nulled out all stability fields — you get garbled data or invisible failures; and if diagnostics leak into stdout, every downstream script breaks silently.
+
 ---
 
 ## Subcommands: one binary, many jobs

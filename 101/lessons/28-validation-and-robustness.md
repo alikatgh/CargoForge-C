@@ -2,6 +2,22 @@
 
 Every program eventually meets bad input — a typo in a weight field, a manifest with a missing dimension, a DG code no one has seen before. CargoForge-C must survive all of that without crashing. This lesson traces the validation strategy embedded in [`src/parser.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/parser.c), from the single function that guards every numeric field, through the error paths that clean up borrowed memory before returning, to the contract the project holds with its own fuzzer.
 
+## What this actually means (plain English)
+
+No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
+
+- **Clean rejection** = "the program says no and stops safely, instead of crashing" — `parse_ship_config` and `parse_cargo_list` both return −1 on bad input and leave the caller's memory in a safe state, which is what "clean rejection" looks like in practice.
+- **`safe_atof`** = "the one bouncer that checks every number before it's let in" — it wraps `strtof` with four checks (overflow, no digits, trailing garbage, out-of-range) and returns `NAN` as an unambiguous "refused entry" signal so the caller can test `isnan(v)` and bail immediately.
+- **NAN sentinel** = "a special float value that means 'this field failed'" — because `NAN != NAN` is always true in IEEE 754, the only reliable way to detect it is `isnan(val)`, which is exactly what every caller of `safe_atof` does.
+- **Null-after-free** = "zeroing a pointer the moment you free it, so no one accidentally uses it again" — after freeing `ship->cargo` in the error path, the code immediately sets `ship->cargo = NULL` and `ship->cargo_count = 0`; this is what stopped `ship_cleanup` from walking a freed array and triggering a heap-use-after-free.
+- **Use-after-free** = "reading memory you already gave back, which can silently corrupt data or crash" — the fuzzer caught exactly this bug in `parse_cargo_list`: freeing the cargo array but leaving the pointer non-NULL meant `ship_cleanup` later iterated it with a stale count, and AddressSanitizer flagged the access (exit code 134).
+- **Two-pass allocation** = "count the lines first, allocate once, then parse" — `parse_cargo_list` scans the file once to count non-comment lines and calls `malloc` a single time, so every subsequent error path only has one array to free rather than a chain of partial allocations.
+- **Fuzzer as enforcer** = "a script that throws adversarial inputs at the binary and treats any crash (exit ≥ 128) as a test failure" — `scripts/fuzz.sh` running under AddressSanitizer is what turned the use-after-free from a silent bug into a loud, reproducible FAIL.
+
+**Why it matters:** a ship-stability program that crashes on a bad manifest is not just annoying — it could leave a partially-loaded cargo plan in memory that a downstream analysis trusts. Getting validation and cleanup right means the only outcome for bad input is a clear error message, never a corrupted or partially-freed state.
+
+---
+
 ## The contract: never crash on bad input
 
 A crash on malformed input is not an acceptable outcome for any safety-relevant program. The CargoForge-C project expresses this as a testable invariant enforced by the fuzzer in [`scripts/fuzz.sh`](https://github.com/alikatgh/CargoForge-C/blob/main/scripts/fuzz.sh): the binary must never exit with a signal (code ≥ 128). It may reject bad data, print an error, and return a non-zero exit code — that is a clean rejection, not a failure. A crash is always a bug.

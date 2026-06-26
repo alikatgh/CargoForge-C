@@ -24,6 +24,20 @@ displacement. This lesson traces that entire pipeline: parsing, validation, forw
 <text x="280" y="214" fill="currentColor" font-size="11" text-anchor="middle" opacity="0.65">Linear interpolation between the two nearest rows (<tspan font-family="var(--md-code-font,monospace)">src/hydrostatics.c</tspan>); box model if no table.</text>
 </svg>
 
+## What this actually means (plain English)
+
+No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
+
+- **Hydrostatic table** = "a lookup chart that maps how deep the ship sits to every hull property at that depth" — instead of guessing with a generic `BLOCK_COEFF`, `perform_analysis` reads a CSV supplied by the naval architect and uses real numbers for your specific hull.
+- **`HydroEntry`** = "one row of that chart — draft, displacement, KB, BM, KM, TPC, MTC, and optionally waterplane area and LCB all in one struct" — `parse_hydro_table` fills an array of these from the CSV; the rest of the code reads from that array rather than computing approximations.
+- **Linear interpolation / `lerp`** = "splitting the gap between two known values in proportion to where your query lands" — when the ship floats at 7.389 m and the table only has rows at 7.0 m and 8.0 m, `lerp` slides 38.9 % of the way along every field simultaneously via `interpolate_entries`.
+- **Forward lookup (`hydro_interpolate`)** = "given a draft in metres, return all the hull properties at that depth" — `perform_analysis` calls this after it already knows the draft, to fill in KB, BM, KM, and the rest in one shot.
+- **Reverse lookup (`hydro_draft_from_displacement`)** = "given total weight in tonnes, figure out how deep the ship sits" — this runs first in `perform_analysis` because you know the cargo mass before you know the draft; then the result feeds straight into `hydro_interpolate`.
+- **Clamping** = "if your query is outside the table's range, return the nearest endpoint instead of guessing beyond it" — both lookup functions do this at their top and bottom boundaries so an overloaded ship gets the deepest table row rather than a made-up extrapolation.
+- **Ascending-draft validation** = "the parser refuses a table whose rows are out of order" — a hard error at parse time rather than a warning, because the bracketing loop in `hydro_interpolate` only works correctly when rows are sorted; a disorder would silently produce wrong KB and GM values.
+
+**Why it matters:** if the table is wrong, missing rows, or out-of-order, every downstream stability number — GM, trim, free-surface correction — is built on bad data, and a ship that looks stable on paper may not be; the parser's strict validation and the clamping guards exist precisely to catch those silent failure modes before they reach the final stability report.
+
 ---
 
 ## Why tables instead of formulas?

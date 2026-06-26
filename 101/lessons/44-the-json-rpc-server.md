@@ -2,6 +2,20 @@
 
 The `cargoforge serve` subcommand turns the engine into a network service: any program that can send an HTTP POST can now run a full stowage optimisation, stability analysis, or configuration check — without shell access, without linking against `libcargoforge`, and without caring which language it is written in. This lesson walks through how [`src/server.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/server.c) builds that capability from raw POSIX sockets, why it speaks JSON-RPC 2.0, and what each message looks like on the wire.
 
+## What this actually means (plain English)
+
+No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
+
+- **JSON-RPC 2.0** = "a tiny, standardised envelope for remote function calls over HTTP" — CargoForge uses it so that any caller (Python dashboard, mobile app, CI pipeline) can invoke `optimize` or `validate` by POSTing one JSON object and reading back one JSON object, with no bespoke protocol to invent.
+- **`cargoforge_serve(int port, int verbose)`** = "the single on/off switch for the whole server" — it is the only function exported from `include/server.h`; everything else (socket setup, HTTP parsing, method dispatch) lives inside `src/server.c` and is invisible to callers.
+- **`cargoforge_open` / `cargoforge_close` per request** = "each HTTP request gets its own fresh engine instance, destroyed when the response is sent" — because `CargoForge *cf` is created and freed inside every `handle_method_optimize` call, a crash or bad manifest in one request cannot corrupt the next.
+- **`SO_REUSEADDR`** = "let the server restart immediately without waiting for the OS to forget the old socket" — without this flag, restarting the process during development causes a "address already in use" error for up to two minutes while the kernel drains `TIME_WAIT` state.
+- **`SIGPIPE` ignored** = "if a client disconnects mid-response, keep running instead of dying" — `write` will return `EPIPE` which the code discards; without `SIG_IGN` the whole server process would be killed by a single impatient client.
+- **`cargoforge_load_ship_string` / `cargoforge_load_cargo_string`** = "accept a ship config or cargo manifest as an in-memory string, not a file path" — the `_string` variants use `mkstemp` + `unlink` internally so callers like `handle_method_optimize` can pass JSON-embedded text directly without touching the filesystem themselves.
+- **Method dispatch on `-32601`** = "if the caller names a method that doesn't exist, return a standardised error code, not a crash" — `dispatch_request` replies with JSON-RPC error `-32601` ("Method not found") so automated callers can detect and handle unknown methods programmatically.
+
+**Why it matters:** if you get the per-request lifecycle wrong — leaking a `CargoForge *cf`, ignoring `SIGPIPE`, or forgetting to free `cargoforge_result_json`'s string before calling `cargoforge_close` — one bad request can crash or corrupt the server for every subsequent caller. The isolation guarantees in `handle_method_optimize` are what make the single-threaded design safe to expose over a network.
+
 ---
 
 ## Why a server mode?

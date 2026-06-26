@@ -25,6 +25,19 @@ Every earlier lesson has focused on one layer: parsing, physics, placement, or a
 <text x="330" y="150" fill="currentColor" font-size="11.5" text-anchor="middle" opacity="0.65">One <tspan font-family="var(--md-code-font,monospace)">Ship</tspan> struct flows through every stage — each fills in more of it.</text>
 </svg>
 
+## What this actually means (plain English)
+
+No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
+
+- **The pipeline** = "one command triggers five stages in sequence, each handing its results to the next" — `cmd_optimize` in `cli.c` is the single function that owns this chain: it calls `parse_ship_config`, `parse_cargo_list`, `place_cargo_3d`, `perform_analysis`, `output_results`, and `ship_cleanup` in exactly that order, with one `Ship` struct flowing through all of them.
+- **`Ship` struct as the shared state** = "a single data structure that every stage reads from and writes into" — the parser fills in dimensions and the cargo array, `place_cargo_3d` sets each cargo's `pos_x/y/z`, and `perform_analysis` reads those positions to compute GM; if any stage leaves the struct half-formed, every later stage gets wrong answers.
+- **Sentinel values (`pos_x = -1.0f`, `gm = NAN`)** = "a special number baked into the data itself that means 'something went wrong here'" — instead of threading a separate error flag through every function, `perform_analysis` skips any cargo item whose `pos_x` is still `-1.0f` (never placed), and every output formatter checks `isnan(result.gm)` before printing stability numbers.
+- **`safe_atof` and fail-fast validation** = "stop the moment any input number is bad, rather than carrying garbage silently forward" — if a weight or dimension string in `parse_cargo_list` is out of range, the parser immediately returns `-1`, and `cmd_optimize` aborts before any placement or physics runs, preventing the heap-use-after-free bug that would follow if a half-built cargo array were freed twice.
+- **Guillotine bin-packing (`split_space_3d`, `find_best_fit_3d`)** = "cut the remaining free space into up to three smaller rectangles every time a box is placed" — the three bins (`ForwardHold`, `AftHold`, `Deck`) each start as one big empty space; every placed cargo slices it into right, back, and top remainders, and `find_best_fit_3d` picks whichever valid slot wastes the least volume.
+- **`ship_cleanup` and NULL-after-free** = "free every heap allocation in reverse order, then set the pointer to NULL so a second call is harmless" — the parser allocates `ship->cargo`, each `cargo[i].dg`, `ship->hydro`, `ship->tanks`, and `ship->strength_limits`; cleanup frees them in the same strict sequence and nulls each pointer so a double-call cannot dereference freed memory.
+
+**Why it matters:** if any stage produces bad data — an undetected NAN, a non-nulled pointer after an early-exit free, or a skipped cargo item — every downstream stage silently inherits the corruption; the whole-pipeline view in this lesson is what lets you trace a wrong output number back to the exact stage and line that produced it.
+
 ---
 
 ## Entry: `main.c`

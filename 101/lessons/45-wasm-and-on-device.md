@@ -7,6 +7,22 @@ same compiled artifact can be embedded inside iOS and Android applications.
 Understanding this matters because it shows that "write once, compile
 everywhere" is not a slogan in C; it is a mechanical property of the language.
 
+## What this actually means (plain English)
+
+No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
+
+- **WebAssembly (WASM)** = "a tiny, safe virtual machine that any browser can run" — the browser has its own stack, its own heap, and its own arithmetic unit, and it turns out that's almost exactly what `emcc` already produces from C source, so CargoForge-C ports to it without touching a single line of the engine.
+- **`emcc` / Emscripten** = "a C compiler whose target happens to be the browser instead of a CPU" — it takes the same `LIB_SRCS` that `gcc` compiles for Linux and emits `cargoforge.wasm` + a JavaScript glue file that loads it.
+- **Exported functions** = "the eight C symbols that JavaScript is allowed to call across the JS/WASM boundary" — everything else in the engine is invisible to JS; `_malloc` and `_free` are included so the browser can write a ship-config string into WASM's linear memory before handing the pointer to `_cargoforge_load_ship_string`.
+- **`ALLOW_MEMORY_GROWTH=1`** = "let the WASM heap expand at runtime if it runs out" — without this flag, parsing a large cargo manifest via `parse_cargo_list` or a multi-row hydrostatic table via `parse_hydro_table` could silently exhaust the default 16 MB and crash.
+- **`MODULARIZE=1`** = "wrap the generated JS in an async factory function instead of dumping it on `window`" — this makes `CargoForge()` safe to import in a React or Vue bundle without polluting the global scope, and it correctly reflects that WASM instantiation is always asynchronous.
+- **`_string` loader variants** = "entry points that accept raw content instead of a filename" — because WASM has no real filesystem, `cargoforge_load_ship_string` and `cargoforge_load_cargo_string` accept the file's text directly, write it to a temp file internally via `mkstemp`, and then hand that descriptor to the same parser that the CLI uses.
+- **Native mobile path (iOS / Android)** = "compile the same `LIB_SRCS` with a different compiler target and wrap with a thin language bridge" — iOS uses a Swift bridging header over `libcargoforge.h`; Android uses JNI; the C engine itself is unchanged in both cases.
+
+**Why it matters:** if the WASM build omits an exported function or the heap can't grow, the browser-based loading-plan tool silently fails with no result — getting `EXPORTED_FUNCTIONS`, `ALLOW_MEMORY_GROWTH`, and the `_string` entry points right is what makes the engine actually usable outside the command line.
+
+---
+
 ## What WebAssembly is, and why C maps to it cleanly
 
 WebAssembly (WASM) is a binary instruction format that browsers can execute at

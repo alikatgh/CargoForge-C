@@ -7,6 +7,19 @@ This lesson traces that understanding through [`src/parser.c`](https://github.co
 reads an entire cargo manifest into a heap-allocated array before a single item
 is analysed.
 
+## What this actually means (plain English)
+
+No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
+
+- **Array** = "a row of same-size boxes sitting back-to-back in memory, numbered from zero" — C finds box `i` by jumping exactly `i` box-widths from the start; there is no guard at the end, so writing past the last box silently damages whatever comes next.
+- **Fixed-size buffer (`char id[32]`)** = "a reserved slot of exactly 32 bytes baked into every `Cargo` struct" — `parse_cargo_list` copies user-supplied strings into it with `strncpy(..., sizeof(c->id) - 1)` plus an explicit `'\0'` write so a 31-character input never leaves the buffer unterminated.
+- **Count-then-allocate (two-pass)** = "count the lines first, then ask for exactly that much memory" — `parse_cargo_list` rewinds the file after pass 1 so `malloc` gets a precise size instead of a wasteful upper-bound guess; `cargo_capacity` records how many slots exist while `cargo_count` tracks how many are actually filled.
+- **Off-by-one** = "stopping one index too late (or too early) so you touch memory you don't own" — the dimension loop uses `d < MAX_DIMENSION`, not `d <= MAX_DIMENSION`, to keep `d` inside the three valid indices of `dimensions[3]`.
+- **`realloc` double-assignment** = "save the new pointer before overwriting the old one, so a NULL return doesn't lose the original allocation" — the stdin path assigns into `new_lines` first, checks for NULL, and only then moves it into `lines`; skipping this step leaks every line already read.
+- **Use-after-free / NULL-out discipline** = "after `free(ship->cargo)`, set the pointer to NULL and zero the count so nothing can accidentally use the freed memory" — every error path in `parse_cargo_list` does both assignments; missing either one is a bug that AddressSanitizer (`make test-asan`) will catch.
+
+**Why it matters:** an out-of-bounds write or a dangling pointer doesn't crash at the bad line — it silently corrupts unrelated memory and surfaces as a mysterious crash or wrong result somewhere else entirely, making it one of the hardest bug classes to diagnose without a sanitizer.
+
 ---
 
 ## What an array actually is

@@ -6,6 +6,20 @@ input nobody thought to write a test for? CargoForge-C ships a purpose-built fuz
 adversarial inputs. When combined with memory sanitizers, fuzzing becomes one of the most
 effective ways to find real bugs — and it found a real one in this codebase.
 
+## What this actually means (plain English)
+
+No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
+
+- **Fuzzing** = "feeding a program thousands of weird, broken inputs to see if it survives" — `fuzz.sh` does this automatically, generating randomised ship configs and cargo manifests so no human has to think up every bad case.
+- **A crash on bad input is always a bug** = "the program is allowed to say 'no', but never allowed to explode" — CargoForge-C's contract is that `parse_cargo_list` and the CLI must return a clean error exit, never a signal-killed process, even when the manifest is gibberish.
+- **AddressSanitizer (ASan)** = "a layer added at compile time that yells the moment you touch memory you shouldn't" — `fuzz.sh` compiles a dedicated `cargoforge-asan` binary with `-fsanitize=address,undefined` so bugs like the heap-use-after-free in `parse_cargo_list` trigger an immediate abort (exit code 134) instead of silently corrupting data.
+- **Heap-use-after-free** = "reading memory you already gave back" — in `parse_cargo_list`, the error path freed `ship->cargo` but left the pointer and `ship->cargo_count` unchanged, so `ship_cleanup` later walked through already-freed memory thinking it was still valid.
+- **NULL-after-free pattern** = "setting a pointer to NULL right after `free` so nothing can follow it again" — the fix adds `ship->cargo = NULL` and `ship->cargo_count = 0` immediately after the `free` calls, making the `if (ship->cargo)` guard in `ship_cleanup` a reliable safety net.
+- **Fixed seed (`RANDOM=1`)** = "making randomness repeatable" — every CI run of `fuzz.sh` produces the exact same sequence of inputs, so a bug found on one machine can be reproduced on any other machine with `scripts/fuzz.sh 300 1`.
+- **Adversarial corpora** = "a handpicked list of values known to break parsers" — `fuzz.sh` mixes them into generated configs (values like `-5`, `abc`, `""`, `/nonexistent.csv`, `DG:::`) so the fuzzer targets the specific spots in `safe_atof`, `parse_dg_field`, and `parse_hydro_table` that real bad inputs hit.
+
+**Why it matters:** Without fuzzing and ASan, the heap-use-after-free in `parse_cargo_list` would have been invisible to unit tests — it only surfaces when a parse partially succeeds, hits a bad field mid-way, and then reaches `ship_cleanup`. Getting this wrong means silent memory corruption in production; getting it right means every malformed manifest is rejected cleanly and safely.
+
 ---
 
 ## What is Fuzzing?

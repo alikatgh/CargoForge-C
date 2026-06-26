@@ -6,6 +6,20 @@ these formats lets you feed real data to the program, interpret parse errors, an
 configuration with hydrostatic tables, tank definitions, or structural limits — capabilities that
 unlock the full physics engine.
 
+## What this actually means (plain English)
+
+No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
+
+- **Ship config file (`key=value`)** = "a plain text recipe card that tells CargoForge-C what the vessel is" — five mandatory keys give `parse_ship_config` the dimensions and lightship weight it stores in the `Ship` struct before any cargo is touched.
+- **Cargo manifest (whitespace-delimited columns)** = "a row-per-item list of what you're loading, how heavy it is, how big, and what kind" — `parse_cargo_list` turns each line into a `Cargo` entry with weight already converted to kilograms and dimensions split into the `dimensions[3]` array.
+- **Tonne-to-kilogram conversion at parse time** = "the files speak tonnes because ship people always do; the code speaks kilograms; the parser is the translator" — every `weight_tonnes` value is multiplied by 1000 on entry so that `perform_analysis` and every stability formula inside it never has to think about units again.
+- **`safe_atof` with range checks** = "a bounce-back guard on every number field" — it calls `strtof`, rejects anything outside the valid range, and returns `NAN` so the caller (`parse_ship_config` or `parse_cargo_list`) can bail cleanly with `-1` instead of silently storing a zero or garbage value.
+- **`hydrostatic_table` path in the config** = "a pointer to a measured data file that replaces the built-in box-hull guesses" — when loaded, `perform_analysis` switches from the fixed $C_B = 0.75$ and $C_W = 0.85$ approximations to linear interpolation of real KB, BM, and MTC values at the actual draft.
+- **`tank_config` and free-surface correction** = "a list of partially-filled tanks whose sloshing liquid makes the ship wobblier than its weight alone suggests" — `calculate_virtual_kg_rise` sums each tank's free-surface moment and subtracts the result from GM, giving `GM_corrected`; skipping this file leaves `GM` unconservatively high.
+- **Freeing and NULLing on parse error** = "when something in the cargo list is wrong, every item already allocated is freed and the pointers are set to NULL immediately" — this is the direct lesson from the use-after-free bug recorded in the journal: `parse_cargo_list` sets `ship->cargo = NULL` after freeing so `ship_cleanup` cannot reach a dangling pointer.
+
+**Why it matters:** if either file has a typo or a missing field, the program rejects the entire load cleanly rather than computing stability with corrupted data — but only because `safe_atof`, the two-phase error cleanup, and the NULL-after-free discipline are all working together. Get any one of those wrong and you get silent bad results or a crash, not an error message.
+
 ---
 
 ## The ship configuration file

@@ -23,6 +23,19 @@ A ship is never perfectly level. Cargo placed too far forward or aft causes one 
 <text x="300" y="194" fill="currentColor" font-size="11" text-anchor="middle" opacity="0.6">The waterline stays horizontal — it is the ship that tilts. Both come from where the cargo sits.</text>
 </svg>
 
+## What this actually means (plain English)
+
+No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
+
+- **Trim** = "one end of the ship sits deeper in the water than the other" — caused by the longitudinal centre of gravity (LCG) being off-centre fore-or-aft; `perform_analysis` reports this as `r.trim` in metres by stern.
+- **Heel** = "the ship leans to one side" — caused by the transverse centre of gravity (TCG) sitting to port or starboard of the centreline; `perform_analysis` reports this as `r.heel` in degrees.
+- **LCG / TCG** = "where the loaded ship's combined weight is centred, measured along the ship's length (LCG) or across its width (TCG)" — both are computed by dividing the total weight-moment by total displacement in the single-pass loop inside `analysis.c`.
+- **GM (corrected)** = "how stiff the ship is against tipping sideways, after accounting for sloshing liquid in tanks" — the heel formula uses `gm_effective` (the free-surface-corrected GM) because using the raw GM would underestimate how much the ship actually leans.
+- **`place_cargo_3d` vs `perform_analysis`** = "the bin-packer fills the holds (ForwardHold, AftHold, Deck) without caring about balance; `perform_analysis` measures the result afterward" — if trim or heel comes out bad, the operator must manually re-assign items between bins and re-run the analysis.
+- **CG percentage display** = "how far through the ship's length and beam the cargo mass sits, expressed as a percentage" — `perc_x` 45–55 % and `perc_y` 40–60 % is the acceptable band; values outside it trigger a "Warning" in the printed loading plan.
+
+**Why it matters:** A ship with too much trim by stern steers poorly and may ship water over the stern; a ship with excessive heel risks cargo shifting or, at the extreme, capsizing. Both conditions are invisible until you run `perform_analysis` — which is why the analysis step is not optional after `place_cargo_3d`.
+
 ---
 
 ## The two axes of imbalance

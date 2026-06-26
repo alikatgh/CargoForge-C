@@ -2,6 +2,19 @@
 
 C has no built-in string type. Every piece of text — a cargo ID, a type tag, a UN number — is a raw array of bytes terminated by a special zero byte. Understanding this model is mandatory for reading CargoForge-C's parser, which processes untrusted text line by line and must never let a malformed manifest corrupt memory.
 
+## What this actually means (plain English)
+
+No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
+
+- **NUL terminator (`'\0'`)** = "the stop sign at the end of every string" — it's the single zero byte that tells `strlen`, `printf`, and every other C string function where your text ends; without it, they keep reading into whatever memory comes next.
+- **Fixed-size char array (`char id[32]`)** = "a reserved parking lot with exactly 32 spaces" — `Cargo` uses these for `id` and `type` so the text lives right inside the struct without a separate heap allocation; 31 usable characters is enough for any realistic cargo label.
+- **`strncpy` + explicit terminator** = "copy at most N bytes, then force-write the stop sign yourself" — `parse_cargo_list` always follows `strncpy(c->id, id, sizeof(c->id) - 1)` with `c->id[sizeof(c->id) - 1] = '\0'` because `strncpy` won't write the terminator if the source fills the buffer exactly.
+- **`strtok_r`** = "a whitespace splitter that remembers where it left off, per caller" — `parse_cargo_list` uses two independent `saveptr` variables so the outer manifest-field loop and the inner `"x"`-delimited dimension loop can both run at the same time without stepping on each other.
+- **Copy before `strtok_r`** = "give the slicer its own scratch copy so it doesn't destroy read-only memory" — `parse_dg_field` copies the DG field into a local `buf[64]` before tokenising because `strtok_r` writes `'\0'` bytes into the buffer it works on, and mutating a `const char *` is undefined behaviour.
+- **Use-after-free** = "reading from an address after you've already handed that memory back" — one of the three classic C-string bug shapes; CargoForge-C defends against it by setting `ship->cargo = NULL` immediately after `free`, so a stale pointer can't silently re-read freed data (documented in `docs/BUG_JOURNAL.md`).
+
+**Why it matters:** every C-string bug — buffer overrun, missing terminator, stale pointer — is invisible at compile time and silently corrupts memory at runtime, so a single malformed manifest line could corrupt the ship's `Cargo` array or leak the bytes of a neighbouring struct field; the `strncpy`-plus-explicit-terminator pattern and the copy-before-`strtok_r` discipline are what keep `parse_cargo_list` and `parse_dg_field` safe against untrusted input.
+
 ---
 
 ## What a string actually is in C

@@ -2,6 +2,20 @@
 
 CargoForge-C is not only a command-line tool — it is also a reusable C library. `libcargoforge` packages the entire stability engine behind a clean, stable interface that any C (or C-compatible) program can call. This lesson explains how that library is built, what its API surface looks like, and how to drive it from your own code.
 
+## What this actually means (plain English)
+
+No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
+
+- **Library vs. CLI** = "the same physics engine, packaged so other programs can call it directly" — `make lib` builds `libcargoforge.a` / `.so` / `.dylib` from the engine source files (`analysis.c`, `placement_3d.c`, `hydrostatics.c`, etc.) while deliberately leaving out `main.c` and `cli.c`, so the calculation core travels without its command-line wrapper.
+- **Opaque handle (`CargoForge *`)** = "a box your code holds but cannot open" — the `CargoForge` struct is defined only inside `src/libcargoforge.c`; callers see only a pointer, so the library can rearrange its internals freely without breaking any code that links against it.
+- **State machine / error codes** = "the API enforces the right order of operations" — `CF_ERR_NO_SHIP` fires if you call `cargoforge_load_cargo` before loading a ship, and `CF_ERR_STATE` fires if you call `cargoforge_check_imdg` before `cargoforge_optimize` or `cargoforge_analyze`; the integer codes (`CF_OK`, `CF_ERR_NOMEM`, …) are how a C function signals success or failure without exceptions.
+- **`cargoforge_open` / `cargoforge_close`** = "allocate the session, then clean it up completely" — `open` uses `calloc` so every field starts at zero, and `close` calls `ship_cleanup` (freeing all cargo and hydrostatic sub-allocations) plus `free(cf->json_cache)` before freeing the handle itself; skipping `close` leaks everything the handle owns.
+- **`fill_result`** = "a translation layer that keeps the public face stable" — after `perform_analysis` fills the internal `AnalysisResult` struct, `fill_result` copies selected fields into the public `CfResult` struct; this means internal reorganisations are absorbed here and callers never need to recompile.
+- **`_string` loading variants** = "feed data from memory without touching the filesystem yourself" — `cargoforge_load_ship_string` and `cargoforge_load_cargo_string` use `mkstemp` to write a uniquely-named temp file, invoke the file-based loader, then `unlink` the file immediately, so web backends and test harnesses can pass in-memory text without managing temporary files.
+- **JSON cache (`cf->json_cache`)** = "generate the JSON once, serve it for free after that" — `cargoforge_result_json` uses `open_memstream` to build the JSON into a heap buffer on the first call and stores the pointer in the handle; subsequent calls return the cached pointer until a new `optimize`, `reset`, or `close` invalidates it.
+
+**Why it matters:** if you call operations out of order, skip `cargoforge_close`, or rely on internal headers instead of `libcargoforge.h`, you will get state errors, memory leaks, or ABI breakage the moment the engine internals change — the entire design of this library exists to make those failure modes impossible for a caller who follows the open → load → optimize → read → close pattern.
+
 ---
 
 ## Why a separate library?

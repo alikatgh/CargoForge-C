@@ -24,6 +24,20 @@ and what `->` does when you see it in `analysis.c`.
 <text x="310" y="178" fill="currentColor" font-size="11.5" text-anchor="middle" opacity="0.7"><tspan font-family="var(--md-code-font,monospace)">&amp;ship</tspan> gets the address · <tspan font-family="var(--md-code-font,monospace)">*p</tspan> follows it back · <tspan font-family="var(--md-code-font,monospace)">p-&gt;length</tspan> reads a field</text>
 </svg>
 
+## What this actually means (plain English)
+
+No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
+
+- **Address** = "the street number of a variable in memory" — every value the program creates gets a unique slot; `&ship` reads that slot's number, which is all a pointer ever stores.
+- **Pointer (`Ship *p`)** = "a sticky note that says where the real data lives" — `perform_analysis` and `print_loading_plan` both receive one of these sticky notes instead of a full copy of the `Ship`, so they work on the same data without duplicating it.
+- **Dereference (`*p` or `p->field`)** = "follow the sticky note to the actual data" — `ship->cargo_count` in `analysis.c` follows the `ship` pointer to the `Ship` struct and reads `cargo_count`; `->` is just the shorthand that bundles the follow-and-read into one step.
+- **`const Ship *`** = "you may look but not touch" — `const` in front of the pointed-to type is a compiler-enforced promise; every analysis function in CargoForge-C takes `const Ship *ship` so the compiler rejects any accidental mutation of the ship data inside the function.
+- **Output parameter (`float *max_gz`)** = "pass me a blank to write the answer into" — because C can return only one value, `find_gz_max` accepts addresses of two floats owned by the caller and writes `gz_max` and `gz_max_angle` directly into `perform_analysis`'s result struct.
+- **NULL guard (`if (ship->hydro)`)** = "check the sticky note isn't blank before following it" — optional pointer fields like `ship->hydro` are set to `NULL` when no table is loaded; dereferencing NULL crashes the program, so every use in `analysis.c` is preceded by a `&&` chain that verifies the pointer first.
+- **Write NULL after `free`** = "tear up the old sticky note once the data is gone" — `ship_cleanup` sets `ship->cargo = NULL` immediately after `free(ship->cargo)` so that any later `if (ship->cargo)` guard sees the field as empty; skipping this step causes a use-after-free, the exact bug AddressSanitizer caught in an earlier version of `parse_cargo_list`.
+
+**Why it matters:** get pointer ownership or nulling wrong and the program either crashes with a segfault or silently corrupts stability calculations — neither of which is acceptable on a vessel where GM and righting-arm values drive load decisions.
+
 ---
 
 ## Every variable has an address

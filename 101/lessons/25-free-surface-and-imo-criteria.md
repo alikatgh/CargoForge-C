@@ -27,6 +27,20 @@ A ship's tanks are rarely empty or brim-full. When a tank is partially filled, t
 <text x="300" y="213" fill="#12A594" font-size="11.5" text-anchor="middle" font-weight="600">GM_corrected = GM − FSC,  FSM = ρ·l·b³⁄12  (src/tanks.c)</text>
 </svg>
 
+## What this actually means (plain English)
+
+No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
+
+- **Free-surface effect** = "sloshing liquid that acts as if it lifted the whole ship's centre of gravity" — when a partially-filled tank heels, its liquid shifts toward the low side; `perform_analysis` in `src/analysis.c` treats that shift as a virtual KG rise, reducing the righting ability even though no mass actually moved upward.
+- **Free-surface moment (FSM)** = "a number that measures how destabilising a half-full tank is" — `calculate_free_surface_moment` in `src/tanks.c` computes it as `density × length × breadth³ / 12`; breadth appears cubed, so a wide tank is far more dangerous than a long, narrow one of the same volume.
+- **Free-surface correction (FSC)** = "the total virtual KG rise summed across all partially-filled tanks" — `calculate_virtual_kg_rise` divides the sum of all FSMs by the ship's displacement; `perform_analysis` subtracts this from raw GM to get `gm_corrected`, the only GM value used in every subsequent check.
+- **GM corrected** = "how much the ship will resist rolling once tank sloshing is accounted for" — if `gm_corrected` drops below 0.15 m the first IMO criterion fails and `imo_compliant` is set to 0, meaning the loading plan must be revised before departure.
+- **GZ (righting lever)** = "the sideways push that brings a heeled ship back upright" — `gz_at_angle` computes it from `gm_corrected` using the wall-sided formula; the six IMO thresholds test not just its size at one angle but the area under its curve, ensuring the ship can absorb wave energy across a range of heels.
+- **The six IMO criteria** = "six simultaneous pass/fail tests that together prove the ship won't capsize in realistic seas" — `perform_analysis` evaluates all six (GM floor, GZ at 30°, angle of maximum GZ, and three righting-energy areas) and only sets `imo_compliant = 1` when every one passes; a single failure is enough to reject the plan.
+- **Deck weight ratio and stack pressure constraints** = "cargo placement rules in `src/constraints.c` that keep KG low before the stability solver even runs" — `check_cargo_constraints` enforces a 40% deck-weight cap and a 10 t/m² stack-pressure limit during `find_best_fit_3d`, so problematic cargo is rejected at placement time, not discovered after the fact.
+
+**Why it matters:** if you skip the free-surface correction you get a falsely optimistic GM — in a vessel with several large double-bottom tanks partially filled the FSC can exceed 0.5 m, turning a compliant loading plan into a capsize risk without any visible change in cargo weight.
+
 ---
 
 ## Why partial fill is dangerous

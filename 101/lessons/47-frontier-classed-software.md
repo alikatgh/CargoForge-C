@@ -2,6 +2,19 @@
 
 CargoForge-C teaches the physics and the code — but it is a teaching tool, not a class-society-approved loading computer. This lesson maps the gap: what commercial systems like NAPA and GHS add on top of what you now understand, where the simplifications in CargoForge-C live, and how a learner or developer crosses from "interesting open source" to "software that shipping companies are allowed to use."
 
+## What this actually means (plain English)
+
+No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
+
+- **Type approval** = "an official certificate from a classification society that says this software is allowed to be used on real ships" — without it, a shipping company's insurer won't cover losses and port state control can detain the vessel, regardless of how correct the arithmetic inside the software is.
+- **Wall-sided GZ formula** = "an equation in `analysis.c` (`gz_at_angle`) that estimates how strongly a ship rights itself when heeled, assuming the hull sides are perfectly vertical at the waterline" — it works reasonably well at small angles but grows increasingly wrong above about 30° because real hulls flare outward, so the formula understates the righting lever.
+- **Box-hull fallback** = "when no hydrostatic table CSV is provided, `perform_analysis` in `analysis.c` assumes the ship is shaped like a rectangular box, using fixed constants like $C_b = 0.75$ and $KB = 0.53 \times T$" — these constants are teaching approximations that are systematically wrong for almost every real hull form, which is why table-interpolation mode (`hydrostatic_table=` in the ship config) exists.
+- **Linear interpolation (`lerp`)** = "in `hydrostatics.c`, when the current draft falls between two CSV rows, CargoForge-C draws a straight line between them to estimate displacement and other values" — real stability booklets use curved (higher-order) interpolation because a hull widens non-linearly as it rises out of the water, so linear interpolation introduces small but predictable errors near the bilge.
+- **20-station longitudinal model** = "in `longitudinal_strength.c`, the ship's length is divided into 20 slices to compute shear force and bending moment along the hull, using a simple three-zone trapezoidal guess for where the lightship weight sits" — class software uses hundreds of stations tied to actual construction drawings; CargoForge-C's output is useful for gross checks but would not satisfy class documentation.
+- **`imo_compliant` flag** = "the boolean in `AnalysisResult` that records whether the ship passes the six intact stability criteria from IMO MSC.267(85) §2.2" — it covers only the basic intact range up to 40°; it does not check damage stability, the weather criterion, or the newer dynamic stability criteria that class software handles as separate licensed modules.
+
+**Why it matters:** Shipping companies are legally required to use approved loading computers; a program with correct physics but no type-approval certificate cannot be used operationally, no matter how good its code is. Understanding where CargoForge-C deliberately simplifies — box-hull KB, wall-sided GZ, linear interpolation, 20 stations — tells you exactly what would need to be replaced on the path to a real DNV-SE-0475 submission.
+
 ---
 
 ## What "classed" means and why it matters
