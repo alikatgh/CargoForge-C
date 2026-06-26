@@ -63,6 +63,45 @@ Leaks are the least immediately dangerous of the four — they rarely cause inco
 
 This is not a textbook example. This is a bug that lived in CargoForge-C until the fuzzer found it.
 
+<svg viewBox="0 0 660 280" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:640px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+<title>The use-after-free lifecycle and the one-line fix</title>
+<desc>Three snapshots. 1: malloc gives ship->cargo a heap block it owns. 2: on a parse error free() releases the block but ship->cargo still points at it — a dangling pointer. 3: ship_cleanup reads through the dangling pointer and frees it again — use-after-free plus double-free. The fix sets ship->cargo to NULL after freeing, so cleanup's if-check skips it.</desc>
+<defs>
+<marker id="a-ok" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 1 L9 5 L0 9 Z" fill="currentColor"/></marker>
+<marker id="a-bad" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 1 L9 5 L0 9 Z" fill="#D05663"/></marker>
+<marker id="a-fix" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 1 L9 5 L0 9 Z" fill="#12A594"/></marker>
+<pattern id="hatch" width="6" height="6" patternTransform="rotate(45)" patternUnits="userSpaceOnUse"><line x1="0" y1="0" x2="0" y2="6" stroke="#D05663" stroke-width="1.4" opacity="0.5"/></pattern>
+</defs>
+<!-- panel 1: allocate -->
+<text x="30" y="30" fill="currentColor" font-size="12.5" font-weight="600">1 · malloc</text>
+<rect x="30" y="44" width="92" height="26" rx="4" fill="none" stroke="currentColor" stroke-width="1" opacity="0.7"/><text x="76" y="61" fill="currentColor" font-size="11.5" text-anchor="middle">ship-&gt;cargo</text>
+<line x1="122" y1="57" x2="158" y2="57" stroke="currentColor" stroke-width="1.4" marker-end="url(#a-ok)"/>
+<rect x="160" y="42" width="58" height="30" rx="4" fill="#12A594" fill-opacity="0.12" stroke="#12A594" stroke-width="1.2"/><text x="189" y="61" fill="#12A594" font-size="11" text-anchor="middle">Cargo[]</text>
+<text x="30" y="92" fill="currentColor" font-size="11" opacity="0.6">owns the array</text>
+<!-- panel 2: free, dangling -->
+<text x="250" y="30" fill="currentColor" font-size="12.5" font-weight="600">2 · free() on error</text>
+<rect x="250" y="44" width="92" height="26" rx="4" fill="none" stroke="currentColor" stroke-width="1" opacity="0.7"/><text x="296" y="61" fill="currentColor" font-size="11.5" text-anchor="middle">ship-&gt;cargo</text>
+<line x1="342" y1="57" x2="378" y2="57" stroke="#D05663" stroke-width="1.4" stroke-dasharray="4 3" marker-end="url(#a-bad)"/>
+<rect x="380" y="42" width="58" height="30" rx="4" fill="url(#hatch)" stroke="#D05663" stroke-width="1.2" stroke-dasharray="3 2"/><text x="409" y="61" fill="#D05663" font-size="10.5" text-anchor="middle">freed</text>
+<text x="250" y="92" fill="#D05663" font-size="11" opacity="0.85">pointer left dangling</text>
+<!-- panel 3: cleanup -->
+<text x="470" y="30" fill="currentColor" font-size="12.5" font-weight="600">3 · ship_cleanup</text>
+<rect x="470" y="44" width="92" height="26" rx="4" fill="none" stroke="currentColor" stroke-width="1" opacity="0.7"/><text x="516" y="61" fill="currentColor" font-size="11.5" text-anchor="middle">ship-&gt;cargo</text>
+<line x1="562" y1="57" x2="598" y2="57" stroke="#D05663" stroke-width="1.4" stroke-dasharray="4 3" marker-end="url(#a-bad)"/>
+<rect x="600" y="42" width="40" height="30" rx="4" fill="url(#hatch)" stroke="#D05663" stroke-width="1.2"/><text x="620" y="62" fill="#D05663" font-size="15" text-anchor="middle" font-weight="700">✗</text>
+<text x="470" y="92" fill="#D05663" font-size="11" opacity="0.85">reads it → UAF + double free</text>
+<!-- divider -->
+<line x1="30" y1="124" x2="640" y2="124" stroke="currentColor" stroke-width="1" opacity="0.15"/>
+<!-- fix lane -->
+<text x="30" y="156" fill="#12A594" font-size="12.5" font-weight="700">The one-line fix</text>
+<rect x="30" y="174" width="92" height="26" rx="4" fill="none" stroke="currentColor" stroke-width="1" opacity="0.7"/><text x="76" y="191" fill="currentColor" font-size="11.5" text-anchor="middle">ship-&gt;cargo</text>
+<line x1="122" y1="187" x2="170" y2="187" stroke="#12A594" stroke-width="1.6" marker-end="url(#a-fix)"/>
+<text x="184" y="192" fill="#12A594" font-size="15" font-weight="700">⏚ NULL</text>
+<text x="270" y="184" fill="currentColor" font-size="12" opacity="0.8">After freeing, set <tspan fill="#12A594" font-weight="600">ship-&gt;cargo = NULL</tspan>.</text>
+<text x="270" y="202" fill="currentColor" font-size="12" opacity="0.8">Now ship_cleanup's <tspan font-family="var(--md-code-font,monospace)">if (ship-&gt;cargo)</tspan> skips it — safe.</text>
+<text x="30" y="244" fill="currentColor" font-size="11.5" opacity="0.55">A freed pointer is a loaded gun. The discipline: free, then immediately NULL anything another path can reach.</text>
+</svg>
+
 ### The setup
 
 `parse_cargo_list` (in `src/parser.c`) reads a whitespace-delimited manifest of cargo items into a heap-allocated array on `ship->cargo`. The array is allocated before the parsing loop, because the function needs to know how many items there are before it can fill them.

@@ -25,6 +25,46 @@ And:
 
 $$GM = KB + BM - KG = KM - KG$$
 
+<svg viewBox="0 0 620 372" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:600px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+<title>The metacentric diagram: a heeled ship rights itself when M is above G</title>
+<desc>A ship heeled to one side. Weight acts down through the centre of gravity G; buoyancy acts up through the shifted centre of buoyancy B. The vertical through B meets the ship's centreline at the metacentre M. The horizontal gap between the two force lines is the righting arm GZ. Because M is above G, the couple rotates the ship back upright.</desc>
+<defs>
+<marker id="ar-up" viewBox="0 0 10 10" refX="5" refY="9" markerWidth="7" markerHeight="7" orient="auto"><path d="M5 0 L9 9 L1 9 Z" fill="#12A594"/></marker>
+<marker id="ar-dn" viewBox="0 0 10 10" refX="5" refY="1" markerWidth="7" markerHeight="7" orient="auto"><path d="M5 10 L1 1 L9 1 Z" fill="#D05663"/></marker>
+</defs>
+<!-- waterline -->
+<line x1="70" y1="222" x2="552" y2="222" stroke="currentColor" stroke-width="1" opacity="0.35"/>
+<text x="552" y="218" fill="currentColor" font-size="11" opacity="0.5" text-anchor="end">waterline</text>
+<!-- heeled hull -->
+<path d="M232,104 L246,286 Q250,316 270,308 Q310,294 392,156" fill="currentColor" fill-opacity="0.05" stroke="currentColor" stroke-width="1.4" opacity="0.7"/>
+<line x1="232" y1="104" x2="392" y2="156" stroke="currentColor" stroke-width="1.4" opacity="0.7"/>
+<!-- ship centreline (tilted), K -> G -> M -->
+<line x1="255" y1="309" x2="329" y2="81" stroke="currentColor" stroke-width="1" stroke-dasharray="4 3" opacity="0.55"/>
+<!-- force line of buoyancy: world-vertical through B, up to M -->
+<line x1="329" y1="250" x2="329" y2="110" stroke="#12A594" stroke-width="1.6" marker-end="url(#ar-up)"/>
+<!-- force line of weight: world-vertical through G, downward -->
+<line x1="289" y1="204" x2="289" y2="330" stroke="#D05663" stroke-width="1.6" marker-end="url(#ar-dn)"/>
+<!-- righting arm GZ -->
+<line x1="289" y1="204" x2="329" y2="204" stroke="#12A594" stroke-width="3"/>
+<text x="309" y="196" fill="#12A594" font-size="13" font-weight="600" text-anchor="middle">GZ</text>
+<!-- heel angle arc at M -->
+<path d="M329,116 A35 35 0 0 0 314,123" fill="none" stroke="currentColor" stroke-width="1" opacity="0.55"/>
+<text x="322" y="133" fill="currentColor" font-size="12" opacity="0.7">θ</text>
+<!-- points -->
+<circle cx="255" cy="309" r="3.4" fill="currentColor"/><text x="245" y="313" fill="currentColor" font-size="13" text-anchor="end" font-weight="600">K</text>
+<circle cx="329" cy="250" r="3.4" fill="#12A594"/><text x="339" y="254" fill="#12A594" font-size="13" font-weight="600">B</text>
+<circle cx="289" cy="204" r="3.4" fill="#D05663"/><text x="279" y="208" fill="#D05663" font-size="13" text-anchor="end" font-weight="600">G</text>
+<circle cx="329" cy="81" r="3.4" fill="currentColor"/><text x="339" y="85" fill="currentColor" font-size="13" font-weight="600">M</text>
+<!-- labels for the forces -->
+<text x="329" y="104" fill="#12A594" font-size="11" text-anchor="middle">buoyancy ↑</text>
+<text x="289" y="345" fill="#D05663" font-size="11" text-anchor="middle">weight ↓</text>
+<!-- caption -->
+<text x="430" y="250" fill="currentColor" font-size="12.5" opacity="0.75">M is above G,</text>
+<text x="430" y="269" fill="currentColor" font-size="12.5" opacity="0.75">so the couple</text>
+<text x="430" y="288" fill="#12A594" font-size="12.5" font-weight="600">rights the ship.</text>
+<text x="430" y="312" fill="currentColor" font-size="11.5" opacity="0.6">GM = GZ / sin θ &gt; 0</text>
+</svg>
+
 ---
 
 ## Why GM tells you whether the ship self-rights
