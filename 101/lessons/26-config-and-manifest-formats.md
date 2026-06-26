@@ -22,6 +22,85 @@ No jargon — here's what the ideas in this lesson *actually* mean, and why they
 
 ---
 
+## The mental model 🧠
+
+You'll forget the exact column order — hold THIS picture instead:
+
+> Think of the two files as a *passport* and a *boarding list*. The ship config (`key=value`) is the vessel's passport: a small card of fixed facts — length, width, max weight, lightship KG — checked once at the gate by `parse_ship_config` before anyone boards. The cargo manifest is the boarding list: one row per item, read line-by-line by `parse_cargo_list`, stamping each `Cargo` entry into the `ship->cargo[]` array like a seat assignment.
+
+Both documents speak **tonnes** because seafarers always do, but the gate agent (`safe_atof`) converts every figure to kilograms on the spot — so the physics engine (`perform_analysis`) and every stability formula it calls sees one consistent unit from the very first field. If a row on the boarding list is malformed, the gate doesn't try to salvage the rest: it tears up the entire list, frees every allocated `Cargo` slot, and NULLs the pointer so `ship_cleanup` cannot reach a dangling address. The extended keys (`hydrostatic_table`, `tank_config`) are optional attachments stapled to the passport — without them the gate uses conservative box-hull estimates; with them it switches to ship-specific measured data.
+
+---
+
+<svg viewBox="0 0 620 310" role="img" xmlns="http://www.w3.org/2000/svg"
+  style="max-width:600px;width:100%;height:auto;display:block;margin:1.8rem auto;
+  font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+  <title>Config and manifest parse flow</title>
+  <desc>Two input files — sample_ship.cfg and sample_cargo.txt — feed into parse_ship_config and parse_cargo_list respectively via safe_atof, which validates and converts tonnes to kg. Both populate fields of the Ship struct that perform_analysis reads.</desc>
+
+  <!-- ship config file box -->
+  <rect x="10" y="30" width="150" height="72" rx="6" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.7"/>
+  <text x="85" y="52" text-anchor="middle" font-size="11" font-weight="600" fill="currentColor">sample_ship.cfg</text>
+  <text x="85" y="68" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.75">key=value</text>
+  <text x="85" y="84" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.75">length_m, width_m</text>
+  <text x="85" y="98" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.75">lightship_kg_m …</text>
+
+  <!-- cargo manifest file box -->
+  <rect x="10" y="200" width="150" height="72" rx="6" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.7"/>
+  <text x="85" y="222" text-anchor="middle" font-size="11" font-weight="600" fill="currentColor">sample_cargo.txt</text>
+  <text x="85" y="238" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.75">whitespace columns</text>
+  <text x="85" y="254" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.75">ID weight dims type</text>
+  <text x="85" y="270" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.75">[DG field]</text>
+
+  <!-- safe_atof box (shared) -->
+  <rect x="215" y="118" width="130" height="44" rx="6" fill="none" stroke="#12A594" stroke-width="2"/>
+  <text x="280" y="136" text-anchor="middle" font-size="11" font-weight="700" fill="#12A594">safe_atof</text>
+  <text x="280" y="152" text-anchor="middle" font-size="10" fill="#12A594">validate + t → kg</text>
+
+  <!-- arrow: cfg -> safe_atof -->
+  <line x1="160" y1="66" x2="215" y2="130" stroke="currentColor" stroke-width="1.4" opacity="0.6" marker-end="url(#arr)"/>
+  <!-- arrow: cargo -> safe_atof -->
+  <line x1="160" y1="236" x2="215" y2="152" stroke="currentColor" stroke-width="1.4" opacity="0.6" marker-end="url(#arr)"/>
+
+  <!-- parse_ship_config box -->
+  <rect x="215" y="20" width="150" height="44" rx="6" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.8"/>
+  <text x="290" y="38" text-anchor="middle" font-size="11" font-weight="600" fill="currentColor">parse_ship_config</text>
+  <text x="290" y="54" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.7">reads .cfg, calls safe_atof</text>
+
+  <!-- parse_cargo_list box -->
+  <rect x="215" y="240" width="150" height="44" rx="6" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.8"/>
+  <text x="290" y="258" text-anchor="middle" font-size="11" font-weight="600" fill="currentColor">parse_cargo_list</text>
+  <text x="290" y="274" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.7">rows → Cargo[], NULL on err</text>
+
+  <!-- arrows parse fns <-> safe_atof -->
+  <line x1="290" y1="64" x2="290" y2="118" stroke="currentColor" stroke-width="1.2" opacity="0.5" stroke-dasharray="4,3"/>
+  <line x1="290" y1="240" x2="290" y2="162" stroke="currentColor" stroke-width="1.2" opacity="0.5" stroke-dasharray="4,3"/>
+
+  <!-- Ship struct box -->
+  <rect x="430" y="80" width="170" height="144" rx="6" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.8"/>
+  <text x="515" y="100" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">Ship struct</text>
+  <text x="515" y="118" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.8">length, width, max_weight</text>
+  <text x="515" y="133" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.8">lightship_weight, lightship_kg</text>
+  <text x="515" y="148" text-anchor="middle" font-size="10" fill="#12A594">cargo[0..n-1]  (kg)</text>
+  <text x="515" y="163" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.6">hydro (optional)</text>
+  <text x="515" y="178" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.6">tanks (optional)</text>
+  <text x="515" y="193" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.6">strength_limits (optional)</text>
+  <text x="515" y="210" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.5">→ perform_analysis()</text>
+
+  <!-- arrows parse fns -> Ship struct -->
+  <line x1="365" y1="42" x2="430" y2="120" stroke="currentColor" stroke-width="1.4" opacity="0.65" marker-end="url(#arr)"/>
+  <line x1="365" y1="262" x2="430" y2="185" stroke="currentColor" stroke-width="1.4" opacity="0.65" marker-end="url(#arr)"/>
+
+  <!-- error path label -->
+  <text x="215" y="295" font-size="10" fill="#D05663" opacity="0.9">parse error → free + NULL → clean exit</text>
+
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="currentColor" opacity="0.65"/>
+    </marker>
+  </defs>
+</svg>
+
 ## The ship configuration file
 
 Ship config files use a minimal `key=value` format. Comment lines begin with `#`; blank lines are

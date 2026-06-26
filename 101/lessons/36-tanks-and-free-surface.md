@@ -21,6 +21,114 @@ No jargon — here's what the ideas in this lesson *actually* mean, and why they
 
 ---
 
+## The mental model 🧠
+
+You'll forget the formula — hold THIS picture instead:
+
+> Imagine sliding a baking tray half-full of water across a tilting table.
+> The water rushes to the low side. The tray gets heavier on that side.
+> Now imagine the tray is *wider*: twice the width, and the sloshing force is **eight times** worse — because breadth is cubed in the formula.
+
+That baking tray is any slack tank in the ship. When CargoForge-C calls `calculate_free_surface_moment`, it computes $\rho \cdot l \cdot b^3 / 12$ — the breadth dominates everything. A short, wide double-bottom fuel tank can steal as much GM as dozens of narrow wing tanks. The result (the FSM) is summed across all slack tanks, divided by the ship's displacement, and subtracted from GM to give `gm_corrected` — the single number every downstream criterion in `perform_analysis` actually uses. Fill the tray to the brim or drain it completely and the sloshing stops entirely; that is why `calculate_free_surface_moment` returns zero when `fill_fraction` is 0 or 1.
+
+---
+
+<svg viewBox="0 0 620 310" role="img" xmlns="http://www.w3.org/2000/svg"
+  style="max-width:600px;width:100%;height:auto;display:block;margin:1.8rem auto;
+  font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+  <title>Free-surface effect on ship stability</title>
+  <desc>Cross-section of a ship hull heeled to starboard. A slack tank shows the liquid surface staying horizontal while the tank tilts, shifting mass to the low (starboard) side. Labels show KG rising to virtual KG, and GM being reduced by the free-surface correction FSC.</desc>
+
+  <!-- Hull outline (upright, shown slightly heeled by offsetting content) -->
+  <!-- Left panel: upright ship -->
+  <g transform="translate(10,0)">
+    <text x="145" y="22" text-anchor="middle" font-size="11" font-weight="600" fill="currentColor">Upright — tank half full</text>
+    <!-- hull -->
+    <path d="M 60,240 Q 55,270 145,285 Q 235,270 230,240 L 220,120 L 70,120 Z"
+          fill="none" stroke="currentColor" stroke-width="2"/>
+    <!-- waterline -->
+    <line x1="50" y1="200" x2="240" y2="200" stroke="currentColor" stroke-opacity="0.35" stroke-width="1" stroke-dasharray="5,3"/>
+    <text x="242" y="203" font-size="9" fill="currentColor" fill-opacity="0.55">WL</text>
+    <!-- tank box (inside hull, centred) -->
+    <rect x="90" y="230" width="110" height="38" rx="2"
+          fill="none" stroke="currentColor" stroke-width="1.5" stroke-opacity="0.6"/>
+    <!-- liquid fill — upright, level surface -->
+    <rect x="90" y="249" width="110" height="19" rx="0"
+          fill="#12A594" fill-opacity="0.25" stroke="none"/>
+    <!-- free surface line -->
+    <line x1="90" y1="249" x2="200" y2="249" stroke="#12A594" stroke-width="2"/>
+    <text x="145" y="245" text-anchor="middle" font-size="9" fill="#12A594">free surface</text>
+    <!-- tank label -->
+    <text x="145" y="278" text-anchor="middle" font-size="9" fill="currentColor" fill-opacity="0.7">tank (b = breadth)</text>
+    <!-- KG marker -->
+    <line x1="145" y1="120" x2="145" y2="195" stroke="currentColor" stroke-opacity="0.5" stroke-width="1" stroke-dasharray="3,2"/>
+    <circle cx="145" cy="168" r="3" fill="currentColor" fill-opacity="0.6"/>
+    <text x="150" y="171" font-size="9" fill="currentColor" fill-opacity="0.7">KG</text>
+    <!-- M marker -->
+    <circle cx="145" cy="130" r="3" fill="currentColor"/>
+    <text x="150" y="133" font-size="9" fill="currentColor">M</text>
+    <!-- GM brace -->
+    <line x1="140" y1="130" x2="140" y2="168" stroke="currentColor" stroke-opacity="0.5" stroke-width="1"/>
+    <text x="118" y="151" font-size="9" fill="currentColor" fill-opacity="0.8">GM</text>
+  </g>
+
+  <!-- Divider -->
+  <line x1="308" y1="15" x2="308" y2="295" stroke="currentColor" stroke-opacity="0.2" stroke-width="1"/>
+
+  <!-- Right panel: heeled ship -->
+  <g transform="translate(318,0)">
+    <text x="145" y="22" text-anchor="middle" font-size="11" font-weight="600" fill="currentColor">Heeled — liquid sloshes</text>
+    <!-- hull heeled ~8° — rotate around keel centre -->
+    <g transform="rotate(8, 145, 270)">
+      <path d="M 60,240 Q 55,270 145,285 Q 235,270 230,240 L 220,120 L 70,120 Z"
+            fill="none" stroke="currentColor" stroke-width="2"/>
+      <!-- tank box -->
+      <rect x="90" y="230" width="110" height="38" rx="2"
+            fill="none" stroke="currentColor" stroke-width="1.5" stroke-opacity="0.6"/>
+      <!-- liquid fill — surface stays horizontal (counter-rotate) -->
+      <g transform="rotate(-8, 145, 270)">
+        <!-- clipped fill polygon approximating horizontal surface inside tilted tank -->
+        <polygon points="90,252 200,266 200,268 90,268"
+                 fill="#12A594" fill-opacity="0.25" stroke="none"/>
+        <!-- free surface — horizontal -->
+        <line x1="90" y1="252" x2="200" y2="266" stroke="#D05663" stroke-width="2"/>
+        <text x="204" y="262" font-size="9" fill="#D05663">sloshed!</text>
+      </g>
+    </g>
+    <!-- waterline (horizontal reference) -->
+    <line x1="50" y1="200" x2="240" y2="200" stroke="currentColor" stroke-opacity="0.35" stroke-width="1" stroke-dasharray="5,3"/>
+    <text x="242" y="203" font-size="9" fill="currentColor" fill-opacity="0.55">WL</text>
+    <!-- virtual KG (higher) -->
+    <line x1="145" y1="120" x2="145" y2="195" stroke="currentColor" stroke-opacity="0.5" stroke-width="1" stroke-dasharray="3,2"/>
+    <circle cx="145" cy="155" r="3" fill="#D05663"/>
+    <text x="150" y="158" font-size="9" fill="#D05663">virtual KG</text>
+    <!-- original KG ghost -->
+    <circle cx="145" cy="168" r="3" fill="currentColor" fill-opacity="0.3"/>
+    <text x="150" y="171" font-size="9" fill="currentColor" fill-opacity="0.4">KG</text>
+    <!-- M marker -->
+    <circle cx="145" cy="130" r="3" fill="currentColor"/>
+    <text x="150" y="133" font-size="9" fill="currentColor">M</text>
+    <!-- FSC arrow -->
+    <line x1="138" y1="155" x2="138" y2="168" stroke="#D05663" stroke-width="1.5" marker-end="url(#arr)"/>
+    <text x="86" y="163" font-size="9" fill="#D05663">FSC</text>
+    <!-- GM corrected brace -->
+    <line x1="132" y1="130" x2="132" y2="155" stroke="#D05663" stroke-opacity="0.7" stroke-width="1"/>
+    <text x="98" y="144" font-size="9" fill="#D05663">GM_corr</text>
+  </g>
+
+  <!-- Arrow marker def -->
+  <defs>
+    <marker id="arr" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#D05663"/>
+    </marker>
+  </defs>
+
+  <!-- Bottom legend -->
+  <text x="310" y="302" text-anchor="middle" font-size="10" fill="currentColor" fill-opacity="0.6">
+    FSC = Σ(ρ · l · b³/12) / Δ  →  GM_corrected = GM − FSC  (calculated in src/tanks.c)
+  </text>
+</svg>
+
 ## The physical problem
 
 Imagine a rectangular tank half full of water.

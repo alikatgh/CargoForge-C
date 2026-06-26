@@ -22,6 +22,78 @@ No jargon — here's what the ideas in this lesson *actually* mean, and why they
 
 ---
 
+## The mental model 🧠
+
+You'll forget the rules — hold THIS picture instead:
+
+> Imagine a row of numbered post-office boxes bolted to a wall. Each box is the same size. The clerk finds box 7 by counting exactly 7 boxes from the left — no list, no check, no guard. Box 32 on a 32-box wall? The clerk walks straight past the end and opens whatever's mounted there. It might be the manager's private cabinet. It might be thin air. The wall doesn't stop him.
+
+That's `ship->cargo`: a row of `Cargo`-sized slots in heap memory. `parse_cargo_list` pre-counts the manifest lines so it can bolt exactly the right number of boxes to the wall — no more, no fewer (`cargo_capacity`). As items are filled in, `cargo_count` tracks how many boxes actually hold real cargo. Every loop that reads cargo must stop at `cargo_count`, never at `cargo_capacity`, and never one step beyond — because past the last filled box the clerk opens memory that belongs to someone else.
+
+---
+
+<svg viewBox="0 0 620 200" role="img" xmlns="http://www.w3.org/2000/svg"
+  style="max-width:600px;width:100%;height:auto;display:block;margin:1.8rem auto;
+  font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+  <title>Array layout and bounds in CargoForge-C</title>
+  <desc>A row of memory slots labelled cargo[0] through cargo[N-1] shown as valid (teal), with cargo[N] shown in red as out-of-bounds, and arrows showing cargo_count stopping at the last valid slot.</desc>
+
+  <!-- slot width=80, height=56, start x=20, y=72 -->
+  <!-- slots 0..3 = valid -->
+  <rect x="20"  y="72" width="80" height="56" fill="none" stroke="#12A594" stroke-width="2" rx="3"/>
+  <rect x="100" y="72" width="80" height="56" fill="none" stroke="#12A594" stroke-width="2" rx="3"/>
+  <rect x="180" y="72" width="80" height="56" fill="none" stroke="#12A594" stroke-width="2" rx="3"/>
+  <rect x="260" y="72" width="80" height="56" fill="none" stroke="#12A594" stroke-width="2" rx="3"/>
+
+  <!-- ellipsis gap -->
+  <text x="358" y="105" text-anchor="middle" font-size="22" fill="currentColor" opacity="0.5">…</text>
+
+  <!-- last valid slot -->
+  <rect x="380" y="72" width="80" height="56" fill="none" stroke="#12A594" stroke-width="2" rx="3"/>
+
+  <!-- out-of-bounds slot -->
+  <rect x="460" y="72" width="80" height="56" fill="none" stroke="#D05663" stroke-width="2" stroke-dasharray="6 3" rx="3"/>
+
+  <!-- slot labels -->
+  <text x="60"  y="98"  text-anchor="middle" font-size="11" fill="#12A594" font-weight="600">cargo[0]</text>
+  <text x="140" y="98"  text-anchor="middle" font-size="11" fill="#12A594" font-weight="600">cargo[1]</text>
+  <text x="220" y="98"  text-anchor="middle" font-size="11" fill="#12A594" font-weight="600">cargo[2]</text>
+  <text x="300" y="98"  text-anchor="middle" font-size="11" fill="#12A594" font-weight="600">cargo[3]</text>
+  <text x="420" y="98"  text-anchor="middle" font-size="11" fill="#12A594" font-weight="600">cargo[N-1]</text>
+  <text x="500" y="98"  text-anchor="middle" font-size="11" fill="#D05663" font-weight="600">cargo[N]</text>
+
+  <!-- sub-labels -->
+  <text x="60"  y="114" text-anchor="middle" font-size="9" fill="currentColor" opacity="0.6">Cargo struct</text>
+  <text x="140" y="114" text-anchor="middle" font-size="9" fill="currentColor" opacity="0.6">Cargo struct</text>
+  <text x="220" y="114" text-anchor="middle" font-size="9" fill="currentColor" opacity="0.6">Cargo struct</text>
+  <text x="300" y="114" text-anchor="middle" font-size="9" fill="currentColor" opacity="0.6">Cargo struct</text>
+  <text x="420" y="114" text-anchor="middle" font-size="9" fill="currentColor" opacity="0.6">Cargo struct</text>
+  <text x="500" y="114" text-anchor="middle" font-size="9" fill="#D05663" opacity="0.8">⛔ UB</text>
+
+  <!-- cargo_count arrow -->
+  <line x1="420" y1="60" x2="420" y2="70" stroke="#12A594" stroke-width="1.5" marker-end="url(#arr-teal)"/>
+  <text x="420" y="52" text-anchor="middle" font-size="10" fill="#12A594" font-weight="600">cargo_count = N</text>
+  <text x="420" y="40" text-anchor="middle" font-size="9" fill="currentColor" opacity="0.6">(loop stops here)</text>
+
+  <!-- cargo_capacity arrow -->
+  <line x1="500" y1="60" x2="500" y2="70" stroke="#D05663" stroke-width="1.5" marker-end="url(#arr-red)"/>
+  <text x="500" y="52" text-anchor="middle" font-size="10" fill="#D05663" font-weight="600">cargo_capacity = N</text>
+  <text x="500" y="40" text-anchor="middle" font-size="9" fill="currentColor" opacity="0.6">(do NOT index here)</text>
+
+  <!-- legend label at bottom -->
+  <text x="60"  y="148" text-anchor="middle" font-size="9" fill="currentColor" opacity="0.5">heap base →</text>
+  <text x="310" y="170" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.6">malloc(N × sizeof(Cargo)) — allocated by parse_cargo_list</text>
+
+  <defs>
+    <marker id="arr-teal" markerWidth="7" markerHeight="7" refX="4" refY="3.5" orient="auto">
+      <path d="M0,0 L7,3.5 L0,7 Z" fill="#12A594"/>
+    </marker>
+    <marker id="arr-red" markerWidth="7" markerHeight="7" refX="4" refY="3.5" orient="auto">
+      <path d="M0,0 L7,3.5 L0,7 Z" fill="#D05663"/>
+    </marker>
+  </defs>
+</svg>
+
 ## What an array actually is
 
 In C an array is a contiguous block of identically-sized objects in memory.

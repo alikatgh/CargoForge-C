@@ -40,6 +40,16 @@ No jargon — here's what the ideas in this lesson *actually* mean, and why they
 
 ---
 
+## The mental model 🧠
+
+You'll forget the formula — hold THIS picture instead:
+
+> Imagine a long ruler lying on a table. You've marked two points on it: "7.0 m draft, KB = 3.71 m" at the left, and "8.0 m draft, KB = 4.24 m" at the right. Your ship floats at 7.389 m — so you slide your finger 38.9 % of the way along the ruler and read off the KB right there. That's the whole idea.
+
+`lerp` is the finger-sliding. `interpolate_entries` does it for all nine `HydroEntry` fields — `kb`, `bm`, `km`, `tpc`, `mtc`, and the rest — simultaneously, using the same fraction `t`. The fraction comes from whichever column you're indexing: draft for `hydro_interpolate`, displacement for `hydro_draft_from_displacement`.
+
+The two-step pipeline in `perform_analysis` is just doing this twice in sequence: first slide along the *displacement* column to find draft, then slide along the *draft* column to read KB, BM, and KM — which feed directly into GM = KB + BM − KG.
+
 ## Why tables instead of formulas?
 
 The box-hull fallback bakes in constants like `BLOCK_COEFF = 0.75` and `KB_FACTOR = 0.53`.

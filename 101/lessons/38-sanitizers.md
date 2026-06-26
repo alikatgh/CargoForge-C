@@ -17,6 +17,78 @@ No jargon — here's what the ideas in this lesson *actually* mean, and why they
 
 ---
 
+## The mental model 🧠
+
+You'll forget the flags — hold THIS picture instead:
+
+> Imagine a ship's cargo hold where every shelf is painted with invisible ink the moment its goods are unloaded. A dock worker (your code) reaches back onto that empty, "poisoned" shelf to grab something that's already gone. A watchman standing right there — with a UV lamp — screams instantly, points at the worker, and names the exact shelf. That's ASan.
+
+In CargoForge-C terms: `parse_cargo_list` built the cargo array and eventually called `free(ship->cargo)` — the shelf was unloaded. The poison went on immediately. Then `ship_cleanup` walked the same shelf (`ship->cargo[i].dg`) because `ship->cargo_count` still said it was full. The watchman (ASan's shadow memory) lit it up the moment the loop touched the poisoned byte, printed three stacks — free site, read site, allocation site — and aborted. Without the UV lamp, the freed memory still looked readable for milliseconds and the bug was completely invisible.
+
+The watchman doesn't know what the cargo *means* (logic errors are yours to find), only whether the shelf is live or poisoned. That one guarantee turns silent corruption into an instant, named abort at the exact source line.
+
+---
+
+<svg viewBox="0 0 620 310" role="img" xmlns="http://www.w3.org/2000/svg"
+  style="max-width:600px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+  <title>ASan catching heap-use-after-free in CargoForge-C</title>
+  <desc>Three-phase diagram: parse_cargo_list allocates the cargo array (green), an error path frees it and poisons shadow memory (red), then ship_cleanup tries to read the freed block and ASan fires immediately.</desc>
+
+  <!-- Phase labels -->
+  <text x="90" y="22" text-anchor="middle" font-size="11" font-weight="600" fill="currentColor" opacity="0.55">① allocate</text>
+  <text x="310" y="22" text-anchor="middle" font-size="11" font-weight="600" fill="currentColor" opacity="0.55">② free + poison</text>
+  <text x="530" y="22" text-anchor="middle" font-size="11" font-weight="600" fill="currentColor" opacity="0.55">③ bad read → ABORT</text>
+
+  <!-- Phase ①: cargo array allocated -->
+  <!-- box: cargo array -->
+  <rect x="20" y="36" width="140" height="56" rx="5" fill="none" stroke="#12A594" stroke-width="1.8"/>
+  <text x="90" y="55" text-anchor="middle" font-size="11" font-weight="700" fill="#12A594">ship-&gt;cargo[ ]</text>
+  <text x="90" y="72" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.75">malloc'd in</text>
+  <text x="90" y="85" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.75">parse_cargo_list</text>
+  <!-- shadow memory: all OK -->
+  <rect x="20" y="104" width="140" height="30" rx="4" fill="#12A594" opacity="0.15" stroke="#12A594" stroke-width="1.2"/>
+  <text x="90" y="124" text-anchor="middle" font-size="10" fill="#12A594" font-weight="600">shadow: LIVE ✓</text>
+
+  <!-- arrow ①→② -->
+  <line x1="165" y1="85" x2="205" y2="85" stroke="currentColor" stroke-width="1.4" opacity="0.5"/>
+  <polygon points="205,81 213,85 205,89" fill="currentColor" opacity="0.5"/>
+  <text x="189" y="78" text-anchor="middle" font-size="9" fill="currentColor" opacity="0.45">error path</text>
+
+  <!-- Phase ②: freed + shadow poisoned -->
+  <rect x="218" y="36" width="184" height="56" rx="5" fill="none" stroke="#D05663" stroke-width="1.8"/>
+  <text x="310" y="55" text-anchor="middle" font-size="11" font-weight="700" fill="#D05663">free(ship-&gt;cargo)</text>
+  <text x="310" y="72" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.75">cargo_count left non-zero</text>
+  <text x="310" y="85" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.75">parser.c:337</text>
+  <!-- shadow memory: poisoned -->
+  <rect x="218" y="104" width="184" height="30" rx="4" fill="#D05663" opacity="0.15" stroke="#D05663" stroke-width="1.2"/>
+  <text x="310" y="124" text-anchor="middle" font-size="10" fill="#D05663" font-weight="600">shadow: POISONED ✗</text>
+
+  <!-- arrow ②→③ -->
+  <line x1="407" y1="85" x2="447" y2="85" stroke="currentColor" stroke-width="1.4" opacity="0.5"/>
+  <polygon points="447,81 455,85 447,89" fill="currentColor" opacity="0.5"/>
+  <text x="431" y="78" text-anchor="middle" font-size="9" fill="currentColor" opacity="0.45">cleanup runs</text>
+
+  <!-- Phase ③: ship_cleanup reads freed block — ASan fires -->
+  <rect x="460" y="36" width="140" height="56" rx="5" fill="none" stroke="currentColor" stroke-width="1.4" opacity="0.7"/>
+  <text x="530" y="52" text-anchor="middle" font-size="10" font-weight="700" fill="currentColor">ship_cleanup</text>
+  <text x="530" y="66" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.75">reads cargo[i].dg</text>
+  <text x="530" y="80" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.75">analysis.c:211</text>
+  <!-- ASan ABORT badge -->
+  <rect x="466" y="104" width="128" height="30" rx="4" fill="#D05663" opacity="0.9"/>
+  <text x="530" y="124" text-anchor="middle" font-size="10" fill="#fff" font-weight="700">ASan ABORT ✗</text>
+
+  <!-- separator -->
+  <line x1="20" y1="152" x2="600" y2="152" stroke="currentColor" stroke-width="0.8" opacity="0.18" stroke-dasharray="4,4"/>
+
+  <!-- Report box -->
+  <rect x="20" y="164" width="580" height="96" rx="6" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.35"/>
+  <text x="36" y="182" font-size="10" font-weight="700" fill="#D05663">ERROR: AddressSanitizer: heap-use-after-free</text>
+  <text x="36" y="198" font-size="10" fill="currentColor" opacity="0.75">READ of size 8 …  →  #0 ship_cleanup  analysis.c:211   (where the bad read happened)</text>
+  <text x="36" y="214" font-size="10" fill="currentColor" opacity="0.75">freed here       →  #0 parse_cargo_list  parser.c:337     (where free() was called)</text>
+  <text x="36" y="230" font-size="10" fill="currentColor" opacity="0.75">allocated here   →  #0 parse_cargo_list  parser.c:290     (where malloc was called)</text>
+  <text x="36" y="250" font-size="10" fill="#12A594" font-weight="600">Fix: free(ship-&gt;cargo);  ship-&gt;cargo = NULL;  ship-&gt;cargo_count = 0;</text>
+</svg>
+
 ## What Sanitizers Are
 
 C gives you full control of memory. The trade-off is that mistakes are silent by default: a buffer overrun may not crash immediately; a freed pointer may still hold readable data for milliseconds. The bug manifests far from its cause, if at all on a given run.

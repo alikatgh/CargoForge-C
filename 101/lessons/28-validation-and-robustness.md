@@ -18,6 +18,80 @@ No jargon — here's what the ideas in this lesson *actually* mean, and why they
 
 ---
 
+## The mental model 🧠
+
+You'll forget the exact checks — hold THIS picture instead:
+
+> A nightclub bouncer at the door. Every person (number) must show ID before getting past. The bouncer checks four things: is the ID real? does it have digits at all? is there nonsense scrawled after the number? is the value in the allowed range? If any check fails, the person gets a wristband stamped **NAN** — "not admitted" — and is turned away at the door. The bouncer never lets a bad number slip through to the dance floor.
+
+In CargoForge-C, `safe_atof` is that bouncer. Every numeric field in `parse_ship_config` and `parse_cargo_list` passes through it before touching a struct. When it rejects a value it returns `NAN` — a sentinel the caller detects with `isnan()` — and the parse function then has one job: free whatever heap memory it already allocated (the `ship->cargo` array, any `dg` strings), null the pointer, zero the count, and return `−1`. The NULL-after-free step is not tidiness; it is the lock that keeps `ship_cleanup` from walking a freed array later and triggering a heap-use-after-free.
+
+---
+
+<svg viewBox="0 0 620 260" role="img" xmlns="http://www.w3.org/2000/svg"
+  style="max-width:600px;width:100%;height:auto;display:block;margin:1.8rem auto;
+  font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+  <title>safe_atof validation flow in parse_cargo_list</title>
+  <desc>Diagram showing a raw string entering safe_atof, passing four checks, returning either a valid float to the struct field or NAN triggering a cleanup and return -1 path.</desc>
+
+  <!-- Raw input box -->
+  <rect x="10" y="100" width="110" height="44" rx="6"
+        fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.6"/>
+  <text x="65" y="117" text-anchor="middle" font-size="11" fill="currentColor" opacity="0.85">raw string</text>
+  <text x="65" y="133" text-anchor="middle" font-size="10.5" fill="currentColor" opacity="0.6">"12.4xyz"</text>
+
+  <!-- Arrow: input → safe_atof -->
+  <line x1="120" y1="122" x2="158" y2="122" stroke="currentColor" stroke-width="1.5" opacity="0.6"
+        marker-end="url(#arr)"/>
+
+  <!-- safe_atof box -->
+  <rect x="160" y="80" width="140" height="84" rx="6"
+        fill="none" stroke="#12A594" stroke-width="2"/>
+  <text x="230" y="99" text-anchor="middle" font-size="12" font-weight="600" fill="#12A594">safe_atof</text>
+  <text x="230" y="116" text-anchor="middle" font-size="9.5" fill="currentColor" opacity="0.75">① errno ≠ 0 (overflow)</text>
+  <text x="230" y="130" text-anchor="middle" font-size="9.5" fill="currentColor" opacity="0.75">② end == s (no digits)</text>
+  <text x="230" y="144" text-anchor="middle" font-size="9.5" fill="currentColor" opacity="0.75">③ trailing garbage</text>
+  <text x="230" y="158" text-anchor="middle" font-size="9.5" fill="currentColor" opacity="0.75">④ out of range [min,max]</text>
+
+  <!-- Arrow: safe_atof → valid float (right, up) -->
+  <line x1="300" y1="104" x2="400" y2="104" stroke="#12A594" stroke-width="1.5"
+        marker-end="url(#arr-teal)"/>
+  <!-- Valid float label -->
+  <text x="350" y="97" text-anchor="middle" font-size="9.5" fill="#12A594">valid float</text>
+
+  <!-- Struct field box -->
+  <rect x="402" y="80" width="140" height="44" rx="6"
+        fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.6"/>
+  <text x="472" y="97" text-anchor="middle" font-size="11" fill="currentColor" opacity="0.85">Cargo struct field</text>
+  <text x="472" y="113" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.6">weight_t, dims, …</text>
+
+  <!-- Arrow: safe_atof → NAN (down) -->
+  <line x1="230" y1="164" x2="230" y2="194" stroke="#D05663" stroke-width="1.5"
+        marker-end="url(#arr-red)"/>
+  <!-- NAN label -->
+  <text x="245" y="185" font-size="10" fill="#D05663">NAN</text>
+
+  <!-- Cleanup box -->
+  <rect x="130" y="196" width="200" height="52" rx="6"
+        fill="none" stroke="#D05663" stroke-width="1.8"/>
+  <text x="230" y="215" text-anchor="middle" font-size="11" font-weight="600" fill="#D05663">error path (cleanup)</text>
+  <text x="230" y="231" text-anchor="middle" font-size="9.5" fill="currentColor" opacity="0.75">free(ship-&gt;cargo)  cargo = NULL</text>
+  <text x="230" y="245" text-anchor="middle" font-size="9.5" fill="currentColor" opacity="0.75">cargo_count = 0  →  return −1</text>
+
+  <!-- Arrowhead markers -->
+  <defs>
+    <marker id="arr" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+      <path d="M0,0 L7,3.5 L0,7 Z" fill="currentColor" opacity="0.6"/>
+    </marker>
+    <marker id="arr-teal" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+      <path d="M0,0 L7,3.5 L0,7 Z" fill="#12A594"/>
+    </marker>
+    <marker id="arr-red" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+      <path d="M0,0 L7,3.5 L0,7 Z" fill="#D05663"/>
+    </marker>
+  </defs>
+</svg>
+
 ## The contract: never crash on bad input
 
 A crash on malformed input is not an acceptable outcome for any safety-relevant program. The CargoForge-C project expresses this as a testable invariant enforced by the fuzzer in [`scripts/fuzz.sh`](https://github.com/alikatgh/CargoForge-C/blob/main/scripts/fuzz.sh): the binary must never exit with a signal (code ≥ 128). It may reject bad data, print an error, and return a non-zero exit code — that is a clean rejection, not a failure. A crash is always a bug.

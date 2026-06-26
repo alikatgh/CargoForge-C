@@ -37,6 +37,16 @@ No jargon — here's what the ideas in this lesson *actually* mean, and why they
 
 ---
 
+## The mental model 🧠
+
+You'll forget the formula — hold THIS picture instead:
+
+> Imagine pressing a rubber duck into a bathtub. The water level rises. That rising water has weight. When the weight of the water you've pushed aside equals the weight of the duck, your hand feels no resistance — the duck is floating. Let go and it stays exactly there.
+
+A steel ship is just a very large, hollow rubber duck. The hollow interior means the ship's average density (steel shell plus the air inside) is less than seawater, so the hull only has to sink far enough that the water it shoves aside weighs as much as the whole vessel. `perform_analysis` opens by computing exactly that balance: sum every tonne of steel, cargo, and fuel (`lightship_weight` + `total_cargo_weight_kg` + tank weights), divide by `SEAWATER_DENSITY = 1.025`, and you have the displaced volume. From that single volume, draft follows (how deep the duck sits), then KB (where the push is centred), then BM (how the push shifts when the duck tilts), and finally GM = KB + BM − KG — the number that tells you whether the duck rights itself or rolls over.
+
+---
+
 ## The Principle
 
 Around 250 BCE, Archimedes observed that an object submerged in a fluid experiences an upward force equal to the weight of the fluid it displaces. Written as a relationship rather than a formula:

@@ -17,6 +17,88 @@ No jargon — here's what the ideas in this lesson *actually* mean, and why they
 
 ---
 
+## The mental model 🧠
+
+You'll forget the directive syntax — hold THIS picture instead:
+
+> Think of `cargoforge.h` as the ship's master manifest posted at the dock gate. Every crew member (`.c` file) reads the manifest to learn what cargo types exist, what the holds look like, and who to call for each job — but the manifest itself is not the cargo and not the crew. The actual cargo (`HydroTable` data, parsed numbers) lives below deck in `hydrostatics.c`; the actual workers (`parse_hydro_table`, `lerp`) are in the engine room. The gate has a stamp (`#ifndef CARGOFORGE_H`): once you've read the manifest, the stamp is marked and any second crew member who walks up gets waved through without re-reading it.
+
+In CargoForge-C terms: `cargoforge.h` is the manifest — it declares the `Ship` struct, the `Cargo` shape, and prototypes like `parse_cargo_list` and `perform_analysis`, but defines nothing. The include guard is the gate stamp that prevents the compiler from choking on a duplicate `typedef Cargo` when both `analysis.c` and `parser.c` include the same header. The `static float lerp(...)` in `hydrostatics.c` is a private tool that never leaves the engine room — the linker cannot see it, so it cannot clash with anything else.
+
+---
+
+<svg viewBox="0 0 620 310" role="img" xmlns="http://www.w3.org/2000/svg"
+  style="max-width:600px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+  <title>Preprocessor pipeline: how #include and #define expand before the compiler sees source code</title>
+  <desc>A left-to-right flow showing cargoforge.h and hydrostatics.h being pasted into hydrostatics.c by the preprocessor, the compiler turning that into an object file, and the linker combining multiple object files into the final binary.</desc>
+
+  <!-- Header files -->
+  <rect x="10" y="20" width="130" height="48" rx="5" fill="none" stroke="#12A594" stroke-width="1.8"/>
+  <text x="75" y="40" text-anchor="middle" font-size="11" font-weight="600" fill="#12A594">cargoforge.h</text>
+  <text x="75" y="57" text-anchor="middle" font-size="9.5" fill="currentColor" opacity=".7">declarations + guard</text>
+
+  <rect x="10" y="88" width="130" height="48" rx="5" fill="none" stroke="#12A594" stroke-width="1.8"/>
+  <text x="75" y="108" text-anchor="middle" font-size="11" font-weight="600" fill="#12A594">hydrostatics.h</text>
+  <text x="75" y="125" text-anchor="middle" font-size="9.5" fill="currentColor" opacity=".7">HydroTable + prototypes</text>
+
+  <!-- Source file -->
+  <rect x="10" y="158" width="130" height="48" rx="5" fill="none" stroke="currentColor" stroke-width="1.4" opacity=".6"/>
+  <text x="75" y="178" text-anchor="middle" font-size="11" font-weight="600" fill="currentColor">hydrostatics.c</text>
+  <text x="75" y="195" text-anchor="middle" font-size="9.5" fill="currentColor" opacity=".7">definitions + static lerp</text>
+
+  <!-- Arrows to preprocessor -->
+  <line x1="140" y1="44" x2="195" y2="110" stroke="currentColor" stroke-width="1.3" opacity=".5" marker-end="url(#arr)"/>
+  <line x1="140" y1="112" x2="195" y2="118" stroke="currentColor" stroke-width="1.3" opacity=".5" marker-end="url(#arr)"/>
+  <line x1="140" y1="182" x2="195" y2="130" stroke="currentColor" stroke-width="1.3" opacity=".5" marker-end="url(#arr)"/>
+
+  <!-- Preprocessor box -->
+  <rect x="200" y="80" width="110" height="68" rx="6" fill="none" stroke="currentColor" stroke-width="1.6" opacity=".8"/>
+  <text x="255" y="105" text-anchor="middle" font-size="11" font-weight="600" fill="currentColor">Preprocessor</text>
+  <text x="255" y="121" text-anchor="middle" font-size="9" fill="currentColor" opacity=".65">#include → paste</text>
+  <text x="255" y="136" text-anchor="middle" font-size="9" fill="currentColor" opacity=".65">#define → replace</text>
+
+  <!-- Arrow to compiler -->
+  <line x1="310" y1="114" x2="355" y2="114" stroke="currentColor" stroke-width="1.5" opacity=".6" marker-end="url(#arr)"/>
+  <text x="332" y="108" text-anchor="middle" font-size="8.5" fill="currentColor" opacity=".55">translation unit</text>
+
+  <!-- Compiler box -->
+  <rect x="360" y="80" width="100" height="68" rx="6" fill="none" stroke="currentColor" stroke-width="1.6" opacity=".8"/>
+  <text x="410" y="105" text-anchor="middle" font-size="11" font-weight="600" fill="currentColor">Compiler</text>
+  <text x="410" y="122" text-anchor="middle" font-size="9" fill="currentColor" opacity=".65">type-checks</text>
+  <text x="410" y="137" text-anchor="middle" font-size="9" fill="currentColor" opacity=".65">generates code</text>
+
+  <!-- Arrow to linker -->
+  <line x1="460" y1="114" x2="505" y2="114" stroke="currentColor" stroke-width="1.5" opacity=".6" marker-end="url(#arr)"/>
+  <text x="483" y="108" text-anchor="middle" font-size="8.5" fill="currentColor" opacity=".55">.o file</text>
+
+  <!-- Linker box -->
+  <rect x="510" y="80" width="100" height="68" rx="6" fill="none" stroke="#12A594" stroke-width="1.8"/>
+  <text x="560" y="105" text-anchor="middle" font-size="11" font-weight="600" fill="#12A594">Linker</text>
+  <text x="560" y="122" text-anchor="middle" font-size="9" fill="currentColor" opacity=".65">combines .o files</text>
+  <text x="560" y="137" text-anchor="middle" font-size="9" fill="currentColor" opacity=".65">→ cargoforge binary</text>
+
+  <!-- Private symbol note -->
+  <rect x="200" y="200" width="200" height="40" rx="5" fill="none" stroke="#D05663" stroke-width="1.4" stroke-dasharray="5,3"/>
+  <text x="300" y="218" text-anchor="middle" font-size="9.5" fill="#D05663" font-weight="600">static lerp() — linker-invisible</text>
+  <text x="300" y="232" text-anchor="middle" font-size="9" fill="currentColor" opacity=".65">stays inside hydrostatics.o only</text>
+
+  <!-- Arrow from compiler box down to private note -->
+  <line x1="410" y1="148" x2="370" y2="200" stroke="#D05663" stroke-width="1.2" stroke-dasharray="4,3" opacity=".7" marker-end="url(#arrd)"/>
+
+  <!-- Defs -->
+  <defs>
+    <marker id="arr" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+      <path d="M0,0 L7,3.5 L0,7 Z" fill="currentColor" opacity=".6"/>
+    </marker>
+    <marker id="arrd" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+      <path d="M0,0 L7,3.5 L0,7 Z" fill="#D05663" opacity=".7"/>
+    </marker>
+  </defs>
+
+  <!-- Bottom label -->
+  <text x="310" y="295" text-anchor="middle" font-size="9" fill="currentColor" opacity=".45">Each .c file is compiled independently; the linker resolves cross-file calls at the end.</text>
+</svg>
+
 ## What the preprocessor actually does
 
 The preprocessor is a text transformer. It reads your source file and produces a new text file — called a **translation unit** — that the compiler then compiles. Three directives cover the vast majority of what it does.

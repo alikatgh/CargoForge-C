@@ -20,7 +20,93 @@ No jargon — here's what the ideas in this lesson *actually* mean, and why they
 
 **Why it matters:** Draft is the root input for every stability number — GM, trim, KB, BM, and longitudinal strength all depend on it. Get displacement wrong (e.g. by including unplaced cargo, or using fresh-water density instead of 1.025) and every downstream stability calculation will be off.
 
+## The mental model 🧠
+
+You'll forget the formula — hold THIS picture instead:
+
+> Imagine lowering a fully loaded freight elevator into a swimming pool. The pool water
+> rises exactly enough to make room for the elevator's weight — not its size, its *weight*.
+> The denser the water, the less it has to rise. The boxier the elevator, the shallower the rise.
+
+That's the whole lesson. In CargoForge-C, the "elevator" is `displacement_t` (lightship + placed cargo + tanks). The "rise" is `r.draft`. The pool is denser than fresh water (`SEAWATER_DENSITY = 1.025f`), so the hull sits slightly higher than it would in a river. And the "boxiness" is `BLOCK_COEFF = 0.75` in the fallback path — or, when you load a hydrostatic CSV, the real hull geometry encoded row-by-row in `ship->hydro`. `hydro_draft_from_displacement` is just the pool asking: "given this much elevator weight, how high does the water line sit on the hull?"
+
 ---
+
+<svg viewBox="0 0 620 310" role="img" xmlns="http://www.w3.org/2000/svg"
+  style="max-width:600px;width:100%;height:auto;display:block;margin:1.8rem auto;
+  font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+  <title>Displacement → volume → draft pipeline</title>
+  <desc>Three-stage pipeline showing how CargoForge-C converts displacement_kg to displaced_vol to r.draft, with the overweight guard at the start and the two draft paths (box-hull fallback and hydrostatic table) at the end.</desc>
+
+  <!-- Stage 1: displacement_kg box -->
+  <rect x="10" y="100" width="150" height="110" rx="6"
+        fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.7"/>
+  <text x="85" y="126" text-anchor="middle" font-size="11" font-weight="600" fill="currentColor">displacement_kg</text>
+  <text x="85" y="144" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.75">lightship_weight</text>
+  <text x="85" y="159" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.75">+ cargo (pos_x ≥ 0)</text>
+  <text x="85" y="174" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.75">+ tank_weight × 1000</text>
+  <!-- overweight guard label -->
+  <rect x="18" y="193" width="134" height="10" rx="3" fill="#D05663" opacity="0.15"/>
+  <text x="85" y="201" text-anchor="middle" font-size="9" fill="#D05663" font-weight="600">⚠ if > max_weight → NAN</text>
+
+  <!-- Arrow 1: ÷ 1000 -->
+  <line x1="160" y1="155" x2="198" y2="155" stroke="currentColor" stroke-width="1.5" opacity="0.6"/>
+  <polygon points="198,151 206,155 198,159" fill="currentColor" opacity="0.6"/>
+  <text x="183" y="148" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.75">÷ 1000</text>
+  <text x="183" y="170" text-anchor="middle" font-size="9" fill="currentColor" opacity="0.55">→ tonnes</text>
+
+  <!-- Stage 2: displacement_t box -->
+  <rect x="206" y="115" width="120" height="80" rx="6"
+        fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.7"/>
+  <text x="266" y="143" text-anchor="middle" font-size="11" font-weight="600" fill="currentColor">displacement_t</text>
+  <text x="266" y="161" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.75">(tonnes)</text>
+  <text x="266" y="181" text-anchor="middle" font-size="10" fill="#12A594">÷ 1.025 t/m³</text>
+
+  <!-- Arrow 2: ÷ ρ -->
+  <line x1="326" y1="155" x2="364" y2="155" stroke="currentColor" stroke-width="1.5" opacity="0.6"/>
+  <polygon points="364,151 372,155 364,159" fill="currentColor" opacity="0.6"/>
+  <text x="348" y="148" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.75">÷ ρ</text>
+  <text x="348" y="170" text-anchor="middle" font-size="9" fill="currentColor" opacity="0.55">→ m³</text>
+
+  <!-- Stage 3: displaced_vol box -->
+  <rect x="372" y="115" width="120" height="80" rx="6"
+        fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.7"/>
+  <text x="432" y="143" text-anchor="middle" font-size="11" font-weight="600" fill="currentColor">displaced_vol</text>
+  <text x="432" y="161" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.75">(m³)</text>
+  <text x="432" y="181" text-anchor="middle" font-size="10" fill="#12A594">hull geometry →</text>
+
+  <!-- Fork arrow down-right to two paths -->
+  <line x1="492" y1="155" x2="530" y2="155" stroke="currentColor" stroke-width="1.5" opacity="0.6"/>
+  <line x1="530" y1="155" x2="530" y2="90" stroke="currentColor" stroke-width="1.2" opacity="0.5"/>
+  <line x1="530" y1="155" x2="530" y2="220" stroke="currentColor" stroke-width="1.2" opacity="0.5"/>
+  <polygon points="526,90 530,82 534,90" fill="currentColor" opacity="0.5"/>
+  <polygon points="526,220 530,228 534,220" fill="currentColor" opacity="0.5"/>
+
+  <!-- Path A: box-hull fallback -->
+  <rect x="540" y="58" width="72" height="48" rx="5"
+        fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.6"/>
+  <text x="576" y="78" text-anchor="middle" font-size="9.5" font-weight="600" fill="currentColor">Box-hull</text>
+  <text x="576" y="91" text-anchor="middle" font-size="9" fill="currentColor" opacity="0.7">V / (L×B×Cb)</text>
+  <text x="576" y="102" text-anchor="middle" font-size="9" fill="currentColor" opacity="0.7">Cb = 0.75</text>
+
+  <!-- Path B: hydrostatic table -->
+  <rect x="540" y="194" width="72" height="48" rx="5"
+        fill="none" stroke="#12A594" stroke-width="1.5" opacity="0.85"/>
+  <text x="576" y="213" text-anchor="middle" font-size="9.5" font-weight="600" fill="#12A594">Hydro table</text>
+  <text x="576" y="226" text-anchor="middle" font-size="9" fill="currentColor" opacity="0.7">hydro_draft_from</text>
+  <text x="576" y="237" text-anchor="middle" font-size="9" fill="currentColor" opacity="0.7">_displacement()</text>
+
+  <!-- r.draft label spanning both -->
+  <text x="576" y="280" text-anchor="middle" font-size="11" font-weight="700" fill="#12A594">r.draft (m)</text>
+  <line x1="576" y1="106" x2="576" y2="272" stroke="#12A594" stroke-width="1" stroke-dasharray="3,3" opacity="0.4"/>
+  <line x1="576" y1="242" x2="576" y2="272" stroke="#12A594" stroke-width="1" stroke-dasharray="3,3" opacity="0.4"/>
+
+  <!-- Stage labels at top -->
+  <text x="85" y="88" text-anchor="middle" font-size="9" fill="currentColor" opacity="0.5">① accumulate</text>
+  <text x="266" y="105" text-anchor="middle" font-size="9" fill="currentColor" opacity="0.5">② convert</text>
+  <text x="432" y="105" text-anchor="middle" font-size="9" fill="currentColor" opacity="0.5">③ volume</text>
+  <text x="576" y="48" text-anchor="middle" font-size="9" fill="currentColor" opacity="0.5">④ draft</text>
+</svg>
 
 ## What displacement means
 

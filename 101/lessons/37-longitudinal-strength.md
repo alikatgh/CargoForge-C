@@ -34,6 +34,14 @@ No jargon — here's what the ideas in this lesson *actually* mean, and why they
 
 ---
 
+## The mental model 🧠
+
+You'll forget the formula — hold THIS picture instead:
+
+> A heavily-loaded flatbed truck with too much weight piled in the middle starts to bow upward at the axles — the frame **hogs**. Shift all the freight to the two ends and the middle sags under its own weight. That truck frame is your ship's hull, the freight is cargo plus steel, and the road pushing back from below is buoyancy. The hull bends for the same reason the truck frame does: the support (buoyancy / axles) and the load (weight) don't line up.
+
+In CargoForge-C the 20-station array is the truck frame cut into 20 cross-sections. `distribute_lightship` and `distribute_cargo` fill `weight_dist[]` with everything pushing down at each slice; `distribute_buoyancy` fills `buoyancy_dist[]` with everything pushing up. `net_load[i] = weight_dist[i] - buoyancy_dist[i]` is simply "how much more weight than road-push at this slice." Integrate that imbalance once and you get shear force — sections sliding past each other. Integrate again and you get `bending_moment[]` — the actual curve of the hull. `check_strength_limits` then asks: did that curve exceed what the class society allows before the steel gives way?
+
 ## The physical picture
 
 Imagine the ship as a beam floating on water. At every cross-section along its length there is some weight acting downward (hull steel, machinery, cargo) and some buoyancy acting upward (the upward pressure of displaced water). Where weight exceeds buoyancy the section is loaded in excess; where buoyancy exceeds weight it is relieved. The difference — the **net load** — varies continuously along the ship.
