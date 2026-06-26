@@ -18,6 +18,133 @@ No jargon — here's what the ideas in this lesson *actually* mean, and why they
 
 ---
 
+## The mental model 🧠
+
+You'll forget the field names — hold THIS picture instead:
+
+> Imagine a superintendent's clipboard hanging on a hook in the cargo office. Each row on the clipboard is one crate: an ID sticker, a weight scrawled in pencil, a box drawn for dimensions, and — only if the crate is hazardous — a red DG card clipped to the row. Until the crane sets the crate in the hold, the "position" column is blank (that's `pos_x = -1.0f`). The clipboard itself hangs on a bigger board labelled with the ship's length, breadth, and deadweight — that's `Ship`. Three extra folders dangle beneath it: a hydrostatic table binder, a tank diagram, and a strength-limits card. If the folders are missing, the office uses rough estimates instead.
+
+In code, `Cargo` is one clipboard row. `Ship` wraps the whole board: it owns the dynamic array of rows (`Cargo *cargo`), the hull numbers (`length`, `width`, `max_weight`), and the three optional folders (`hydro`, `tanks`, `strength_limits`). When `perform_analysis` walks the rows to compute KG, it skips any row whose position column is still blank — exactly as a superintendent would skip a crate still sitting on the dock. `ship_cleanup` is the act of filing everything away at voyage end: it empties each row's DG card, then the rows, then the folders, in one tidy pass.
+
+---
+
+<svg viewBox="0 0 620 340" role="img" xmlns="http://www.w3.org/2000/svg"
+  style="max-width:600px;width:100%;height:auto;display:block;margin:1.8rem auto;
+  font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+  <title>CargoForge-C data model: Ship owns Cargo array, Cargo optionally owns DGInfo, Ship optionally owns HydroTable/TankConfig/StrengthLimits</title>
+  <desc>Box-and-arrow diagram showing the Ship struct containing hull fields and a pointer to a heap Cargo array. Each Cargo entry holds id, weight, dimensions, type, pos_x/y/z, and an optional dg pointer. Ship also holds three nullable extension pointers: hydro, tanks, and strength_limits.</desc>
+
+  <!-- Ship outer box -->
+  <rect x="10" y="10" width="200" height="320" rx="6"
+        fill="none" stroke="currentColor" stroke-width="1.6" stroke-opacity="0.9"/>
+  <text x="110" y="30" text-anchor="middle" font-size="12" font-weight="700"
+        fill="#12A594">Ship</text>
+
+  <!-- Ship fields -->
+  <text x="22" y="52" font-size="10" fill="currentColor" opacity="0.85">length (m)</text>
+  <text x="22" y="68" font-size="10" fill="currentColor" opacity="0.85">width (m)</text>
+  <text x="22" y="84" font-size="10" fill="currentColor" opacity="0.85">max_weight (kg)</text>
+  <text x="22" y="100" font-size="10" fill="currentColor" opacity="0.85">lightship_weight (kg)</text>
+  <text x="22" y="116" font-size="10" fill="currentColor" opacity="0.85">lightship_kg (m)</text>
+  <text x="22" y="132" font-size="10" fill="currentColor" opacity="0.85">cargo_count / cargo_capacity</text>
+
+  <!-- cargo pointer row -->
+  <rect x="14" y="142" width="182" height="20" rx="3"
+        fill="#12A594" fill-opacity="0.12" stroke="#12A594" stroke-width="1"/>
+  <text x="22" y="156" font-size="10" font-weight="600" fill="#12A594">Cargo *cargo  →</text>
+
+  <!-- extension pointer rows -->
+  <text x="22" y="186" font-size="10" fill="currentColor" opacity="0.7">HydroTable_ *hydro</text>
+  <text x="22" y="204" font-size="10" fill="currentColor" opacity="0.7">TankConfig_ *tanks</text>
+  <text x="22" y="222" font-size="10" fill="currentColor" opacity="0.7">StrengthLimits_ *limits</text>
+  <text x="22" y="244" font-size="10" fill="currentColor" opacity="0.45">(NULL = disabled)</text>
+
+  <!-- ship_cleanup label -->
+  <text x="22" y="292" font-size="9" fill="currentColor" opacity="0.5">▼ ship_cleanup()</text>
+  <text x="22" y="306" font-size="9" fill="currentColor" opacity="0.5">  frees dg[], cargo, extensions</text>
+
+  <!-- Arrow from cargo pointer to Cargo array box -->
+  <line x1="196" y1="152" x2="250" y2="152" stroke="#12A594" stroke-width="1.5" marker-end="url(#arr-teal)"/>
+
+  <!-- Cargo array box -->
+  <rect x="250" y="10" width="190" height="240" rx="6"
+        fill="none" stroke="currentColor" stroke-width="1.6" stroke-opacity="0.9"/>
+  <text x="345" y="30" text-anchor="middle" font-size="12" font-weight="700"
+        fill="#12A594">Cargo[i]</text>
+  <text x="345" y="46" text-anchor="middle" font-size="9" fill="currentColor" opacity="0.5">(heap array)</text>
+
+  <text x="262" y="66"  font-size="10" fill="currentColor" opacity="0.85">id[32]  — e.g. "HeavyMachinery"</text>
+  <text x="262" y="82"  font-size="10" fill="currentColor" opacity="0.85">weight  — kg (tonnes × 1000)</text>
+  <text x="262" y="98"  font-size="10" fill="currentColor" opacity="0.85">dimensions[3]  — L × W × H (m)</text>
+  <text x="262" y="114" font-size="10" fill="currentColor" opacity="0.85">type[16]  — "standard" | "reefer" …</text>
+
+  <!-- pos fields with sentinel callout -->
+  <text x="262" y="134" font-size="10" fill="currentColor" opacity="0.85">pos_x  — m from hull origin</text>
+  <text x="262" y="150" font-size="10" fill="currentColor" opacity="0.85">pos_y  — m from hull origin</text>
+  <text x="262" y="166" font-size="10" fill="currentColor" opacity="0.85">pos_z  — m from keel</text>
+
+  <!-- sentinel callout box -->
+  <rect x="262" y="176" width="170" height="28" rx="3"
+        fill="#D05663" fill-opacity="0.10" stroke="#D05663" stroke-width="1"/>
+  <text x="270" y="189" font-size="9" fill="#D05663">pos_x = −1.0f → not yet placed</text>
+  <text x="270" y="200" font-size="9" fill="#D05663">skipped by perform_analysis</text>
+
+  <!-- dg pointer row -->
+  <rect x="256" y="212" width="178" height="20" rx="3"
+        fill="currentColor" fill-opacity="0.06" stroke="currentColor" stroke-opacity="0.3" stroke-width="1"/>
+  <text x="262" y="226" font-size="10" fill="currentColor" opacity="0.7">DGInfo_ *dg  →</text>
+
+  <!-- Arrow from dg to DGInfo box -->
+  <line x1="440" y1="222" x2="490" y2="222" stroke="currentColor" stroke-opacity="0.5"
+        stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#arr-grey)"/>
+
+  <!-- DGInfo box -->
+  <rect x="490" y="198" width="118" height="68" rx="6"
+        fill="none" stroke="currentColor" stroke-opacity="0.5" stroke-width="1.2"/>
+  <text x="549" y="216" text-anchor="middle" font-size="11" font-weight="600"
+        fill="currentColor" opacity="0.75">DGInfo_</text>
+  <text x="500" y="233" font-size="9" fill="currentColor" opacity="0.6">un_number</text>
+  <text x="500" y="247" font-size="9" fill="currentColor" opacity="0.6">hazard_class</text>
+  <text x="500" y="261" font-size="9" fill="currentColor" opacity="0.5">(heap; NULL if</text>
+  <text x="500" y="272" font-size="9" fill="currentColor" opacity="0.5"> no DG: field)</text>
+
+  <!-- Extension boxes (right of Ship, lower) -->
+  <rect x="250" y="268" width="118" height="28" rx="4"
+        fill="none" stroke="currentColor" stroke-opacity="0.4" stroke-width="1"/>
+  <text x="309" y="286" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.65">HydroTable_</text>
+
+  <rect x="380" y="268" width="118" height="28" rx="4"
+        fill="none" stroke="currentColor" stroke-opacity="0.4" stroke-width="1"/>
+  <text x="439" y="286" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.65">TankConfig_</text>
+
+  <rect x="490" y="268" width="118" height="28" rx="4"
+        fill="none" stroke="currentColor" stroke-opacity="0.4" stroke-width="1"/>
+  <text x="549" y="286" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.65">StrengthLimits_</text>
+
+  <!-- Dashed arrows from Ship extension fields to the boxes -->
+  <line x1="196" y1="186" x2="309" y2="268" stroke="currentColor" stroke-opacity="0.3"
+        stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="196" y1="204" x2="439" y2="268" stroke="currentColor" stroke-opacity="0.3"
+        stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="196" y1="222" x2="549" y2="268" stroke="currentColor" stroke-opacity="0.3"
+        stroke-width="1" stroke-dasharray="4,3"/>
+
+  <!-- NULL / optional label -->
+  <text x="310" y="314" text-anchor="middle" font-size="9" fill="currentColor" opacity="0.4">NULL = disabled (box-hull fallback)</text>
+
+  <!-- Arrow markers -->
+  <defs>
+    <marker id="arr-teal" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#12A594"/>
+    </marker>
+    <marker id="arr-grey" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="currentColor" opacity="0.45"/>
+    </marker>
+  </defs>
+</svg>
+
+---
+
 ## Why structs mirror the physical world
 
 In C a **struct** is a named block of memory that groups related variables together. Where a ship superintendent keeps a clipboard with columns for item ID, mass, and location, CargoForge-C keeps a `Cargo` struct. The one-to-one correspondence between the data model and the domain is deliberate: when you see `pos_x`, you should picture a tape measure running from the bow along the ship's centreline.

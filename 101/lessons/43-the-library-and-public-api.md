@@ -18,6 +18,86 @@ No jargon — here's what the ideas in this lesson *actually* mean, and why they
 
 ---
 
+## The mental model 🧠
+
+You'll forget the function names — hold THIS picture instead:
+
+> A sealed cargo container with a single slot on each end. You push data in through the IN slot (`cargoforge_load_ship`, `cargoforge_load_cargo`), press the GO button (`cargoforge_optimize`), and pull results out of the OUT slot (`cargoforge_result`). You never open the container itself — you have no idea how it packs things inside, and that is the point.
+
+The `CargoForge *` handle IS the sealed container. Its struct definition is hidden inside `src/libcargoforge.c`; your code holds only a pointer — an address sticker on the outside. When you call `cargoforge_optimize`, the engine runs `place_cargo_3d` and `perform_analysis` inside the container, then `fill_result` copies the output into the public `CfResult` slot. The internal layout can be reorganised any time without breaking your code, because you only ever read from the OUT slot (`CfResult`), never from the raw internals (`AnalysisResult`). `cargoforge_close` is you returning the container — everything allocated inside gets freed cleanly.
+
+---
+
+<svg viewBox="0 0 620 310" role="img" xmlns="http://www.w3.org/2000/svg"
+  style="max-width:600px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+  <title>libcargoforge API lifecycle</title>
+  <desc>Flow diagram showing the five steps of the libcargoforge public API: open, load ship and cargo, optimize, read result, and close, with the opaque CargoForge handle at the centre and fill_result bridging internal AnalysisResult to public CfResult.</desc>
+
+  <!-- Step boxes -->
+  <!-- 1: open -->
+  <rect x="10" y="120" width="90" height="44" rx="6" fill="none" stroke="#12A594" stroke-width="1.8"/>
+  <text x="55" y="138" text-anchor="middle" font-size="11" fill="#12A594" font-weight="600">cargoforge</text>
+  <text x="55" y="153" text-anchor="middle" font-size="11" fill="#12A594" font-weight="600">_open()</text>
+
+  <!-- arrow 1→2 -->
+  <line x1="100" y1="142" x2="128" y2="142" stroke="currentColor" stroke-width="1.4" stroke-opacity=".55"/>
+  <polygon points="128,138 136,142 128,146" fill="currentColor" fill-opacity=".55"/>
+
+  <!-- 2: load -->
+  <rect x="137" y="106" width="102" height="72" rx="6" fill="none" stroke="currentColor" stroke-width="1.4" stroke-opacity=".7"/>
+  <text x="188" y="127" text-anchor="middle" font-size="10.5" fill="currentColor">load_ship()</text>
+  <line x1="148" y1="142" x2="228" y2="142" stroke="currentColor" stroke-width="1" stroke-opacity=".35" stroke-dasharray="3,3"/>
+  <text x="188" y="159" text-anchor="middle" font-size="10.5" fill="currentColor">load_cargo()</text>
+
+  <!-- arrow 2→3 -->
+  <line x1="239" y1="142" x2="267" y2="142" stroke="currentColor" stroke-width="1.4" stroke-opacity=".55"/>
+  <polygon points="267,138 275,142 267,146" fill="currentColor" fill-opacity=".55"/>
+
+  <!-- 3: optimize (the big opaque box) -->
+  <rect x="276" y="88" width="120" height="108" rx="8" fill="none" stroke="#12A594" stroke-width="2"/>
+  <text x="336" y="109" text-anchor="middle" font-size="11" fill="#12A594" font-weight="600">optimize()</text>
+  <!-- inner: place_cargo_3d -->
+  <rect x="288" y="116" width="96" height="24" rx="4" fill="currentColor" fill-opacity=".07" stroke="currentColor" stroke-width="1" stroke-opacity=".3"/>
+  <text x="336" y="133" text-anchor="middle" font-size="9.5" fill="currentColor" fill-opacity=".8">place_cargo_3d()</text>
+  <!-- inner: perform_analysis -->
+  <rect x="288" y="146" width="96" height="24" rx="4" fill="currentColor" fill-opacity=".07" stroke="currentColor" stroke-width="1" stroke-opacity=".3"/>
+  <text x="336" y="163" text-anchor="middle" font-size="9.5" fill="currentColor" fill-opacity=".8">perform_analysis()</text>
+  <!-- fill_result label -->
+  <text x="336" y="188" text-anchor="middle" font-size="9" fill="#12A594" fill-opacity=".85">fill_result() ↓ CfResult</text>
+
+  <!-- arrow 3→4 -->
+  <line x1="396" y1="142" x2="424" y2="142" stroke="currentColor" stroke-width="1.4" stroke-opacity=".55"/>
+  <polygon points="424,138 432,142 424,146" fill="currentColor" fill-opacity=".55"/>
+
+  <!-- 4: read result -->
+  <rect x="433" y="106" width="102" height="72" rx="6" fill="none" stroke="currentColor" stroke-width="1.4" stroke-opacity=".7"/>
+  <text x="484" y="127" text-anchor="middle" font-size="10.5" fill="currentColor">result()</text>
+  <line x1="444" y1="142" x2="524" y2="142" stroke="currentColor" stroke-width="1" stroke-opacity=".35" stroke-dasharray="3,3"/>
+  <text x="484" y="159" text-anchor="middle" font-size="10.5" fill="currentColor">result_json()</text>
+
+  <!-- arrow 4→5 -->
+  <line x1="535" y1="142" x2="563" y2="142" stroke="currentColor" stroke-width="1.4" stroke-opacity=".55"/>
+  <polygon points="563,138 571,142 563,146" fill="currentColor" fill-opacity=".55"/>
+
+  <!-- 5: close -->
+  <rect x="572" y="120" width="38" height="44" rx="6" fill="none" stroke="#D05663" stroke-width="1.8"/>
+  <text x="591" y="138" text-anchor="middle" font-size="10" fill="#D05663" font-weight="600">close</text>
+  <text x="591" y="153" text-anchor="middle" font-size="10" fill="#D05663" font-weight="600">()</text>
+
+  <!-- opaque handle label -->
+  <text x="336" y="226" text-anchor="middle" font-size="10" fill="currentColor" fill-opacity=".6">CargoForge * handle — opaque to callers</text>
+  <rect x="276" y="232" width="120" height="1" fill="currentColor" fill-opacity=".18"/>
+
+  <!-- bottom labels -->
+  <text x="55" y="240" text-anchor="middle" font-size="9.5" fill="currentColor" fill-opacity=".55">calloc</text>
+  <text x="188" y="243" text-anchor="middle" font-size="9.5" fill="currentColor" fill-opacity=".55">libcargoforge.h only</text>
+  <text x="484" y="243" text-anchor="middle" font-size="9.5" fill="currentColor" fill-opacity=".55">CfResult / JSON</text>
+  <text x="591" y="242" text-anchor="middle" font-size="9.5" fill="#D05663" fill-opacity=".7">free</text>
+
+  <!-- state-machine error note -->
+  <text x="310" y="275" text-anchor="middle" font-size="9" fill="currentColor" fill-opacity=".5">CF_ERR_NO_SHIP if load skipped · CF_ERR_STATE if check_imdg before optimize</text>
+</svg>
+
 ## Why a separate library?
 
 The CLI (`cargoforge optimize`, `cargoforge serve`, …) is one consumer of the calculation engine. A ship-management system, a web backend, or a WebAssembly port might be another. Bundling the engine as a library separates the _what_ (the physics and placement algorithms) from the _how_ (command-line flags, JSON-RPC, WASM exports).

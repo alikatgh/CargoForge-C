@@ -22,6 +22,127 @@ No jargon — here's what the ideas in this lesson *actually* mean, and why they
 
 ---
 
+## The mental model 🧠
+
+You'll forget the exact call sequence — hold THIS picture instead:
+
+> A shipping terminal has a bonded warehouse. When a manifest arrives, the terminal
+> master **reserves** a numbered bay (`malloc`). Cargo fills that bay during the
+> voyage. One designated official — and only one — holds the authority to
+> **release** the bay back to the pool when the ship departs (`ship_cleanup`).
+> If two officials both release the same bay, chaos ensues (double-free). If no
+> one ever releases it, the bay sits locked forever (memory leak). The terminal
+> rule is simple: whoever owns the manifest owns the bay — and posts a sign on
+> the door saying "bay 0 — vacant" the moment it's released (pointer = NULL).
+
+In CargoForge-C, `parse_cargo_list` is the terminal master: it reserves the cargo
+bay with `malloc(count * sizeof(Cargo))` and fills it line by line. The `Ship`
+struct is the manifest — it holds the address of every bay it reserved (`cargo`,
+`hydro`, `tanks`, `strength_limits`). `ship_cleanup` is the single designated
+official: it walks every field, releases the bay, and posts the NULL sign. The
+nested `dg` pointers inside each `Cargo` are sub-bays — `ship_cleanup` empties
+those first, then releases the outer bay, always in the right order.
+
+---
+
+<svg viewBox="0 0 620 370" role="img" xmlns="http://www.w3.org/2000/svg"
+  style="max-width:600px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+  <title>CargoForge-C ownership tree: Ship struct owns all heap allocations, ship_cleanup frees them</title>
+  <desc>Diagram showing the Ship struct on the left with pointer fields (cargo, hydro, tanks, strength_limits) connected by arrows to heap blocks on the right. A ship_cleanup label covers all free operations. The cargo block contains a nested dg pointer freed first.</desc>
+
+  <!-- Ship struct box -->
+  <rect x="20" y="60" width="170" height="250" rx="6" ry="6"
+        fill="none" stroke="currentColor" stroke-width="1.5"/>
+  <rect x="20" y="60" width="170" height="28" rx="6" ry="6"
+        fill="currentColor" fill-opacity="0.08"/>
+  <text x="105" y="79" text-anchor="middle" font-size="13" font-weight="600"
+        fill="currentColor">Ship (stack)</text>
+
+  <!-- Field rows -->
+  <line x1="20" y1="105" x2="190" y2="105" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"/>
+  <text x="32" y="97" font-size="11.5" fill="currentColor" fill-opacity="0.7">cargo *</text>
+
+  <line x1="20" y1="168" x2="190" y2="168" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"/>
+  <text x="32" y="160" font-size="11.5" fill="currentColor" fill-opacity="0.7">hydro *</text>
+
+  <line x1="20" y1="231" x2="190" y2="231" stroke="currentColor" stroke-opacity="0.25" stroke-width="1"/>
+  <text x="32" y="223" font-size="11.5" fill="currentColor" fill-opacity="0.7">tanks *</text>
+
+  <text x="32" y="285" font-size="11.5" fill="currentColor" fill-opacity="0.7">strength_limits *</text>
+
+  <!-- Heap: cargo array block -->
+  <rect x="280" y="40" width="165" height="115" rx="5" ry="5"
+        fill="none" stroke="#12A594" stroke-width="1.8"/>
+  <rect x="280" y="40" width="165" height="25" rx="5" ry="5"
+        fill="#12A594" fill-opacity="0.15"/>
+  <text x="362" y="57" text-anchor="middle" font-size="12" font-weight="600"
+        fill="#12A594">cargo[] — heap</text>
+  <text x="292" y="79" font-size="11" fill="currentColor">Cargo[0]  dg → NULL</text>
+  <text x="292" y="97" font-size="11" fill="currentColor">Cargo[1]  dg →</text>
+  <!-- dg pointer sub-block -->
+  <rect x="450" y="84" width="90" height="28" rx="4" ry="4"
+        fill="none" stroke="#D05663" stroke-width="1.4"/>
+  <text x="495" y="102" text-anchor="middle" font-size="10.5" fill="#D05663">DGInfo heap</text>
+  <line x1="370" y1="98" x2="450" y2="98" stroke="#D05663" stroke-width="1.3"
+        marker-end="url(#arr-red)"/>
+  <text x="292" y="115" font-size="11" fill="currentColor">Cargo[2]  dg → NULL</text>
+  <text x="292" y="133" font-size="10.5" fill="currentColor" fill-opacity="0.55">…</text>
+
+  <!-- Heap: hydro block -->
+  <rect x="280" y="175" width="165" height="42" rx="5" ry="5"
+        fill="none" stroke="#12A594" stroke-width="1.8"/>
+  <text x="362" y="200" text-anchor="middle" font-size="12" font-weight="600"
+        fill="#12A594">HydroTable — heap</text>
+
+  <!-- Heap: tanks block -->
+  <rect x="280" y="232" width="165" height="42" rx="5" ry="5"
+        fill="none" stroke="#12A594" stroke-width="1.8"/>
+  <text x="362" y="257" text-anchor="middle" font-size="12" font-weight="600"
+        fill="#12A594">TankConfig — heap</text>
+
+  <!-- Heap: strength_limits block -->
+  <rect x="280" y="289" width="165" height="42" rx="5" ry="5"
+        fill="none" stroke="#12A594" stroke-width="1.8"/>
+  <text x="362" y="314" text-anchor="middle" font-size="12" font-weight="600"
+        fill="#12A594">StrengthLimits — heap</text>
+
+  <!-- Arrows from Ship fields to heap blocks -->
+  <defs>
+    <marker id="arr-teal" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#12A594"/>
+    </marker>
+    <marker id="arr-red" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#D05663"/>
+    </marker>
+  </defs>
+
+  <!-- cargo pointer arrow -->
+  <line x1="190" y1="91" x2="280" y2="91" stroke="#12A594" stroke-width="1.5"
+        marker-end="url(#arr-teal)"/>
+  <!-- hydro pointer arrow -->
+  <line x1="190" y1="154" x2="280" y2="196" stroke="#12A594" stroke-width="1.5"
+        marker-end="url(#arr-teal)"/>
+  <!-- tanks pointer arrow -->
+  <line x1="190" y1="217" x2="280" y2="253" stroke="#12A594" stroke-width="1.5"
+        marker-end="url(#arr-teal)"/>
+  <!-- strength_limits pointer arrow -->
+  <line x1="190" y1="278" x2="280" y2="310" stroke="#12A594" stroke-width="1.5"
+        marker-end="url(#arr-teal)"/>
+
+  <!-- ship_cleanup bracket on right -->
+  <line x1="555" y1="40" x2="570" y2="40" stroke="currentColor" stroke-opacity="0.5" stroke-width="1.2"/>
+  <line x1="570" y1="40" x2="570" y2="330" stroke="currentColor" stroke-opacity="0.5" stroke-width="1.2"/>
+  <line x1="555" y1="330" x2="570" y2="330" stroke="currentColor" stroke-opacity="0.5" stroke-width="1.2"/>
+  <text x="575" y="190" font-size="11.5" font-weight="600" fill="currentColor"
+        writing-mode="tb" text-anchor="middle">ship_cleanup()</text>
+
+  <!-- Legend -->
+  <rect x="20" y="325" width="12" height="12" rx="2" fill="none" stroke="#12A594" stroke-width="1.5"/>
+  <text x="37" y="336" font-size="10.5" fill="currentColor" fill-opacity="0.8">heap allocation (freed by ship_cleanup)</text>
+  <rect x="260" y="325" width="12" height="12" rx="2" fill="none" stroke="#D05663" stroke-width="1.4"/>
+  <text x="277" y="336" font-size="10.5" fill="currentColor" fill-opacity="0.8">nested DGInfo (freed first)</text>
+</svg>
+
 ## Why static memory is not enough
 
 A `Cargo` struct occupies a fixed amount of space. What you cannot know at

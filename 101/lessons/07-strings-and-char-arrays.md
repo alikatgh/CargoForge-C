@@ -17,6 +17,77 @@ No jargon — here's what the ideas in this lesson *actually* mean, and why they
 
 ---
 
+## The mental model 🧠
+
+You'll forget the formula — hold THIS picture instead:
+
+> A C string is a **parking lot with a red cone at the end of the last occupied space.** The lot (`char id[32]`) always has exactly 32 spaces. You park five cars (`'C','O','N','T','1'`), then drop a red cone (`'\0'`) in space 6. Every function (`strlen`, `printf`, `strncpy`) drives through the lot and stops the moment it sees the cone — it never looks at the empty spaces beyond. Remove the cone and the function drives off the edge of the lot into whatever is parked next door.
+
+In CargoForge-C the parking lot is `c->id` (32 spaces) or `c->type` (16 spaces), carved right into the `Cargo` struct. `strncpy` fills the spaces, but if a cargo ID arrives exactly 31 characters long with no room left for a cone, `strncpy` parks the last car and walks away. The explicit `c->id[sizeof(c->id) - 1] = '\0'` is you personally dropping the cone into the last space before anyone else drives through. `strtok_r` is the valet who needs a scratch copy (`buf[64]`) because it pulls cones out and jams them between tokens — you never hand it the original lot.
+
+<svg viewBox="0 0 620 210" role="img" xmlns="http://www.w3.org/2000/svg"
+  style="max-width:600px;width:100%;height:auto;display:block;margin:1.8rem auto;
+  font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+  <title>C string memory layout for char id[32]</title>
+  <desc>A row of 32 memory cells representing char id[32]. The first five cells contain C, O, N, T, 1. Cell index 5 is highlighted in teal and contains the NUL terminator. The remaining cells are shown dimmed and labelled unused.</desc>
+
+  <!-- row label -->
+  <text x="10" y="52" font-size="12" fill="currentColor" opacity="0.6" font-style="italic">char id[32]</text>
+
+  <!-- cells 0-5 (visible chars + NUL) -->
+  <!-- index labels -->
+  <text x="68"  y="26" font-size="10" text-anchor="middle" fill="currentColor" opacity="0.5">0</text>
+  <text x="108" y="26" font-size="10" text-anchor="middle" fill="currentColor" opacity="0.5">1</text>
+  <text x="148" y="26" font-size="10" text-anchor="middle" fill="currentColor" opacity="0.5">2</text>
+  <text x="188" y="26" font-size="10" text-anchor="middle" fill="currentColor" opacity="0.5">3</text>
+  <text x="228" y="26" font-size="10" text-anchor="middle" fill="currentColor" opacity="0.5">4</text>
+  <text x="268" y="26" font-size="10" text-anchor="middle" fill="currentColor" opacity="0.5">5</text>
+  <text x="316" y="26" font-size="10" text-anchor="middle" fill="currentColor" opacity="0.5">6 … 31</text>
+
+  <!-- character cells -->
+  <rect x="48"  y="34" width="40" height="40" rx="4" fill="none" stroke="currentColor" stroke-width="1.4"/>
+  <rect x="88"  y="34" width="40" height="40" rx="4" fill="none" stroke="currentColor" stroke-width="1.4"/>
+  <rect x="128" y="34" width="40" height="40" rx="4" fill="none" stroke="currentColor" stroke-width="1.4"/>
+  <rect x="168" y="34" width="40" height="40" rx="4" fill="none" stroke="currentColor" stroke-width="1.4"/>
+  <rect x="208" y="34" width="40" height="40" rx="4" fill="none" stroke="currentColor" stroke-width="1.4"/>
+
+  <!-- NUL cell — teal highlight -->
+  <rect x="248" y="34" width="40" height="40" rx="4" fill="#12A594" fill-opacity="0.18" stroke="#12A594" stroke-width="2"/>
+
+  <!-- unused cells block -->
+  <rect x="296" y="34" width="80" height="40" rx="4" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="4 3" opacity="0.35"/>
+
+  <!-- character text -->
+  <text x="68"  y="60" font-size="15" text-anchor="middle" fill="currentColor" font-weight="600">'C'</text>
+  <text x="108" y="60" font-size="15" text-anchor="middle" fill="currentColor" font-weight="600">'O'</text>
+  <text x="148" y="60" font-size="15" text-anchor="middle" fill="currentColor" font-weight="600">'N'</text>
+  <text x="188" y="60" font-size="15" text-anchor="middle" fill="currentColor" font-weight="600">'T'</text>
+  <text x="228" y="60" font-size="15" text-anchor="middle" fill="currentColor" font-weight="600">'1'</text>
+  <text x="268" y="55" font-size="13" text-anchor="middle" fill="#12A594" font-weight="700">'\0'</text>
+  <text x="336" y="58" font-size="11" text-anchor="middle" fill="currentColor" opacity="0.35">unused</text>
+
+  <!-- NUL label -->
+  <text x="268" y="90" font-size="10" text-anchor="middle" fill="#12A594">NUL terminator</text>
+  <line x1="268" y1="74" x2="268" y2="84" stroke="#12A594" stroke-width="1.2"/>
+
+  <!-- strncpy arrow + label -->
+  <line x1="48" y1="118" x2="246" y2="118" stroke="currentColor" stroke-width="1.2" stroke-dasharray="3 2" opacity="0.5"/>
+  <polygon points="246,114 254,118 246,122" fill="currentColor" opacity="0.5"/>
+  <text x="145" y="112" font-size="10" text-anchor="middle" fill="currentColor" opacity="0.6">strncpy copies up to sizeof(id)−1 bytes</text>
+
+  <!-- explicit guard arrow -->
+  <line x1="268" y1="130" x2="268" y2="148" stroke="#D05663" stroke-width="1.4"/>
+  <polygon points="264,148 272,148 268,155" fill="#D05663"/>
+  <text x="370" y="143" font-size="10" fill="#D05663">c->id[sizeof(c->id)−1] = '\0'</text>
+  <text x="370" y="157" font-size="10" fill="#D05663">forces the stop sign</text>
+
+  <!-- danger label if NUL missing -->
+  <rect x="48" y="168" width="330" height="28" rx="4" fill="#D05663" fill-opacity="0.10" stroke="#D05663" stroke-width="1" stroke-dasharray="3 2"/>
+  <text x="213" y="187" font-size="10" text-anchor="middle" fill="#D05663">Without '\0': strlen/printf reads past index 31 → buffer over-read</text>
+</svg>
+
+---
+
 ## What a string actually is in C
 
 In C, a string is a `char` array whose last meaningful byte is the **NUL terminator** `'\0'` (ASCII value 0). Every standard library function that works on strings (`strlen`, `strcmp`, `strcpy`, `strncpy`, `strtok_r`) relies on finding this zero byte to know where the string ends.

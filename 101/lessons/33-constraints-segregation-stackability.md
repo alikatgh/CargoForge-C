@@ -40,6 +40,16 @@ No jargon — here's what the ideas in this lesson *actually* mean, and why they
 
 ---
 
+## The mental model 🧠
+
+You'll forget the formula — hold THIS picture instead:
+
+> A nightclub bouncer checks six ID rules before letting anyone through the door. The instant one rule fails, the person is turned away — no further checks, no exceptions. The bouncer stands at the *entrance*, not at the bar, so a bad actor can never get inside in the first place.
+
+That bouncer is `check_cargo_constraints` in `src/constraints.c`. The "door" is every candidate bin × space × orientation that `find_best_fit_3d` proposes. The six ID rules are: point load, IMDG segregation, stacking pressure, reefer preference, fragile depth, and deck weight ratio. They run cheapest-first; the first failure short-circuits the rest and returns 0 — "denied, move on."
+
+The IMDG rule is the strictest bouncer on the list: it consults a 17 × 17 lookup table (`seg_matrix` in `src/imdg.c`) to see whether the two hazard classes can even share the same vessel. `SEG_INCOMPATIBLE` (value 5) is the equivalent of a lifetime ban — `imdg_min_distance` returns −1 and the placement is rejected before any distance math runs.
+
 ## Why constraints live in the placement loop
 
 The bin-packing algorithm in `placement_3d.c` evaluates every candidate space before committing

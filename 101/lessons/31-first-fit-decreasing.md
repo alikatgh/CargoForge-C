@@ -18,6 +18,104 @@ No jargon — here's what the ideas in this lesson *actually* mean, and why they
 
 ---
 
+## The mental model 🧠
+
+You'll forget the formula — hold THIS picture instead:
+
+> You're packing a moving truck. You load the sofa first, then the wardrobe, then the armchairs — always the biggest piece first. By the time you're down to boxes and bags, every awkward gap has a shape that a small box can fill perfectly. If you'd started with the boxes, you'd have a truck full of air pockets and no room for the sofa.
+
+That's FFD. In CargoForge-C, the "sofa" is a 10 m × 4 m machine that must land in `ForwardHold` or `AftHold` before anything else fragments those spaces. `cargo_cmp_by_volume_desc` is the rule that keeps the sofa at the front of the queue; `qsort` acts on it before `find_best_fit_3d` is called even once.
+
+The stability bonus is built into the same picture: heavy furniture rides on the floor of the truck (low KG), not on top of stacked boxes (high KG). Because the holds are tried before the deck and have more headroom, FFD's sort naturally drives heavy cargo down — raising GM and keeping the ship inside the IMO 0.15 m floor without any separate stability pass.
+
+---
+
+<svg viewBox="0 0 620 280" role="img" xmlns="http://www.w3.org/2000/svg"
+  style="max-width:600px;width:100%;height:auto;display:block;margin:1.8rem auto;
+  font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+  <title>First-Fit Decreasing placement pipeline</title>
+  <desc>Three-stage diagram: (1) cargo array sorted largest-first by cargo_cmp_by_volume_desc, (2) find_best_fit_3d tries ForwardHold then AftHold then Deck across six orientations, picking the tightest fit, (3) placed items get real coordinates while unplaced items get the pos_x=-1 sentinel.</desc>
+
+  <!-- Stage labels background strips -->
+  <rect x="10" y="10" width="180" height="260" rx="6" fill="currentColor" fill-opacity="0.05" stroke="currentColor" stroke-opacity="0.18" stroke-width="1"/>
+  <rect x="210" y="10" width="200" height="260" rx="6" fill="currentColor" fill-opacity="0.05" stroke="currentColor" stroke-opacity="0.18" stroke-width="1"/>
+  <rect x="430" y="10" width="180" height="260" rx="6" fill="currentColor" fill-opacity="0.05" stroke="currentColor" stroke-opacity="0.18" stroke-width="1"/>
+
+  <!-- Stage 1: Sort -->
+  <text x="100" y="36" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor" fill-opacity="0.9">① Sort</text>
+  <text x="100" y="52" text-anchor="middle" font-size="10" fill="currentColor" fill-opacity="0.6">cargo_cmp_by_volume_desc</text>
+
+  <!-- Cargo boxes — large to small, largest is teal -->
+  <rect x="28" y="66" width="144" height="34" rx="4" fill="#12A594" fill-opacity="0.85"/>
+  <text x="100" y="87" text-anchor="middle" font-size="11" font-weight="600" fill="white">Machine  120 m³</text>
+
+  <rect x="28" y="108" width="144" height="30" rx="4" fill="currentColor" fill-opacity="0.14"/>
+  <text x="100" y="128" text-anchor="middle" font-size="11" fill="currentColor" fill-opacity="0.85">Container  72 m³</text>
+
+  <rect x="28" y="146" width="144" height="26" rx="4" fill="currentColor" fill-opacity="0.1"/>
+  <text x="100" y="164" text-anchor="middle" font-size="11" fill="currentColor" fill-opacity="0.75">Pallet  18 m³</text>
+
+  <rect x="28" y="180" width="144" height="20" rx="4" fill="currentColor" fill-opacity="0.07"/>
+  <text x="100" y="195" text-anchor="middle" font-size="10" fill="currentColor" fill-opacity="0.6">Box  4 m³</text>
+
+  <text x="100" y="228" text-anchor="middle" font-size="9" fill="currentColor" fill-opacity="0.5">qsort( ship→cargo )</text>
+  <text x="100" y="244" text-anchor="middle" font-size="9" fill="currentColor" fill-opacity="0.5">largest first ↓</text>
+
+  <!-- Arrow 1→2 -->
+  <line x1="192" y1="140" x2="208" y2="140" stroke="currentColor" stroke-opacity="0.5" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Stage 2: find_best_fit_3d -->
+  <text x="310" y="36" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor" fill-opacity="0.9">② find_best_fit_3d</text>
+  <text x="310" y="52" text-anchor="middle" font-size="10" fill="currentColor" fill-opacity="0.6">bins × spaces × 6 orientations</text>
+
+  <!-- Bins -->
+  <rect x="222" y="64" width="176" height="42" rx="4" fill="#12A594" fill-opacity="0.15" stroke="#12A594" stroke-opacity="0.6" stroke-width="1.2"/>
+  <text x="310" y="81" text-anchor="middle" font-size="11" font-weight="600" fill="#12A594">ForwardHold</text>
+  <text x="310" y="97" text-anchor="middle" font-size="9" fill="currentColor" fill-opacity="0.6">z = −8 m  ·  30% weight</text>
+
+  <rect x="222" y="114" width="176" height="42" rx="4" fill="currentColor" fill-opacity="0.09" stroke="currentColor" stroke-opacity="0.3" stroke-width="1.2"/>
+  <text x="310" y="131" text-anchor="middle" font-size="11" fill="currentColor" fill-opacity="0.85">AftHold</text>
+  <text x="310" y="147" text-anchor="middle" font-size="9" fill="currentColor" fill-opacity="0.6">z = −8 m  ·  30% weight</text>
+
+  <rect x="222" y="164" width="176" height="42" rx="4" fill="currentColor" fill-opacity="0.06" stroke="currentColor" stroke-opacity="0.2" stroke-width="1.2"/>
+  <text x="310" y="181" text-anchor="middle" font-size="11" fill="currentColor" fill-opacity="0.7">Deck</text>
+  <text x="310" y="197" text-anchor="middle" font-size="9" fill="currentColor" fill-opacity="0.5">z = 0 m  ·  40% weight</text>
+
+  <text x="310" y="232" text-anchor="middle" font-size="9" fill="currentColor" fill-opacity="0.5">pick tightest fit</text>
+  <text x="310" y="248" text-anchor="middle" font-size="9" fill="currentColor" fill-opacity="0.5">(min wasted volume)</text>
+
+  <!-- Arrow 2→3 -->
+  <line x1="422" y1="140" x2="428" y2="140" stroke="currentColor" stroke-opacity="0.5" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Stage 3: Result -->
+  <text x="520" y="36" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor" fill-opacity="0.9">③ Result</text>
+  <text x="520" y="52" text-anchor="middle" font-size="10" fill="currentColor" fill-opacity="0.6">place_cargo_3d</text>
+
+  <!-- Placed -->
+  <rect x="442" y="64" width="156" height="36" rx="4" fill="#12A594" fill-opacity="0.15" stroke="#12A594" stroke-opacity="0.6" stroke-width="1.2"/>
+  <text x="520" y="80" text-anchor="middle" font-size="11" font-weight="600" fill="#12A594">Placed ✓</text>
+  <text x="520" y="95" text-anchor="middle" font-size="9" fill="currentColor" fill-opacity="0.6">pos_x / pos_y / pos_z set</text>
+
+  <rect x="442" y="108" width="156" height="36" rx="4" fill="currentColor" fill-opacity="0.08" stroke="currentColor" stroke-opacity="0.25" stroke-width="1.2"/>
+  <text x="520" y="124" text-anchor="middle" font-size="10" fill="currentColor" fill-opacity="0.7">split_space_3d</text>
+  <text x="520" y="139" text-anchor="middle" font-size="9" fill="currentColor" fill-opacity="0.55">guillotine cut → new spaces</text>
+
+  <!-- Unplaced sentinel -->
+  <rect x="442" y="154" width="156" height="36" rx="4" fill="#D05663" fill-opacity="0.12" stroke="#D05663" stroke-opacity="0.5" stroke-width="1.2"/>
+  <text x="520" y="170" text-anchor="middle" font-size="11" font-weight="600" fill="#D05663">Unplaced ⚠</text>
+  <text x="520" y="185" text-anchor="middle" font-size="9" fill="currentColor" fill-opacity="0.6">pos_x = −1.0f sentinel</text>
+
+  <text x="520" y="220" text-anchor="middle" font-size="9" fill="currentColor" fill-opacity="0.5">excluded from</text>
+  <text x="520" y="234" text-anchor="middle" font-size="9" fill="currentColor" fill-opacity="0.5">KG / GM calc</text>
+
+  <!-- Arrow marker -->
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L7,3 z" fill="currentColor" fill-opacity="0.45"/>
+    </marker>
+  </defs>
+</svg>
+
 ## The Problem: Bin Packing
 
 Imagine a ship as a set of boxes — holds and deck — and the cargo as a pile of smaller boxes that must fit inside. You want to use as much of the available space as possible while respecting weight limits and safety constraints. This is the **bin-packing problem**, and it is computationally hard: finding the provably optimal arrangement takes exponential time for large manifests. In practice, cargo planners (and software) use heuristics — rules that produce good solutions quickly without guaranteeing perfection.

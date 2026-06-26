@@ -18,6 +18,76 @@ No jargon — here's what the ideas in this lesson *actually* mean, and why they
 
 ---
 
+## The mental model 🧠
+
+You'll forget the syntax — hold THIS picture instead:
+
+> A ship's cargo inspector does not trust the captain's word. She walks every hold herself, checks each container against the manifest, and writes "FAIL" the moment one number is wrong — before the ship leaves port. A unit test is that inspector: it walks the function's output, checks each field against what the spec says, and fails loudly *at compile/test time* rather than silently at sea.
+
+In `test_parser.c`, the "inspector" checks two things after every parse: the **return value** (did the function report success or failure?) and the **struct state** (`s.cargo == NULL && s.cargo_count == 0` after a bad manifest). Checking only the return value is like trusting the captain's word — the cargo hold (`Ship` struct) may still be in chaos even when he says "all clear." The UAF regression test exists because the original code said "all clear" while leaving a dangling pointer inside `ship->cargo`. In `test_hydrostatics.c`, `ASSERT_NEAR` is the inspector's tolerances: real KB and displacement values are `float`, and 1 cm of rounding error is acceptable; anything more means the interpolation formula is broken.
+
+---
+
+<svg viewBox="0 0 620 310" role="img" xmlns="http://www.w3.org/2000/svg"
+  style="max-width:600px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+  <title>Unit test flow in CargoForge-C</title>
+  <desc>Diagram showing how test_parser.c and test_hydrostatics.c call parse functions, then assert both the return value and the struct state, with make test collecting the exit codes.</desc>
+
+  <!-- Fixture box -->
+  <rect x="10" y="100" width="130" height="50" rx="6" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.5"/>
+  <text x="75" y="120" text-anchor="middle" font-size="11" fill="currentColor" opacity="0.8">Fixture</text>
+  <text x="75" y="136" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.6">_bad_cargo_test.txt</text>
+  <text x="75" y="149" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.6">test_hydro.csv</text>
+
+  <!-- Arrow fixture → function -->
+  <line x1="140" y1="125" x2="178" y2="125" stroke="currentColor" stroke-width="1.5" opacity="0.5" marker-end="url(#arr)"/>
+
+  <!-- Function box -->
+  <rect x="180" y="90" width="150" height="70" rx="6" fill="none" stroke="#12A594" stroke-width="2"/>
+  <text x="255" y="112" text-anchor="middle" font-size="11" font-weight="bold" fill="#12A594">Function under test</text>
+  <text x="255" y="130" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.8">parse_cargo_list()</text>
+  <text x="255" y="146" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.8">hydro_interpolate()</text>
+
+  <!-- Arrow function → asserts -->
+  <line x1="330" y1="125" x2="368" y2="125" stroke="currentColor" stroke-width="1.5" opacity="0.5" marker-end="url(#arr)"/>
+
+  <!-- Assert return value box -->
+  <rect x="370" y="60" width="170" height="44" rx="6" fill="none" stroke="#12A594" stroke-width="1.5"/>
+  <text x="455" y="78" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.8">assert return value</text>
+  <text x="455" y="94" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.6">parse_cargo_list() == -1</text>
+
+  <!-- Assert struct state box -->
+  <rect x="370" y="148" width="170" height="44" rx="6" fill="none" stroke="#D05663" stroke-width="1.5"/>
+  <text x="455" y="166" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.8">assert struct state</text>
+  <text x="455" y="182" text-anchor="middle" font-size="10" fill="#D05663">s.cargo==NULL &amp;&amp; count==0</text>
+
+  <!-- Arrows from function to asserts -->
+  <line x1="350" y1="110" x2="368" y2="82" stroke="currentColor" stroke-width="1.2" opacity="0.4" marker-end="url(#arr)"/>
+  <line x1="350" y1="140" x2="368" y2="165" stroke="currentColor" stroke-width="1.2" opacity="0.4" marker-end="url(#arr)"/>
+
+  <!-- make test box -->
+  <rect x="200" y="230" width="210" height="50" rx="6" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.6"/>
+  <text x="305" y="252" text-anchor="middle" font-size="11" font-weight="bold" fill="currentColor" opacity="0.9">make test / make test-asan</text>
+  <text x="305" y="270" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.6">exit 0 = pass · exit ≠ 0 = stop</text>
+
+  <!-- Arrow asserts → make test -->
+  <line x1="455" y1="192" x2="380" y2="229" stroke="currentColor" stroke-width="1.2" opacity="0.4" marker-end="url(#arr)"/>
+  <line x1="455" y1="104" x2="360" y2="229" stroke="currentColor" stroke-width="1.2" opacity="0.4" marker-end="url(#arr)"/>
+
+  <!-- UAF warning label -->
+  <text x="370" y="215" text-anchor="middle" font-size="9" fill="#D05663" opacity="0.85">← UAF lives here if missing</text>
+
+  <!-- ASSERT_NEAR label -->
+  <text x="455" y="44" text-anchor="middle" font-size="9" fill="#12A594" opacity="0.85">ASSERT_NEAR for float (KB, BM, displacement)</text>
+
+  <!-- Arrow marker -->
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="currentColor" opacity="0.5"/>
+    </marker>
+  </defs>
+</svg>
+
 ## What a unit test actually is
 
 A unit test is a small program that calls one function with known inputs and checks that the output matches what you expect. If the check fails the program exits non-zero, and your build system knows the test failed.

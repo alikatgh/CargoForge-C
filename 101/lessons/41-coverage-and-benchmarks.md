@@ -18,6 +18,96 @@ No jargon — here's what the ideas in this lesson *actually* mean, and why they
 
 ---
 
+## The mental model 🧠
+
+You'll forget the exact flags — hold THIS picture instead:
+
+> Imagine a night-watchman doing rounds with a torch. The torch beam shows exactly which rooms he *entered* — but not whether anything inside those rooms was stolen, broken, or wrong. Coverage (`gcov`) is the torch: it maps every room he visited (`#####` marks the ones he skipped). The benchmark harness (`make validate`) is a second inspector who checks the contents of the three most important rooms against an official inventory from the ship's stability booklet.
+
+Together they answer two different questions. The torch (coverage) tells you which lines of `analysis.c`, `hydrostatics.c`, or `parse_cargo_list` were never touched — those are your blind spots. The inspector (benchmark) runs `perform_analysis` on a real 42,550-tonne bulk carrier and checks whether the computed GM, GZ curve, and IMO criteria match the reference values to within `CHECK_ABS` / `CHECK_REL` tolerance. A room can be visited (`✓ covered`) and still hold a wrong value; the inspector catches that. The inspector can pass even if there are unvisited rooms; the torch catches that. You need both patrols.
+
+---
+
+<svg viewBox="0 0 620 310" role="img" xmlns="http://www.w3.org/2000/svg"
+  style="max-width:600px;width:100%;height:auto;display:block;margin:1.8rem auto;
+  font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+  <title>Coverage and benchmark validation layers in CargoForge-C</title>
+  <desc>Three stacked layers showing make test (unit), gcov coverage (gap-finder), and make validate benchmark harness feeding into perform_analysis with three vessel types.</desc>
+
+  <!-- Background lane labels -->
+  <text x="10" y="30" font-size="11" fill="currentColor" opacity="0.5" font-style="italic">Test layers</text>
+  <text x="430" y="30" font-size="11" fill="currentColor" opacity="0.5" font-style="italic">CI gate</text>
+
+  <!-- Layer 1: make test -->
+  <rect x="10" y="40" width="210" height="46" rx="6"
+        fill="none" stroke="currentColor" stroke-opacity="0.25" stroke-width="1.2"/>
+  <text x="22" y="58" font-size="12" font-weight="600" fill="currentColor">make test</text>
+  <text x="22" y="74" font-size="10.5" fill="currentColor" opacity="0.7">unit functions · synthetic inputs</text>
+
+  <!-- Layer 2: gcov -->
+  <rect x="10" y="108" width="210" height="46" rx="6"
+        fill="none" stroke="#12A594" stroke-width="1.5"/>
+  <text x="22" y="126" font-size="12" font-weight="600" fill="#12A594">gcov  (–coverage –O0)</text>
+  <text x="22" y="142" font-size="10.5" fill="currentColor" opacity="0.7">line counts · ##### = blind spot</text>
+
+  <!-- Arrow layer 1 → gcov -->
+  <line x1="115" y1="87" x2="115" y2="107" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2" marker-end="url(#arr)"/>
+
+  <!-- Layer 3: make test-asan -->
+  <rect x="10" y="176" width="210" height="46" rx="6"
+        fill="none" stroke="currentColor" stroke-opacity="0.25" stroke-width="1.2"/>
+  <text x="22" y="194" font-size="12" font-weight="600" fill="currentColor">make test-asan</text>
+  <text x="22" y="210" font-size="10.5" fill="currentColor" opacity="0.7">ASan / UBSan · memory safety</text>
+
+  <!-- Arrow gcov → asan -->
+  <line x1="115" y1="155" x2="115" y2="175" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2" marker-end="url(#arr)"/>
+
+  <!-- Separator -->
+  <line x1="250" y1="40" x2="250" y2="260" stroke="currentColor" stroke-opacity="0.12" stroke-width="1" stroke-dasharray="4 3"/>
+
+  <!-- Benchmark harness box -->
+  <rect x="265" y="40" width="160" height="110" rx="6"
+        fill="none" stroke="#12A594" stroke-width="1.8"/>
+  <text x="280" y="60" font-size="11.5" font-weight="600" fill="#12A594">validate_benchmark.c</text>
+  <text x="280" y="77" font-size="10" fill="currentColor" opacity="0.75">  General cargo  112 m</text>
+  <text x="280" y="92" font-size="10" fill="currentColor" opacity="0.75">  Container ship 283 m</text>
+  <text x="280" y="107" font-size="10" fill="currentColor" opacity="0.75">  Bulk carrier    190 m</text>
+  <text x="280" y="126" font-size="9.5" fill="currentColor" opacity="0.5">add_cargo() · deterministic</text>
+  <text x="280" y="140" font-size="9.5" fill="currentColor" opacity="0.5">CHECK_ABS / CHECK_REL</text>
+
+  <!-- Arrow harness → perform_analysis -->
+  <line x1="425" y1="95" x2="470" y2="95" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.2" marker-end="url(#arr)"/>
+
+  <!-- perform_analysis box -->
+  <rect x="472" y="68" width="132" height="54" rx="6"
+        fill="none" stroke="currentColor" stroke-opacity="0.45" stroke-width="1.2"/>
+  <text x="484" y="89" font-size="11" font-weight="600" fill="currentColor">perform_analysis</text>
+  <text x="484" y="106" font-size="9.5" fill="currentColor" opacity="0.65">hydrostatics · GZ · IMO</text>
+
+  <!-- Arrow perform_analysis → CI exit -->
+  <line x1="538" y1="122" x2="538" y2="158" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.2" marker-end="url(#arr)"/>
+
+  <!-- CI pass / fail box -->
+  <rect x="472" y="160" width="132" height="50" rx="6"
+        fill="none" stroke="#D05663" stroke-width="1.5"/>
+  <text x="484" y="181" font-size="11" font-weight="600" fill="#D05663">CI gate</text>
+  <text x="484" y="198" font-size="9.5" fill="currentColor" opacity="0.65">exit 1 → build fails</text>
+
+  <!-- make validate label -->
+  <text x="280" y="175" font-size="10.5" font-weight="600" fill="currentColor" opacity="0.6">make validate</text>
+  <line x1="345" y1="165" x2="538" y2="161" stroke="currentColor" stroke-opacity="0.2" stroke-width="1" stroke-dasharray="3 3"/>
+
+  <!-- Arrowhead marker -->
+  <defs>
+    <marker id="arr" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
+      <path d="M0,0 L7,3.5 L0,7 Z" fill="currentColor" opacity="0.4"/>
+    </marker>
+  </defs>
+
+  <!-- Bottom note -->
+  <text x="10" y="282" font-size="9.5" fill="currentColor" opacity="0.45">Each layer catches a different failure class — all four must pass before merging.</text>
+</svg>
+
 ## What is line coverage?
 
 Every time the CPU executes a line of your program, a coverage tool can record that fact. After a full test run, you get a report: which lines were reached and how many times, which lines were never reached at all.

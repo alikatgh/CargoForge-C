@@ -17,6 +17,84 @@ No jargon — here's what the ideas in this lesson *actually* mean, and why they
 
 ---
 
+## The mental model 🧠
+
+You'll forget the formula — hold THIS picture instead:
+
+> A see-saw bolted to the ceiling. The bolt is M (the metacenter). Your cargo is the weight on one end (G). As long as the bolt is *above* the weight's center, the see-saw swings back to level on its own. Drop the bolt *below* the weight — it tips and never stops.
+
+That bolt-position is what `r.gm = r.kb + r.bm - r.kg` computes. `r.kb + r.bm` locates M above the keel; `r.kg` is how high the cargo pile sits. The difference is GM — the gap between the ceiling bolt and the weight. When `perform_analysis` fills in those three floats, it is asking: *is the bolt still above the weight after we loaded this cargo?*
+
+The beam-cubed term in BM (`powf(ship->width, 3) / 12.0f`) is what keeps the bolt high. Make the ship wider and M rises fast — which is exactly why cargo ships look squat rather than tall.
+
+---
+
+<svg viewBox="0 0 620 310" role="img" xmlns="http://www.w3.org/2000/svg"
+  style="max-width:600px;width:100%;height:auto;display:block;margin:1.8rem auto;
+  font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+  <title>Ship cross-section: K, B, G, and M on the centreline</title>
+  <desc>A schematic hull cross-section showing the keel (K) at the bottom, the centre of buoyancy (B) mid-draft, the centre of gravity (G) above B, and the metacenter (M) at the top. GM is positive because M is above G.</desc>
+
+  <!-- hull outline -->
+  <path d="M 180 240 Q 200 280 310 285 Q 420 280 440 240 L 430 160 L 190 160 Z"
+        fill="none" stroke="currentColor" stroke-width="2.5" stroke-opacity="0.55"/>
+
+  <!-- waterline -->
+  <line x1="155" y1="185" x2="465" y2="185"
+        stroke="#12A594" stroke-width="1.8" stroke-dasharray="8 4" opacity="0.85"/>
+  <text x="468" y="189" font-size="12" fill="#12A594" opacity="0.9">WL</text>
+
+  <!-- centreline -->
+  <line x1="310" y1="50" x2="310" y2="290"
+        stroke="currentColor" stroke-width="1" stroke-dasharray="4 3" opacity="0.3"/>
+
+  <!-- K — keel -->
+  <circle cx="310" cy="283" r="4" fill="#D05663"/>
+  <text x="318" y="287" font-size="12.5" fill="#D05663" font-weight="600">K</text>
+  <text x="330" y="287" font-size="11" fill="currentColor" opacity="0.6">(keel)</text>
+
+  <!-- B — centre of buoyancy -->
+  <circle cx="310" cy="234" r="5" fill="#12A594"/>
+  <text x="318" y="238" font-size="12.5" fill="#12A594" font-weight="600">B</text>
+  <text x="330" y="238" font-size="11" fill="currentColor" opacity="0.6">(r.kb = 0.53 × draft)</text>
+
+  <!-- G — centre of gravity -->
+  <circle cx="310" cy="175" r="5" fill="#D05663"/>
+  <text x="318" y="179" font-size="12.5" fill="#D05663" font-weight="600">G</text>
+  <text x="330" y="179" font-size="11" fill="currentColor" opacity="0.6">(r.kg — cargo height)</text>
+
+  <!-- M — metacenter -->
+  <circle cx="310" cy="108" r="6" fill="#12A594" fill-opacity="0.15" stroke="#12A594" stroke-width="2"/>
+  <text x="318" y="113" font-size="12.5" fill="#12A594" font-weight="700">M</text>
+  <text x="330" y="113" font-size="11" fill="currentColor" opacity="0.6">(metacenter = KB + BM)</text>
+
+  <!-- BM bracket -->
+  <line x1="155" y1="234" x2="155" y2="108"
+        stroke="currentColor" stroke-width="1.2" opacity="0.35"/>
+  <line x1="150" y1="234" x2="160" y2="234" stroke="currentColor" stroke-width="1.2" opacity="0.35"/>
+  <line x1="150" y1="108" x2="160" y2="108" stroke="currentColor" stroke-width="1.2" opacity="0.35"/>
+  <text x="100" y="176" font-size="11.5" fill="currentColor" opacity="0.6" text-anchor="middle">BM</text>
+  <text x="100" y="190" font-size="10" fill="currentColor" opacity="0.5" text-anchor="middle">I_T / V</text>
+
+  <!-- KB bracket -->
+  <line x1="465" y1="283" x2="465" y2="234"
+        stroke="currentColor" stroke-width="1.2" opacity="0.35"/>
+  <line x1="460" y1="283" x2="470" y2="283" stroke="currentColor" stroke-width="1.2" opacity="0.35"/>
+  <line x1="460" y1="234" x2="470" y2="234" stroke="currentColor" stroke-width="1.2" opacity="0.35"/>
+  <text x="490" y="263" font-size="11.5" fill="currentColor" opacity="0.6">KB</text>
+
+  <!-- GM bracket — teal = good distance -->
+  <line x1="82" y1="175" x2="82" y2="108"
+        stroke="#12A594" stroke-width="2" opacity="0.8"/>
+  <line x1="77" y1="175" x2="87" y2="175" stroke="#12A594" stroke-width="1.5" opacity="0.8"/>
+  <line x1="77" y1="108" x2="87" y2="108" stroke="#12A594" stroke-width="1.5" opacity="0.8"/>
+  <text x="60" y="147" font-size="12" fill="#12A594" font-weight="700" text-anchor="middle">GM</text>
+  <text x="60" y="161" font-size="10" fill="#12A594" opacity="0.75" text-anchor="middle">positive</text>
+
+  <!-- formula label -->
+  <text x="310" y="38" font-size="12" fill="currentColor" opacity="0.7" text-anchor="middle">r.gm = r.kb + r.bm − r.kg</text>
+</svg>
+
 ## Why geometry matters
 
 Place a brick in a bathtub. The water level rises. The weight of water displaced exactly equals the weight of the brick (Archimedes' principle). But a ship is not a brick — it is hollow and asymmetric, and it can roll. Stability asks: *when it rolls by a small angle, does the net force push it back upright, or push it further over?*

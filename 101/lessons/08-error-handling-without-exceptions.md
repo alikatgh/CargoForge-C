@@ -23,6 +23,79 @@ No jargon — here's what the ideas in this lesson *actually* mean, and why they
 
 ---
 
+## The mental model 🧠
+
+You'll forget the exact four mechanisms — hold THIS picture instead:
+
+> Imagine a cargo terminal where every container passes through four inspection
+> gates before it reaches the ship. Gate 1 checks the label (is this a number at
+> all?). Gate 2 checks the range (is the weight physically plausible?). Gate 3
+> stamps the paperwork "REJECTED" and hands it back to the dock supervisor. Gate 4
+> reports the dock closure to port control, which tells the shell. Each gate speaks
+> only to the next one — none of them shout across the whole terminal.
+
+In CargoForge-C those four gates are `strtof`+`errno` (bit-level parsing), `safe_atof` range check (domain validation), `parse_cargo_list` returning `-1` and NULLing `ship->cargo` (cleanup and signal upward), and `cmd_optimize` returning `EXIT_PARSE_ERROR` (OS-level exit code). A defect caught at Gate 1 never reaches Gate 4 intact — it is translated into a slightly higher-level signal at each hand-off. That is the whole pattern: **detect early, translate upward, clean up on the way out**.
+
+---
+
+<svg viewBox="0 0 620 260" role="img" xmlns="http://www.w3.org/2000/svg"
+  style="max-width:600px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+  <title>Error propagation chain in CargoForge-C</title>
+  <desc>Four boxes connected by arrows showing how a bad weight value travels from safe_atof (returns NaN) through parse_cargo_list (returns -1, NULLs cargo) through cmd_optimize (returns EXIT_PARSE_ERROR) to the shell ($? != 0).</desc>
+
+  <!-- box 1: safe_atof -->
+  <rect x="10" y="90" width="130" height="80" rx="6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-opacity="0.35"/>
+  <text x="75" y="122" text-anchor="middle" font-size="12" font-weight="600" fill="currentColor">safe_atof</text>
+  <text x="75" y="140" text-anchor="middle" font-size="10" fill="#D05663">returns NAN</text>
+  <text x="75" y="156" text-anchor="middle" font-size="9" fill="currentColor" fill-opacity="0.55">+ prints to stderr</text>
+
+  <!-- arrow 1→2 -->
+  <line x1="140" y1="130" x2="168" y2="130" stroke="currentColor" stroke-width="1.5" stroke-opacity="0.5" marker-end="url(#arr)"/>
+  <text x="154" y="122" text-anchor="middle" font-size="9" fill="#D05663">NAN</text>
+
+  <!-- box 2: parse_cargo_list -->
+  <rect x="168" y="70" width="150" height="120" rx="6" fill="none" stroke="#D05663" stroke-width="1.5"/>
+  <text x="243" y="102" text-anchor="middle" font-size="12" font-weight="600" fill="currentColor">parse_cargo_list</text>
+  <text x="243" y="120" text-anchor="middle" font-size="10" fill="currentColor" fill-opacity="0.7">isnan(weight_t)</text>
+  <text x="243" y="138" text-anchor="middle" font-size="10" fill="#12A594">free(ship→cargo)</text>
+  <text x="243" y="154" text-anchor="middle" font-size="10" fill="#12A594">ship→cargo = NULL</text>
+  <text x="243" y="172" text-anchor="middle" font-size="10" fill="#D05663">returns -1</text>
+
+  <!-- arrow 2→3 -->
+  <line x1="318" y1="130" x2="346" y2="130" stroke="currentColor" stroke-width="1.5" stroke-opacity="0.5" marker-end="url(#arr)"/>
+  <text x="332" y="122" text-anchor="middle" font-size="9" fill="#D05663">-1</text>
+
+  <!-- box 3: cmd_optimize -->
+  <rect x="346" y="90" width="130" height="80" rx="6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-opacity="0.35"/>
+  <text x="411" y="122" text-anchor="middle" font-size="12" font-weight="600" fill="currentColor">cmd_optimize</text>
+  <text x="411" y="140" text-anchor="middle" font-size="10" fill="currentColor" fill-opacity="0.7">ship_cleanup(&amp;ship)</text>
+  <text x="411" y="156" text-anchor="middle" font-size="10" fill="#D05663">EXIT_PARSE_ERROR</text>
+
+  <!-- arrow 3→4 -->
+  <line x1="476" y1="130" x2="504" y2="130" stroke="currentColor" stroke-width="1.5" stroke-opacity="0.5" marker-end="url(#arr)"/>
+  <text x="490" y="122" text-anchor="middle" font-size="9" fill="#D05663">exit code</text>
+
+  <!-- box 4: shell -->
+  <rect x="504" y="90" width="106" height="80" rx="6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-opacity="0.35"/>
+  <text x="557" y="122" text-anchor="middle" font-size="12" font-weight="600" fill="currentColor">shell</text>
+  <text x="557" y="140" text-anchor="middle" font-size="10" fill="currentColor" fill-opacity="0.7">$? != 0</text>
+  <text x="557" y="156" text-anchor="middle" font-size="10" fill="currentColor" fill-opacity="0.55">CI / script branches</text>
+
+  <!-- bad-weight input label -->
+  <text x="75" y="72" text-anchor="middle" font-size="10" fill="currentColor" fill-opacity="0.6">weight = "-5"</text>
+  <line x1="75" y1="78" x2="75" y2="90" stroke="currentColor" stroke-width="1" stroke-opacity="0.4" marker-end="url(#arr)"/>
+
+  <!-- errno label under box 1 -->
+  <text x="75" y="192" text-anchor="middle" font-size="9" fill="currentColor" fill-opacity="0.45">errno reset before strtof</text>
+
+  <!-- arrowhead marker -->
+  <defs>
+    <marker id="arr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="currentColor" fill-opacity="0.5"/>
+    </marker>
+  </defs>
+</svg>
+
 ## Return codes: the primary signalling channel
 
 The most common convention in C is for functions that can fail to return an

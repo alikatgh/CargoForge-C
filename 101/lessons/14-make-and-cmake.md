@@ -18,6 +18,94 @@ No jargon — here's what the ideas in this lesson *actually* mean, and why they
 
 ---
 
+## The mental model 🧠
+
+You'll forget the formula — hold THIS picture instead:
+
+> A **ship manifest** lists every cargo container and which bay it goes into. The port crane doesn't move a container unless something on the manifest changed since the last voyage. Make is the crane operator: it reads the dependency manifest, checks timestamps, and only touches the containers (source files) that have actually changed.
+
+When you edit `analysis.c`, the manifest says that bay (`build/analysis.o`) is now stale — so the crane recompiles exactly that one object file and then re-stows the ship (`cargoforge` binary) by linking everything together. The other thirteen bays stay put.
+
+CMake is one level up: it's the **manifest-writer**. Instead of hand-scribing the tab-indented Makefile rules (with their platform `uname` dances and `ar rcs` incantations), you declare intent — `add_library(cargoforge_static STATIC ...)` — and CMake prints the manifest for whichever port (macOS, Linux, Windows) the crane will run in.
+
+---
+
+<svg viewBox="0 0 620 260" role="img" xmlns="http://www.w3.org/2000/svg"
+  style="max-width:600px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+  <title>Make build graph for CargoForge-C</title>
+  <desc>A dependency graph showing how Make compiles fourteen .c source files into .o object files, then links them into the cargoforge binary and libcargoforge library. CMake generates the same Makefile from a higher-level description.</desc>
+
+  <!-- Source files column -->
+  <rect x="10" y="20" width="140" height="26" rx="4" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"/>
+  <text x="80" y="37" text-anchor="middle" font-size="11" fill="currentColor" fill-opacity="0.55">src/analysis.c</text>
+
+  <rect x="10" y="56" width="140" height="26" rx="4" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"/>
+  <text x="80" y="73" text-anchor="middle" font-size="11" fill="currentColor" fill-opacity="0.55">src/parser.c</text>
+
+  <rect x="10" y="92" width="140" height="26" rx="4" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"/>
+  <text x="80" y="109" text-anchor="middle" font-size="11" fill="currentColor" fill-opacity="0.55">src/hydrostatics.c</text>
+
+  <rect x="10" y="128" width="140" height="26" rx="4" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"/>
+  <text x="80" y="145" text-anchor="middle" font-size="11" fill="currentColor" fill-opacity="0.55">src/placement_3d.c</text>
+
+  <rect x="10" y="164" width="140" height="26" rx="4" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-width="1.2"/>
+  <text x="80" y="181" text-anchor="middle" font-size="11" fill="currentColor" fill-opacity="0.55">src/main.c  …  (×14)</text>
+
+  <!-- Arrow: src → pattern rule -->
+  <line x1="150" y1="110" x2="200" y2="110" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.4" marker-end="url(#arr)"/>
+
+  <!-- Pattern rule box -->
+  <rect x="200" y="88" width="148" height="44" rx="5" fill="#12A594" fill-opacity="0.12" stroke="#12A594" stroke-width="1.5"/>
+  <text x="274" y="107" text-anchor="middle" font-size="11" font-weight="600" fill="#12A594">pattern rule</text>
+  <text x="274" y="122" text-anchor="middle" font-size="10" fill="currentColor" fill-opacity="0.7">$(BUILD_DIR)/%.o</text>
+
+  <!-- Arrows: pattern rule → .o files -->
+  <line x1="348" y1="110" x2="398" y2="75" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.2" marker-end="url(#arr)"/>
+  <line x1="348" y1="110" x2="398" y2="110" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.2" marker-end="url(#arr)"/>
+  <line x1="348" y1="110" x2="398" y2="145" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.2" marker-end="url(#arr)"/>
+
+  <!-- .o files column -->
+  <rect x="398" y="60" width="108" height="26" rx="4" fill="none" stroke="currentColor" stroke-opacity="0.45" stroke-width="1.2"/>
+  <text x="452" y="77" text-anchor="middle" font-size="11" fill="currentColor" fill-opacity="0.7">build/analysis.o</text>
+
+  <rect x="398" y="96" width="108" height="26" rx="4" fill="none" stroke="currentColor" stroke-opacity="0.45" stroke-width="1.2"/>
+  <text x="452" y="113" text-anchor="middle" font-size="11" fill="currentColor" fill-opacity="0.7">build/parser.o</text>
+
+  <rect x="398" y="132" width="108" height="26" rx="4" fill="none" stroke="currentColor" stroke-opacity="0.45" stroke-width="1.2"/>
+  <text x="452" y="149" text-anchor="middle" font-size="11" fill="currentColor" fill-opacity="0.7">… (×14)</text>
+
+  <!-- Arrows: .o → outputs -->
+  <line x1="506" y1="90" x2="540" y2="72" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.2" marker-end="url(#arr)"/>
+  <line x1="506" y1="120" x2="540" y2="138" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.2" marker-end="url(#arr)"/>
+
+  <!-- Final outputs -->
+  <rect x="540" y="52" width="72" height="30" rx="5" fill="#12A594" fill-opacity="0.15" stroke="#12A594" stroke-width="1.8"/>
+  <text x="576" y="71" text-anchor="middle" font-size="11" font-weight="700" fill="#12A594">cargoforge</text>
+
+  <rect x="540" y="122" width="72" height="30" rx="5" fill="#12A594" fill-opacity="0.15" stroke="#12A594" stroke-width="1.8"/>
+  <text x="576" y="141" text-anchor="middle" font-size="11" font-weight="700" fill="#12A594">libcargoforge</text>
+
+  <!-- include/cargoforge.h dep line -->
+  <rect x="10" y="210" width="140" height="26" rx="4" fill="none" stroke="#D05663" stroke-opacity="0.6" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <text x="80" y="227" text-anchor="middle" font-size="11" fill="#D05663" fill-opacity="0.85">include/cargoforge.h</text>
+  <line x1="150" y1="223" x2="200" y2="223" stroke="#D05663" stroke-opacity="0.5" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <line x1="230" y1="223" x2="230" y2="132" stroke="#D05663" stroke-opacity="0.5" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#arrd)"/>
+  <text x="162" y="218" text-anchor="middle" font-size="9" fill="#D05663" fill-opacity="0.8">change → rebuild all .o</text>
+
+  <!-- CMake label at bottom -->
+  <text x="274" y="245" text-anchor="middle" font-size="10" fill="currentColor" fill-opacity="0.45">CMake generates this same graph from CMakeLists.txt  →  no hand-written tabs, no uname dance</text>
+
+  <!-- Arrowhead markers -->
+  <defs>
+    <marker id="arr" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+      <path d="M0,0 L0,7 L7,3.5 Z" fill="currentColor" fill-opacity="0.45"/>
+    </marker>
+    <marker id="arrd" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+      <path d="M0,0 L0,7 L7,3.5 Z" fill="#D05663" fill-opacity="0.6"/>
+    </marker>
+  </defs>
+</svg>
+
 ## The Problem Make Solves
 
 When you type `gcc -O3 -std=c99 -c src/analysis.c -o build/analysis.o`, you create an **object file**: compiled machine code that is not yet a runnable program. Object files cannot run alone because they reference functions defined elsewhere (`perform_analysis` calls `hydro_interpolate`, which lives in `hydrostatics.c`). The **linker** combines object files into a final executable.

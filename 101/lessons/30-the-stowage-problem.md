@@ -18,6 +18,100 @@ No jargon — here's what the ideas in this lesson *actually* mean, and why they
 
 ---
 
+## The mental model 🧠
+
+You'll forget the formula — hold THIS picture instead:
+
+> Imagine packing a suitcase for a long trip. You always put the big shoes in first — they're the awkward shapes that refuse to go in later. After each item lands, the remaining space breaks into a few rough rectangles you can still fill. You try rotating a folded jacket every which way before declaring it won't fit. And you never shove a leaking shampoo bottle next to the silk shirt, no matter how neatly it fits geometrically.
+
+That's exactly what `place_cargo_3d` does. The *shoes-first* rule is **First Fit Decreasing** — `qsort` reorders `ship->cargo` by volume so the largest items land before the gaps shrink. The *rough rectangles* are the `Space3D` entries in `bin->spaces[]` created by `split_space_3d` after every placement: right-remainder, back-remainder, top-remainder. The *rotating jacket* is the six-orientation loop in `get_orientation_dims`. The *shampoo rule* is `check_cargo_constraints` — a space that violates IMDG segregation or point-load limits is treated as if it doesn't exist, regardless of geometry. The three `Bin3D` holds (ForwardHold, AftHold, Deck) are the compartments of the suitcase.
+
+---
+
+<svg viewBox="0 0 620 310" role="img" xmlns="http://www.w3.org/2000/svg"
+  style="max-width:600px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+  <title>Guillotine splitting in split_space_3d</title>
+  <desc>Two side-by-side diagrams showing a Bin3D before and after placing one cargo item. After placement the original free space is divided into three rectangular remainders: right, back, and top.</desc>
+
+  <!-- ── BEFORE panel ── -->
+  <!-- panel label -->
+  <text x="130" y="22" text-anchor="middle" font-size="12" font-weight="600" fill="currentColor">BEFORE placement</text>
+
+  <!-- bin outline -->
+  <rect x="30" y="32" width="200" height="150" rx="3"
+        fill="none" stroke="currentColor" stroke-width="2"/>
+
+  <!-- single free space fills the whole bin -->
+  <rect x="30" y="32" width="200" height="150" rx="3"
+        fill="#12A594" fill-opacity="0.12" stroke="#12A594" stroke-width="1.5" stroke-dasharray="6 3"/>
+
+  <!-- label inside -->
+  <text x="130" y="110" text-anchor="middle" font-size="11" fill="#12A594">bin-&gt;spaces[0]</text>
+  <text x="130" y="125" text-anchor="middle" font-size="10" fill="currentColor" fill-opacity="0.7">is_free = 1</text>
+
+  <!-- dimension arrows -->
+  <!-- width arrow -->
+  <line x1="30" y1="197" x2="230" y2="197" stroke="currentColor" stroke-opacity="0.5" stroke-width="1"/>
+  <polygon points="30,194 30,200 22,197" fill="currentColor" fill-opacity="0.5"/>
+  <polygon points="230,194 230,200 238,197" fill="currentColor" fill-opacity="0.5"/>
+  <text x="130" y="212" text-anchor="middle" font-size="10" fill="currentColor" fill-opacity="0.7">width</text>
+
+  <!-- height arrow -->
+  <line x1="244" y1="32" x2="244" y2="182" stroke="currentColor" stroke-opacity="0.5" stroke-width="1"/>
+  <polygon points="241,32 247,32 244,24" fill="currentColor" fill-opacity="0.5"/>
+  <polygon points="241,182 247,182 244,190" fill="currentColor" fill-opacity="0.5"/>
+  <text x="258" y="112" text-anchor="start" font-size="10" fill="currentColor" fill-opacity="0.7">height</text>
+
+  <!-- ── ARROW between panels ── -->
+  <line x1="285" y1="107" x2="320" y2="107" stroke="currentColor" stroke-opacity="0.6" stroke-width="2"/>
+  <polygon points="316,103 316,111 326,107" fill="currentColor" fill-opacity="0.6"/>
+  <text x="303" y="98" text-anchor="middle" font-size="9" fill="currentColor" fill-opacity="0.6">place item</text>
+
+  <!-- ── AFTER panel ── -->
+  <text x="480" y="22" text-anchor="middle" font-size="12" font-weight="600" fill="currentColor">AFTER  split_space_3d</text>
+
+  <!-- bin outline -->
+  <rect x="350" y="32" width="240" height="180" rx="3"
+        fill="none" stroke="currentColor" stroke-width="2"/>
+
+  <!-- placed cargo item (top-left of bin) -->
+  <rect x="350" y="32" width="130" height="100" rx="2"
+        fill="#D05663" fill-opacity="0.18" stroke="#D05663" stroke-width="1.5"/>
+  <text x="415" y="78" text-anchor="middle" font-size="11" font-weight="600" fill="#D05663">Cargo</text>
+  <text x="415" y="93" text-anchor="middle" font-size="9" fill="#D05663">cargo_w × cargo_h</text>
+
+  <!-- right remainder -->
+  <rect x="480" y="32" width="110" height="100" rx="2"
+        fill="#12A594" fill-opacity="0.13" stroke="#12A594" stroke-width="1.2" stroke-dasharray="5 3"/>
+  <text x="535" y="76" text-anchor="middle" font-size="10" fill="#12A594">right</text>
+  <text x="535" y="91" text-anchor="middle" font-size="9" fill="currentColor" fill-opacity="0.7">spaces[n]</text>
+
+  <!-- back remainder (below cargo, left column) -->
+  <rect x="350" y="132" width="130" height="80" rx="2"
+        fill="#12A594" fill-opacity="0.10" stroke="#12A594" stroke-width="1.2" stroke-dasharray="5 3"/>
+  <text x="415" y="170" text-anchor="middle" font-size="10" fill="#12A594">back</text>
+  <text x="415" y="185" text-anchor="middle" font-size="9" fill="currentColor" fill-opacity="0.7">spaces[n+1]</text>
+
+  <!-- top remainder label (shown as a thin strip above the right column,
+       representing the "top" axis along depth — simplified to a box) -->
+  <rect x="480" y="132" width="110" height="80" rx="2"
+        fill="#12A594" fill-opacity="0.07" stroke="#12A594" stroke-width="1.2" stroke-dasharray="5 3"/>
+  <text x="535" y="170" text-anchor="middle" font-size="10" fill="#12A594">top</text>
+  <text x="535" y="185" text-anchor="middle" font-size="9" fill="currentColor" fill-opacity="0.7">spaces[n+2]</text>
+
+  <!-- divider lines inside the after-bin to show the cuts -->
+  <line x1="480" y1="32" x2="480" y2="212" stroke="currentColor" stroke-opacity="0.3" stroke-width="1" stroke-dasharray="3 3"/>
+  <line x1="350" y1="132" x2="590" y2="132" stroke="currentColor" stroke-opacity="0.3" stroke-width="1" stroke-dasharray="3 3"/>
+
+  <!-- is_free=0 marker on cargo -->
+  <text x="415" y="108" text-anchor="middle" font-size="9" fill="currentColor" fill-opacity="0.5">is_free = 0</text>
+
+  <!-- bottom caption -->
+  <text x="310" y="295" text-anchor="middle" font-size="11" fill="currentColor" fill-opacity="0.65">
+    One placement → original space marked occupied → up to 3 new free spaces appended to bin-&gt;spaces[]
+  </text>
+</svg>
+
 ## What we are actually trying to solve
 
 A cargo ship has a finite set of holds, each with fixed dimensions and a weight ceiling. The manifest lists cargo items, each with its own dimensions, weight, and constraints (fragile, hazardous, refrigerated…). We want to assign every item to a position in a hold so that:

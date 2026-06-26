@@ -18,6 +18,113 @@ No jargon — here's what the ideas in this lesson *actually* mean, and why they
 
 ---
 
+## The mental model 🧠
+
+You'll forget the formula — hold THIS picture instead:
+
+> Imagine a chef's tasting menu: nine courses, served in strict order. Each dish uses what the previous course left on the table. If the kitchen runs out of ingredients after course two (overweight), the evening ends there and the verdict goes out: *rejected*. If every course is served, the final plate — the `AnalysisResult` — either earns a Michelin star (`imo_compliant = 1`) or it doesn't.
+
+`perform_analysis` works exactly like that. The "ingredients" arrive as a `const Ship *` — fully loaded cargo, tanks, hull data — and nine phases consume them in lockstep: accumulate weights and moments → check overweight (the early exit) → look up hydrostatics (draft, KB, BM) → compute KG → compute raw GM → subtract the free-surface penalty to get `gm_corrected` → compute trim and heel → build the GZ curve → check all six IMO thresholds at once.
+
+Nothing can be skipped. A ship with a great GM but a failing GZ area still gets `imo_compliant = 0`. The sentinel `NAN` in `r.gm` after an overweight rejection is the kitchen fire that stops all remaining courses — every downstream consumer that calls `isnan(r.gm)` sees the rejection without any extra logic.
+
+---
+
+<svg viewBox="0 0 620 480" role="img" xmlns="http://www.w3.org/2000/svg"
+  style="max-width:600px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+  <title>perform_analysis pipeline</title>
+  <desc>Nine-phase pipeline of perform_analysis: cargo accumulation, overweight guard, hydrostatics, KG, GM, free-surface correction, trim/heel, GZ curve, and IMO verdict feeding into AnalysisResult.</desc>
+
+  <!-- Input box -->
+  <rect x="220" y="10" width="180" height="36" rx="6"
+        fill="none" stroke="currentColor" stroke-width="1.5"/>
+  <text x="310" y="33" text-anchor="middle" font-size="13" fill="currentColor">const Ship *ship</text>
+
+  <!-- Arrow down to phase 1 -->
+  <line x1="310" y1="46" x2="310" y2="68" stroke="currentColor" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Phase 1 -->
+  <rect x="180" y="68" width="260" height="34" rx="5"
+        fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="0"/>
+  <text x="310" y="90" text-anchor="middle" font-size="12" fill="currentColor">1 · Cargo loop — weights &amp; moments</text>
+
+  <!-- Arrow -->
+  <line x1="310" y1="102" x2="310" y2="118" stroke="currentColor" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Phase 2 — overweight guard (danger) -->
+  <rect x="180" y="118" width="260" height="34" rx="5"
+        fill="none" stroke="#D05663" stroke-width="1.8"/>
+  <text x="310" y="140" text-anchor="middle" font-size="12" fill="#D05663">2 · Overweight guard → r.gm = NAN ✕</text>
+
+  <!-- Early-exit branch -->
+  <line x1="440" y1="135" x2="530" y2="135" stroke="#D05663" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <text x="535" y="139" font-size="10" fill="#D05663">return r</text>
+
+  <!-- Arrow -->
+  <line x1="310" y1="152" x2="310" y2="168" stroke="currentColor" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Phase 3 -->
+  <rect x="180" y="168" width="260" height="34" rx="5"
+        fill="none" stroke="currentColor" stroke-width="1.4"/>
+  <text x="310" y="185" text-anchor="middle" font-size="12" fill="currentColor">3 · Hydrostatics — draft, KB, BM</text>
+  <!-- sub-labels -->
+  <text x="220" y="197" font-size="9.5" fill="currentColor" opacity="0.65">table: hydro_interpolate()</text>
+  <text x="380" y="197" font-size="9.5" fill="currentColor" opacity="0.65">fallback: BLOCK_COEFF</text>
+
+  <!-- Arrow -->
+  <line x1="310" y1="202" x2="310" y2="218" stroke="currentColor" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Phase 4+5 combined -->
+  <rect x="180" y="218" width="260" height="34" rx="5"
+        fill="none" stroke="currentColor" stroke-width="1.4"/>
+  <text x="310" y="240" text-anchor="middle" font-size="12" fill="currentColor">4–5 · KG → GM = KB + BM − KG</text>
+
+  <!-- Arrow -->
+  <line x1="310" y1="252" x2="310" y2="268" stroke="currentColor" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Phase FSC (teal = key corrective step) -->
+  <rect x="180" y="268" width="260" height="36" rx="5"
+        fill="none" stroke="#12A594" stroke-width="1.8"/>
+  <text x="310" y="287" text-anchor="middle" font-size="12" fill="#12A594">6 · Free-surface correction</text>
+  <text x="310" y="299" text-anchor="middle" font-size="10" fill="#12A594">gm_corrected = gm − FSC</text>
+
+  <!-- Arrow -->
+  <line x1="310" y1="304" x2="310" y2="320" stroke="currentColor" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Phase 7 -->
+  <rect x="180" y="320" width="260" height="34" rx="5"
+        fill="none" stroke="currentColor" stroke-width="1.4"/>
+  <text x="310" y="342" text-anchor="middle" font-size="12" fill="currentColor">7 · Trim &amp; heel (tcg / gm_corrected)</text>
+
+  <!-- Arrow -->
+  <line x1="310" y1="354" x2="310" y2="370" stroke="currentColor" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Phase 8 -->
+  <rect x="180" y="370" width="260" height="34" rx="5"
+        fill="none" stroke="currentColor" stroke-width="1.4"/>
+  <text x="310" y="388" text-anchor="middle" font-size="12" fill="currentColor">8 · GZ curve — wall-sided formula</text>
+  <text x="310" y="399" text-anchor="middle" font-size="9.5" fill="currentColor" opacity="0.65">gz_at_angle() · integrate_gz()</text>
+
+  <!-- Arrow -->
+  <line x1="310" y1="404" x2="310" y2="420" stroke="currentColor" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Phase 9 — IMO verdict -->
+  <rect x="180" y="420" width="260" height="34" rx="5"
+        fill="none" stroke="#12A594" stroke-width="1.8"/>
+  <text x="310" y="442" text-anchor="middle" font-size="12" fill="#12A594">9 · IMO verdict — all 6 criteria</text>
+  <text x="310" y="453" text-anchor="middle" font-size="9.5" fill="#12A594">imo_compliant = 0 or 1</text>
+
+  <!-- Output label -->
+  <text x="310" y="476" text-anchor="middle" font-size="11" fill="currentColor" opacity="0.75">→ AnalysisResult (returned by value)</text>
+
+  <!-- Arrow marker -->
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="currentColor"/>
+    </marker>
+  </defs>
+</svg>
+
 ## The conductor function
 
 `perform_analysis` is 153 lines long and returns an `AnalysisResult` by value. It never modifies the ship; it only reads it. The signature says all of this in one line:

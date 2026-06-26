@@ -22,6 +22,102 @@ No jargon — here's what the ideas in this lesson *actually* mean, and why they
 
 ---
 
+## The mental model 🧠
+
+You'll forget the formula — hold THIS picture instead:
+
+> A children's see-saw with sandbags piled at different heights along each plank.
+> Move a sandbag higher and farther from the pivot and it yanks the balance point upward — fast.
+> That balance point is G. The keel is the ground. KG is just how high G floats above it.
+
+In CargoForge-C, every cargo item is a sandbag. `perform_analysis` multiplies each item's weight by its vertical arm (`cz = pos_z + dimensions[2] / 2`) — that's the "how high it sits" part — sums all those products, and divides by total weight. The result is KG.
+
+The danger is in the formula `GM = KB + BM − KG`: every metre KG climbs steals a metre from GM. When GM hits zero, the see-saw has no springiness left and the ship capsizes. The `pos_x < 0` guard exists so unplaced sandbags can't silently nudge the balance point into a lie.
+
+---
+
+<svg viewBox="0 0 620 310" role="img" xmlns="http://www.w3.org/2000/svg"
+  style="max-width:600px;width:100%;height:auto;display:block;margin:1.8rem auto;
+  font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+  <title>KG computation: moments summed and divided to give the ship's vertical centre of gravity</title>
+  <desc>Schematic showing how CargoForge-C accumulates vertical moments (weight × arm) for the lightship, cargo items, and tanks, then divides the total moment by total displacement to produce KG, which feeds into GM = KB + BM − KG.</desc>
+
+  <!-- hull cross-section outline -->
+  <path d="M 60 240 Q 90 280 180 290 Q 310 300 440 290 Q 530 280 560 240"
+        fill="none" stroke="currentColor" stroke-width="2" stroke-opacity="0.35"/>
+  <!-- waterline -->
+  <line x1="50" y1="210" x2="570" y2="210" stroke="currentColor" stroke-width="1"
+        stroke-opacity="0.2" stroke-dasharray="6 4"/>
+  <text x="575" y="214" font-size="10" fill="currentColor" fill-opacity="0.45">WL</text>
+
+  <!-- keel label -->
+  <text x="305" y="305" text-anchor="middle" font-size="10" fill="currentColor" fill-opacity="0.5">K (keel)</text>
+
+  <!-- lightship block -->
+  <rect x="80" y="185" width="100" height="40" rx="3"
+        fill="currentColor" fill-opacity="0.08" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.5"/>
+  <text x="130" y="202" text-anchor="middle" font-size="11" fill="currentColor">lightship</text>
+  <text x="130" y="217" text-anchor="middle" font-size="10" fill="currentColor" fill-opacity="0.65">w × lightship_kg</text>
+
+  <!-- cargo item 1 (low) -->
+  <rect x="220" y="175" width="70" height="35" rx="3"
+        fill="#12A594" fill-opacity="0.15" stroke="#12A594" stroke-width="1.5"/>
+  <text x="255" y="193" text-anchor="middle" font-size="11" fill="#12A594">cargo[i]</text>
+  <text x="255" y="207" text-anchor="middle" font-size="10" fill="#12A594" fill-opacity="0.8">cz = z + h/2</text>
+
+  <!-- cargo item 2 (stacked higher) -->
+  <rect x="220" y="135" width="70" height="35" rx="3"
+        fill="#D05663" fill-opacity="0.12" stroke="#D05663" stroke-width="1.5"/>
+  <text x="255" y="153" text-anchor="middle" font-size="11" fill="#D05663">cargo[j]</text>
+  <text x="255" y="167" text-anchor="middle" font-size="10" fill="#D05663" fill-opacity="0.8">high stow ↑KG</text>
+
+  <!-- tanks block -->
+  <rect x="430" y="200" width="90" height="30" rx="3"
+        fill="currentColor" fill-opacity="0.08" stroke="currentColor" stroke-opacity="0.4" stroke-width="1.5"/>
+  <text x="475" y="218" text-anchor="middle" font-size="11" fill="currentColor">tanks</text>
+
+  <!-- summation box -->
+  <rect x="185" y="50" width="250" height="55" rx="5"
+        fill="currentColor" fill-opacity="0.06" stroke="currentColor" stroke-opacity="0.5" stroke-width="1.5"/>
+  <text x="310" y="72" text-anchor="middle" font-size="12" font-weight="600" fill="currentColor">Σ (weight × cz)</text>
+  <text x="310" y="91" text-anchor="middle" font-size="11" fill="currentColor" fill-opacity="0.7">vertical_moment accumulator</text>
+
+  <!-- arrows from blocks to summation box -->
+  <line x1="130" y1="185" x2="235" y2="105" stroke="currentColor" stroke-opacity="0.4"
+        stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="255" y1="175" x2="280" y2="105" stroke="#12A594" stroke-opacity="0.7"
+        stroke-width="1.5" marker-end="url(#arr-t)"/>
+  <line x1="255" y1="135" x2="270" y2="105" stroke="#D05663" stroke-opacity="0.7"
+        stroke-width="1.5" marker-end="url(#arr-r)"/>
+  <line x1="475" y1="200" x2="385" y2="105" stroke="currentColor" stroke-opacity="0.4"
+        stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- divide arrow + KG result -->
+  <line x1="310" y1="105" x2="310" y2="128" stroke="currentColor" stroke-opacity="0.55"
+        stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="240" y="128" width="140" height="30" rx="4"
+        fill="#12A594" fill-opacity="0.18" stroke="#12A594" stroke-width="1.8"/>
+  <text x="310" y="148" text-anchor="middle" font-size="13" font-weight="700" fill="#12A594">KG = Σmom / disp</text>
+
+  <!-- GM formula -->
+  <text x="310" y="30" text-anchor="middle" font-size="12" fill="currentColor" fill-opacity="0.75">
+    GM = KB + BM − <tspan font-weight="700" fill="#D05663">KG</tspan>  →  capsize when GM ≤ 0
+  </text>
+
+  <!-- arrowhead markers -->
+  <defs>
+    <marker id="arr" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+      <path d="M0,0 L7,3.5 L0,7 Z" fill="currentColor" fill-opacity="0.5"/>
+    </marker>
+    <marker id="arr-t" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+      <path d="M0,0 L7,3.5 L0,7 Z" fill="#12A594" fill-opacity="0.8"/>
+    </marker>
+    <marker id="arr-r" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+      <path d="M0,0 L7,3.5 L0,7 Z" fill="#D05663" fill-opacity="0.8"/>
+    </marker>
+  </defs>
+</svg>
+
 ## What is a centre of gravity?
 
 The **centre of gravity** (CG) of a system of objects is the single point where
