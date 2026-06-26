@@ -1,0 +1,4 @@
+# Course site — serve the 101 lessons with MkDocs + Material.
+#   pip install -r 101/requirements.txt
+#   mkdocs serve -f 101/mkdocs.yml
+mkdocs-material>=9.5

@@ -1,0 +1,134 @@
+site_name: CargoForge-C 101
+site_description: From zero to systems & naval-architecture engineer, on a real codebase
+docs_dir: lessons
+use_directory_urls: true
+
+theme:
+  name: material
+  font:
+    text: Inter
+    code: JetBrains Mono
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: white
+      accent: teal
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: teal
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  features:
+    - navigation.top
+    - navigation.tracking
+    - navigation.footer
+    - toc.follow
+    - content.code.copy
+    - search.suggest
+    - search.highlight
+
+extra_css:
+  - assets/extra.css
+extra_javascript:
+  - assets/sidebar-toggle.js
+  - assets/mathjax.js
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - footnotes
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.inlinehilite
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.arithmatex:
+      generic: true
+
+plugins:
+  - search
+
+nav:
+  - Welcome: index.md
+  - "1 · Programming foundations (C)":
+      - 01-why-c-and-the-toolchain.md
+      - 02-your-first-c-program.md
+      - 03-types-control-flow-functions.md
+      - 04-cli-git-reproducibility.md
+      - lab-01-foundations.md
+  - "2 · The C language in depth":
+      - 05-structs-enums-the-data-model.md
+      - 06-the-preprocessor-and-headers.md
+      - 07-strings-and-char-arrays.md
+      - 08-error-handling-without-exceptions.md
+      - lab-02-c-in-depth.md
+  - "3 · Memory & pointers":
+      - 09-pointers-and-addresses.md
+      - 10-the-stack-and-the-heap.md
+      - 11-malloc-free-and-ownership.md
+      - 12-arrays-buffers-and-bounds.md
+      - 13-memory-bugs.md
+      - lab-03-memory.md
+  - "4 · Build, test, reproduce":
+      - 14-make-and-cmake.md
+      - 15-unit-testing-in-c.md
+      - 16-continuous-integration.md
+      - lab-04-build-test.md
+  - "5 · Naval architecture I — flotation":
+      - 17-buoyancy-and-archimedes.md
+      - 18-displacement-density-draft.md
+      - 19-the-box-hull-model.md
+      - 20-the-hydrostatic-table.md
+      - lab-05-flotation.md
+  - "6 · Naval architecture II — stability":
+      - 21-center-of-gravity.md
+      - 22-buoyancy-and-the-metacenter.md
+      - 23-gm-why-ships-self-right.md
+      - 24-trim-and-heel.md
+      - 25-free-surface-and-imo-criteria.md
+      - lab-06-stability.md
+  - "7 · Parsing & data":
+      - 26-config-and-manifest-formats.md
+      - 27-tokenizing-and-parsing-in-c.md
+      - 28-validation-and-robustness.md
+      - 29-dangerous-goods-imdg-parsing.md
+      - lab-07-parsing.md
+  - "8 · Algorithms — stowage & placement":
+      - 30-the-stowage-problem.md
+      - 31-first-fit-decreasing.md
+      - 32-3d-bins-and-weight.md
+      - 33-constraints-segregation-stackability.md
+      - lab-08-placement.md
+  - "9 · The stability engine in code":
+      - 34-the-analysis-module.md
+      - 35-hydrostatic-interpolation.md
+      - 36-tanks-and-free-surface.md
+      - 37-longitudinal-strength.md
+      - lab-09-engine.md
+  - "10 · Quality engineering":
+      - 38-sanitizers.md
+      - 39-static-analysis.md
+      - 40-fuzzing.md
+      - 41-coverage-and-benchmarks.md
+      - lab-10-quality.md
+  - "11 · Shipping it":
+      - 42-the-cli-and-output-formats.md
+      - 43-the-library-and-public-api.md
+      - 44-the-json-rpc-server.md
+      - 45-wasm-and-on-device.md
+      - lab-11-shipping.md
+  - "12 · Capstone & frontier":
+      - 46-the-whole-pipeline.md
+      - 47-frontier-classed-software.md
+      - lab-12-capstone.md
+  - Glossary: glossary.md

@@ -1,0 +1,174 @@
+# Why C, and the toolchain
+
+CargoForge-C is described in its own README as "a pure C99 maritime cargo loading optimizer... zero external dependencies." Understanding why the project was written in C — and how C source code becomes a running program — is the foundation for everything that follows. This lesson maps the compile-assemble-link-run pipeline onto the files you can actually see in the repository.
+
+---
+
+## Why C for a Cargo Optimizer?
+
+Ship-stability software has constraints that rule out many popular languages:
+
+**It runs everywhere.** A vessel's onboard computer might be an embedded Linux box from 2010, a standard shore-side PC, or a web browser used by a port agent. C compiles to native machine code on all of them. CargoForge-C takes this literally: the same source tree builds a native CLI binary *and* a WebAssembly module that runs in a browser.
+
+**It has no runtime overhead.** Languages like Python or Java carry a runtime interpreter or virtual machine. C does not. The operating system loads the binary directly. For a tool performing thousands of floating-point calculations per second (hydrostatic interpolation, GZ curve integration, bin-packing), that matters.
+
+**It has no mandatory dependencies.** The README states "zero external dependencies." The only library CargoForge-C links is the standard C math library (`-lm`), which ships with every C toolchain. You can hand the source to any C compiler, anywhere, and build it.
+
+**It is the language of POSIX and naval software.** Legacy stability booklet software, embedded control systems, and IMDG databases are predominantly written in C or C++. A C codebase can directly interface with that ecosystem.
+
+!!! note "C99"
+    CargoForge-C targets the C99 standard, declared with `-std=c99`. C99 added `//` comments, `<stdbool.h>`, variable-length array declarations, and guaranteed 64-bit integer types. It is old enough that every compiler supports it, yet modern enough to avoid the quirks of C89.
+
+---
+
+## The Compile → Assemble → Link → Run Pipeline
+
+Writing C is only the first step. Here is what happens between a `.c` file and a running program.
+
+### 1. Preprocessing
+
+Before any real compilation, the C preprocessor (`cpp`) reads your source and expands macros and `#include` directives. When you write:
+
+```c
+#include "cargoforge.h"
+```
+
+the preprocessor literally pastes the contents of `cargoforge.h` into the `.c` file. `#define` constants such as `MAX_FREE_RECTS` in `cargoforge.h` are replaced with their literal values throughout the file. The output is a single expanded translation unit of pure C text — no macros remain.
+
+### 2. Compilation (and assembly)
+
+The C compiler (`gcc` or `clang`) translates the preprocessed C source into machine instructions. Internally this goes through an assembly stage, but you almost never see the intermediate assembly; the compiler emits an **object file** (`.o`) directly.
+
+An object file contains machine code, but it is not yet runnable. It has unresolved symbols — calls to functions defined in other `.c` files. It is a puzzle piece, not a complete picture.
+
+The Makefile captures this step in one rule (from `Makefile:54`):
+
+```makefile
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c $(HDRS)
+	$(CC) $(CFLAGS) -fPIC -c $< -o $@
+```
+
+- `$(CC)` is `gcc` (defined at line 2).
+- `-c` means "compile only — do not link." This produces an object file.
+- `-fPIC` means "position-independent code," needed so the same object file can be used in both the static library and the shared library.
+- `$<` is the source file; `$@` is the output object file.
+
+Every `.c` file in `src/` produces one `.o` file in `build/`. Run `make` and you will see lines like:
+
+```
+gcc -O3 -Wall -Wextra -std=c99 -D_POSIX_C_SOURCE=200809L -Iinclude -fPIC -c src/analysis.c -o build/analysis.o
+```
+
+### 3. Linking
+
+The linker (`ld`, invoked transparently by `gcc`) collects all the object files and resolves the symbols that were previously dangling. When `cli.c` calls `perform_analysis()`, the linker finds that function's machine code in `build/analysis.o` and stitches the addresses together.
+
+The final link step for the CLI binary is (from `Makefile:51–52`):
+
+```makefile
+$(TARGET): $(ALL_OBJS)
+	$(CC) $(CFLAGS) -o $(TARGET) $(ALL_OBJS) $(LDFLAGS)
+```
+
+`$(ALL_OBJS)` is the full list of `.o` files. `$(LDFLAGS)` is `-lm`, which tells the linker to include the system math library (needed for `sin()`, `atan()`, `sqrt()`, used throughout `analysis.c`). The output is the executable `cargoforge`.
+
+### 4. Running
+
+```bash
+./cargoforge optimize examples/sample_ship.cfg examples/sample_cargo.txt
+```
+
+The operating system loads the binary into memory, sets up a stack and a heap, and jumps to `main()`. In CargoForge-C, `main.c` is two lines of substance: `init_cli_context` and `parse_cli_args` → `dispatch_subcommand`. Everything else flows from there.
+
+---
+
+## The Compiler Flags in Detail
+
+From `Makefile:4`:
+
+```makefile
+CFLAGS = -O3 -Wall -Wextra -std=c99 -D_POSIX_C_SOURCE=200809L -Iinclude
+```
+
+| Flag | Meaning |
+|---|---|
+| `-O3` | Aggressive optimization. The compiler may reorder instructions, inline functions, and unroll loops. CargoForge-C runs at O3 in production — speed matters for the GZ integration loop. |
+| `-Wall -Wextra` | Enable nearly all compiler warnings. A warning in C often points to a real bug. |
+| `-std=c99` | Enforce the C99 language standard. Code using C11 or GNU extensions will be rejected. |
+| `-D_POSIX_C_SOURCE=200809L` | Expose POSIX.1-2008 extensions in the system headers (`mkstemp`, `strtok_r`, `open_memstream`). Without this define, these functions are hidden. |
+| `-Iinclude` | Add `include/` to the header search path, so `#include "cargoforge.h"` resolves without a full path. |
+
+When debugging, the build can switch to `-fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer -g` (from `Makefile:94`). This replaces O3 with debug info and injects runtime checks that catch memory errors and undefined behaviour — the same tooling that found the heap-use-after-free bug in `parse_cargo_list`.
+
+---
+
+## Source Layout: Where the Code Lives
+
+The README project tree maps directly to what `make` does:
+
+```
+CargoForge-C/
+├── src/        ← all .c source files (compiled to build/*.o)
+├── include/    ← all .h header files (included by -Iinclude)
+├── build/      ← object files (created by make, ignored by git)
+├── tests/      ← 8 test binaries, each linked against relevant .o files
+├── examples/   ← sample ship configs and cargo manifests
+├── validation/ ← DNV-SE-0475 benchmark binary
+└── wasm/       ← Emscripten output (cargoforge.js + cargoforge.wasm)
+```
+
+The Makefile divides source into two groups:
+
+- **`LIB_SRCS`** (10 files, `Makefile:15–19`): the pure engine — parser, analysis, placement, constraints, hydrostatics, tanks, longitudinal strength, IMDG, JSON output, and the public library wrapper. These compile into `libcargoforge.a` (static archive) and `libcargoforge.dylib`/`.so` (shared library).
+- **`CLI_SRCS`** (4 files, `Makefile:22–23`): `main.c`, `cli.c`, `visualization.c`, `server.c`. These are the shell around the engine. They are not part of the library — an application embedding `libcargoforge` never touches them.
+
+This separation is intentional: the same engine that powers the CLI also compiles to WebAssembly. The `wasm` target (from `Makefile:184–192`) passes `$(LIB_SRCS)` — and only `$(LIB_SRCS)` — to `emcc`, Emscripten's drop-in C compiler:
+
+```makefile
+emcc -O3 -std=c99 -Iinclude \
+    -s EXPORTED_FUNCTIONS='["_cargoforge_open","_cargoforge_close", ...]' \
+    -s ALLOW_MEMORY_GROWTH=1 \
+    -o wasm/cargoforge.js \
+    $(LIB_SRCS)
+```
+
+The eight exported functions (`cargoforge_open`, `cargoforge_close`, `cargoforge_load_ship_string`, `cargoforge_load_cargo_string`, `cargoforge_optimize`, `cargoforge_result_json`, `cargoforge_version`, plus `malloc`/`free`) are the public surface of `libcargoforge.h`. The CLI code never enters the WASM bundle.
+
+---
+
+## Your First Build
+
+Clone the repository and run:
+
+```bash
+git clone https://github.com/alikatgh/CargoForge-C.git
+cd CargoForge-C
+make
+```
+
+`make` without a target triggers the `all` rule (`Makefile:46`), which builds `build/` and the `cargoforge` binary. To verify everything works:
+
+```bash
+./cargoforge optimize examples/sample_ship.cfg examples/sample_cargo.txt
+```
+
+To confirm the test suite passes:
+
+```bash
+make test
+```
+
+Eight test binaries are compiled and run. Each is linked against only the object files it needs — `test_hydrostatics`, for example, links only `build/hydrostatics.o`, not the full engine — so a failure isolates a specific module.
+
+---
+
+## Recap
+
+- CargoForge-C is written in C99 because it needs to run natively on constrained hardware, compile to WebAssembly for the browser, and carry zero runtime dependencies.
+- The compile pipeline is: **preprocess** (expand headers and macros) → **compile** (C source to object file) → **link** (combine object files into an executable).
+- `-c` tells `gcc`/`clang` to stop after compilation; the linker combines `.o` files into the final binary.
+- `CFLAGS = -O3 -Wall -Wextra -std=c99 -D_POSIX_C_SOURCE=200809L -Iinclude` governs every compilation in this project.
+- The engine (`LIB_SRCS`) and the CLI (`CLI_SRCS`) are deliberately separate: the same engine object files power the CLI, the static library, the shared library, and the WASM build.
+- `make`, `make test`, and `make test-asan` are the three commands you will use most during development.
+
+*Next: [Your first C program](02-your-first-c-program.md).*
