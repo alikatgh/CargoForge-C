@@ -2,6 +2,19 @@
 
 Memory errors are the most dangerous class of bugs in C: they are silent, they corrupt program state invisibly, and they are the primary vector for security vulnerabilities. This lesson uses a real heap-use-after-free that CargoForge-C's own fuzzer caught in `parse_cargo_list` to teach the four canonical memory bug types — and the small, disciplined habits that prevent all of them.
 
+## What this actually means (plain English)
+
+No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
+
+- **Use-after-free** = "you returned a library book, then kept reading from it anyway" — after `free(ship->cargo)` in `parse_cargo_list`'s error path, the pointer still held the old address, so `ship_cleanup` read straight into memory that the allocator had already reclaimed.
+- **Dangling pointer** = "a door key that still looks like a key, but the lock was changed" — `ship->cargo` still contained a valid-looking address after `free()`, which is exactly what made the bug invisible until AddressSanitizer caught it.
+- **Double-free** = "trying to return the same library book twice and crashing the librarian's system" — because `parse_cargo_list` freed `ship->cargo` on the error path but didn't null it, `ship_cleanup` then freed the same block a second time, corrupting allocator bookkeeping.
+- **`ship->cargo = NULL` after `free`** = "tearing up the key so nobody can use it" — setting the pointer to NULL immediately after freeing means any later accidental dereference produces a clean, catchable segfault instead of silent data corruption; it also makes `free(NULL)` a defined no-op, preventing double-free for free.
+- **`ship->cargo_count = 0` alongside the NULL** = "closing both doors, not just one" — `ship_cleanup` loops up to `cargo_count`; zeroing the count ensures the loop never starts even if the NULL check were somehow missed, removing both preconditions for the bug.
+- **AddressSanitizer + fuzzer** = "a trip-wire that fires the moment bad memory is touched, combined with a bot that feeds the program deliberately broken manifests" — `make test-asan` and `scripts/fuzz.sh` together forced the error path that normal happy-path tests never reached, which is the only reason this bug was found before it shipped.
+
+**Why it matters:** a use-after-free on an error path is silent in normal testing and only surfaces when an adversarial or malformed input triggers the cleanup sequence — exactly the scenario a ship's cargo system will encounter in production. Get the `free` / `NULL` / count discipline wrong and you hand an attacker a heap-corruption primitive.
+
 ---
 
 ## The four categories

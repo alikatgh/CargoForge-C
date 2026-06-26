@@ -2,6 +2,20 @@
 
 Fitting cargo into ship holds sounds mechanical — a matter of measuring boxes and doing arithmetic. In practice, it belongs to a family of combinatorial problems that have resisted exact polynomial-time solutions for decades. This lesson explains what bin packing is, why it is computationally hard, and how CargoForge-C trades optimality for speed with a set of practical heuristics.
 
+## What this actually means (plain English)
+
+No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
+
+- **3D bin packing** = "figure out which box goes where in which hold" — the geometric core of what `place_cargo_3d` solves: assign every `Cargo` item a position inside one of the ship's rectangular `Bin3D` holds without anything overlapping or sticking out.
+- **NP-hard** = "no one knows a shortcut; brute-force search explodes too fast to use" — with 50 items across 3 holds the number of possible arrangements is astronomical, which is why CargoForge-C never tries to find the perfect answer and uses fast approximations instead.
+- **First Fit Decreasing (FFD)** = "load the biggest crates first" — `place_cargo_3d` sorts `ship->cargo` by volume (largest to smallest) before placing anything, because large items are hardest to fit and small ones can fill the gaps that remain.
+- **Guillotine splitting** = "after placing a box, slice the leftover space into up to three clean rectangles" — `split_space_3d` records a right-remainder, a back-remainder, and a top-remainder in `bin->spaces[]` so future items have somewhere to land; the downside is that many placements leave small slivers that together might hold an item but individually do not.
+- **Six orientations** = "try turning every crate every which way before giving up" — `get_orientation_dims` enumerates all 3! permutations of length, width, and height, so a crate that does not fit standing up is also tried on its side and on its end.
+- **Sentinel position (`pos_x = -1.0f`)** = "this item has no home yet" — when `find_best_fit_3d` finds no viable space, it stamps the cargo with `-1`; `perform_analysis` then skips it entirely when computing KG, trim, and heel, so an unplaced item cannot silently corrupt the stability numbers.
+- **Constraint gate before geometry** = "a space that breaks a safety rule does not exist" — `check_cargo_constraints` enforces point-load limits, IMDG segregation distances, and stacking pressure before the volume comparison even runs; a space that fails any check is treated as if it were already full.
+
+**Why it matters:** a placement that looks geometrically perfect can still capsize a ship if heavy cargo ends up all on one side, or kill a dockworker if incompatible DG classes end up adjacent — which is exactly why `place_cargo_3d` feeds its results into `perform_analysis` and runs `check_cargo_constraints` on every candidate space before accepting it.
+
 ---
 
 ## What we are actually trying to solve

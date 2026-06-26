@@ -35,6 +35,19 @@ tracking how much weight each bin is already carrying.
 <text x="300" y="198" fill="currentColor" font-size="11" text-anchor="middle" opacity="0.65"><tspan font-family="var(--md-code-font,monospace)">place_cargo_3d</tspan> drops each item into the first bin where it fits without exceeding the cap.</text>
 </svg>
 
+## What this actually means (plain English)
+
+No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
+
+- **Bin** = "a named rectangular zone carved out of the ship's hull" — `place_cargo_3d` creates three of them (ForwardHold, AftHold, Deck), each with its own weight ceiling and a list of free spaces still available for cargo.
+- **`max_weight` / `current_weight`** = "a hard cap on how many tonnes a zone can carry, and a running tally of what's already in it" — `find_best_fit_3d` checks `current_weight + cargo->weight > max_weight` first; if that fails the whole bin is skipped without even looking at geometry.
+- **`pos_z` and the z-coordinate** = "how high above the keel the cargo sits, which directly controls whether the ship is stable" — holds start at z = −8 m (deep, low centre of gravity, good for stability) while deck cargo sits at z = 0 m (high, raises KG, can reduce GM and make the ship more tender).
+- **Six orientations** = "trying all six ways you can rotate a box so its three dimensions line up with the ship's three axes" — a tall crate that won't fit standing up might still slot in sideways; `find_best_fit_3d` tries all six permutations and keeps the tightest fit.
+- **Best-fit strategy** = "preferring the smallest free space that still holds the item" — by not wasting large spaces on small items, the algorithm keeps big gaps available for the heavy cargo that comes next (FFD sort from Lesson 31 feeds the largest items first).
+- **Sentinel value `pos_x = pos_y = pos_z = -1.0f`** = "a flag that says this item was never placed" — `perform_analysis` in `analysis.c` skips any cargo where `pos_x < 0`, so an unplaced heavy item silently disappears from the KG and trim calculation.
+
+**Why it matters:** if a heavy item cannot be placed, the stability numbers `perform_analysis` returns will be wrong — and the only warning is a single line on stderr. Getting the bin geometry and weight limits right is therefore a prerequisite for trusting any GM or trim result the program produces.
+
 ---
 
 ## What a bin is

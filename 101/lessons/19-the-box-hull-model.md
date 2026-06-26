@@ -2,6 +2,19 @@
 
 When CargoForge-C does not have a ship's measured hydrostatic table, it still needs to answer questions like "how deep will the ship sit in the water?" and "how stable is it?". It answers them by pretending the hull is a rectangular box — a deliberately simplified shape whose geometry can be solved with a few multiplications. This lesson explains how that model works, where each formula comes from, and why the program uses it only as a fallback when real table data is absent.
 
+## What this actually means (plain English)
+
+No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
+
+- **Box-hull model** = "treat the ship as a rectangular swimming pool to do the maths" — when `ship->hydro` is `NULL` or not loaded, `perform_analysis` in `src/analysis.c` falls back to this shortcut so it can still compute draft, KB, BM, and GM without any measured data.
+- **Block coefficient (`BLOCK_COEFF = 0.75`)** = "a real hull is only 75% as full as its bounding box" — the underwater body tapers at the bow and stern, so the code divides displaced volume by `L × B × 0.75` to get a draft that is correctly deeper than a perfect rectangle would give.
+- **KB (centre of buoyancy height)** = "the average depth of the water the ship is pushing aside" — `perform_analysis` estimates it as `KB_FACTOR * draft` (0.53 × T), meaning the buoyant centroid sits just over halfway down the draft, which holds well for full-form cargo ships.
+- **BM (metacentric radius)** = "how hard the waterplane shape fights a heel" — the code computes it as `inertia_t / displaced_vol`, where `inertia_t = (L × B³ / 12) × WATERPLANE_COEFF`; because breadth is cubed, doubling the beam roughly quadruples this resistance.
+- **GM = KB + BM − KG** = "the total stability margin from keel to metacentre, minus how high the cargo sits" — `perform_analysis` assembles this from the box-hull KB and BM alongside the actual KG from placed cargo positions, then applies a free-surface correction before any IMO checks run.
+- **`hydro_table_used` flag** = "which path did the code actually take?" — the program prints either "Hydrostatics: Table interpolation" or "Hydrostatics: Box-hull approximation" so operators always know whether the numbers came from measured data or a fleet-average rectangle.
+
+**Why it matters:** if you supply a ship with an unusual hull form (a bulk carrier, a fast ferry) and no hydrostatic table, the box-hull constants may be off by 10–20%, producing a GM that looks safe when the real vessel is marginal — or vice versa; for any regulatory submission, always load a real table.
+
 ---
 
 ## Why approximate at all?

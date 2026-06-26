@@ -6,6 +6,19 @@ as the ship rolls, effectively raising the centre of gravity and reducing stabil
 CargoForge-C models this effect through the **free-surface correction**, computed in
 [`src/tanks.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/tanks.c) and folded into every stability analysis that includes a tank file.
 
+## What this actually means (plain English)
+
+No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
+
+- **Free surface** = "liquid that can slosh around inside a partly filled tank" — when the ship tilts, that sloshing shifts weight to the low side and makes the ship even less stable, as if its centre of gravity had been lifted a little higher.
+- **Free-surface moment (FSM)** = "a number that measures how destabilising a slack tank is" — `calculate_free_surface_moment` computes it as $\rho \cdot l \cdot b^3 / 12$; the breadth is cubed, so a wide tank is far more dangerous than a long narrow one of the same volume.
+- **Fill-fraction independence** = "a tank that is 10% full is just as destabilising as one that is 90% full" — the FSM formula contains the tank's geometry, not its fill level; only the extreme cases (0% or 100% full) return zero, because then the liquid has no room to move.
+- **Virtual KG rise / free-surface correction (FSC)** = "the effective penalty in metres that slack tanks add to the ship's centre of gravity" — `calculate_virtual_kg_rise` sums all FSMs and divides by the ship's displacement, giving the value that `perform_analysis` subtracts from GM to produce `gm_corrected`.
+- **GM corrected** = "the stability margin the ship actually has, after accounting for all sloshing tanks" — every downstream check in CargoForge-C (IMO criteria, GZ curve, heel angle) uses `gm_corrected`, never the raw GM.
+- **Tank CSV** = "the nine-column input file that tells CargoForge-C about each tank's size, position, fill level, and liquid type" — `parse_tank_config` reads it and clamps fill fraction to $[0, 1]$, so an out-of-range value is silently corrected rather than crashing the analysis.
+
+**Why it matters:** A single wide, slack tank can steal several tenths of a metre of GM; on a heavily loaded vessel that can flip an IMO-compliant result to non-compliant. Getting the fill fractions wrong in the CSV — or forgetting to model tanks at all — produces an optimistic stability picture that does not match the real ship.
+
 ---
 
 ## The physical problem

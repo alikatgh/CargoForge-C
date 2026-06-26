@@ -2,6 +2,19 @@
 
 Before the C compiler sees a single line of your code, a separate program called the **preprocessor** runs first. It handles `#include`, `#define`, and `#ifndef` — the directives that begin with `#`. Understanding the preprocessor is what unlocks the `.h`/`.c` split that makes CargoForge-C's twelve source files work together as one coherent program.
 
+## What this actually means (plain English)
+
+No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
+
+- **Preprocessor** = "a find-and-replace robot that runs before the compiler even starts" — it pastes `#include` files in place, swaps every `MAX_FREE_RECTS` token for `1024`, and strips out `#ifdef` blocks the compiler should never see; the compiler only ever sees the finished result.
+- **`#define` constant** = "a named number baked in at compile time, not stored in memory" — `MAX_HYDRO_ENTRIES 200` sets the fixed size of the `HydroEntry entries[MAX_HYDRO_ENTRIES]` array inside `HydroTable`; change one line in `hydrostatics.h` and every file that includes it picks up the new size automatically.
+- **Include guard** = "a one-way door that lets a header be included many times but processed only once" — the `#ifndef CARGOFORGE_H / #define CARGOFORGE_H / ... / #endif` wrapper in `cargoforge.h` prevents the compiler from seeing the same `typedef` twice and throwing a redefinition error.
+- **Declaration vs. definition** = "a declaration describes the shape; a definition is the real thing" — the prototype `AnalysisResult perform_analysis(const Ship *ship);` in `cargoforge.h` is a declaration; the actual function body with its `{ }` in `analysis.c` is the definition, and the linker wires the two together.
+- **Forward declaration** = "just enough information to hold a pointer, nothing more" — `struct HydroTable_;` in `cargoforge.h` lets `Ship` carry a `struct HydroTable_ *hydro` pointer without pulling in all of `hydrostatics.h`; files that only hold the pointer never need to know `HydroTable`'s fields.
+- **`static` on a file-scope function** = "private — the linker cannot see this symbol outside this `.c` file" — `static float lerp(...)` and `static void interpolate_entries(...)` in `hydrostatics.c` are invisible to every other translation unit, so they cannot clash with a `lerp` defined elsewhere and cannot be called accidentally from `parser.c` or `analysis.c`.
+
+**Why it matters:** if you skip include guards, the compiler refuses to build the moment two files both include `cargoforge.h`; if you put a function *definition* in a header, every `.c` file that includes it produces its own copy of that symbol and the linker throws a "multiple definition" error — both failures halt the entire build of CargoForge-C.
+
 ---
 
 ## What the preprocessor actually does

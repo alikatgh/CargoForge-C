@@ -2,6 +2,19 @@
 
 Static analysis means examining source code for bugs *before* compiling or running it. For CargoForge-C this matters because the program handles heap-allocated cargo arrays, raw pointer arithmetic over parsed manifests, and numeric parsing on untrusted input — exactly the class of code where subtle errors survive every unit test yet crash under an adversarial manifest.
 
+## What this actually means (plain English)
+
+No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
+
+- **Static analysis** = "reading your code for bugs without running it" — the compiler and tools like `scan-build` or `cppcheck` reason over every possible input at once, which is how they catch the bug in `parse_cargo_list` that your test suite never triggered.
+- **Intraprocedural vs. interprocedural** = "one function at a time vs. following calls across the whole program" — `-Wall -Wextra` only see inside a single function, so they miss the use-after-free where `parse_cargo_list` frees `ship->cargo` and `ship_cleanup` reads it later; an interprocedural tool like `scan-build` can trace that multi-function path.
+- **`safe_atof`** = "a wrapper around `strtof` that actually tells you when the input was garbage" — unlike `atof`, it checks `end == s` (nothing was parsed) and trailing characters like `"12.5abc"`, returning `NaN` so callers in `parse_cargo_list` can bail out cleanly instead of silently using a zero.
+- **Use-after-free** = "reading memory you already handed back to the heap" — the real bug fixed in `parse_cargo_list` was that `ship->cargo` was freed on an error path but `ship->cargo_count` stayed non-zero, so `ship_cleanup` later iterated over freed slots; the fix was setting `ship->cargo = NULL` and `ship->cargo_count = 0` immediately after `free`.
+- **`-Werror` in CI** = "turn every compiler warning into a build failure" — CargoForge-C doesn't use this yet, but it's the mechanism that prevents warning debt from quietly piling up across commits.
+- **Static analysis blind spots** = "tools can't know if your physics formula is wrong" — `gz_at_angle` could implement the wrong righting-lever calculation and pass every static check; domain correctness (right range, right formula) requires tests and benchmarks, not a linter.
+
+**Why it matters:** a use-after-free in `parse_cargo_list` survived unit tests and only surfaced under an adversarial manifest — exactly the scenario static analysis and sanitizers exist to catch before the ship's stability report is trusted with real cargo.
+
 ---
 
 ## What static analysis is — and is not

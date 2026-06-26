@@ -27,6 +27,19 @@ CargoForge-C is described in its own README as "a pure C99 maritime cargo loadin
 <text x="330" y="142" fill="currentColor" font-size="11.5" text-anchor="middle" opacity="0.6">Compiled and linked ahead of time — the OS loads the native binary directly, with no interpreter.</text>
 </svg>
 
+## What this actually means (plain English)
+
+No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
+
+- **Compiled language** = "code you write gets translated into machine instructions before it ever runs" — unlike Python or JavaScript, there is no interpreter sitting between CargoForge-C and the CPU at runtime; the OS loads the `cargoforge` binary directly and runs it, which is why hydrostatic loops and GZ integrations can execute thousands of times per second without slowing down.
+- **Object file (`.o`)** = "a half-finished puzzle piece of machine code" — when `cc -c src/analysis.c` runs, it turns that one file into `build/analysis.o`, which contains the machine instructions for functions like `perform_analysis` but leaves a blank where any call to a function in another file (say, `parse_cargo_list` in `parser.c`) will eventually go.
+- **Linking** = "snapping all the puzzle pieces together into one runnable program" — the linker takes every `.o` in `build/`, resolves the blanks by matching function names to their addresses, appends `-lm` (the math library needed for `sin`, `atan`, `sqrt` in `analysis.c`), and produces the single `cargoforge` executable.
+- **`-lm` (the math library flag)** = "tell the linker to include the system's math routines" — without it, the linker would complain about unresolved references to every trigonometric and square-root call in `analysis.c`; it is the only external dependency CargoForge-C needs.
+- **`LIB_SRCS` vs `CLI_SRCS`** = "engine vs shell" — the ten engine files (parser, analysis, placement, hydrostatics, etc.) compile into `libcargoforge` and also into the WASM bundle; the four CLI files (`main.c`, `cli.c`, `visualization.c`, `server.c`) are the command-line wrapper that never enters a browser, so Emscripten only sees `LIB_SRCS`.
+- **`-fsanitize=address`** = "add a runtime watchdog that catches memory bugs the compiler can't see" — this is the flag that caught the heap-use-after-free in `parse_cargo_list`; it instruments every memory access so that reading freed memory triggers an immediate, descriptive crash instead of silent corruption.
+
+**Why it matters:** if you get the compile–link boundary wrong (e.g., forget to pass an object file to the linker, or omit `-lm`), the build fails with cryptic "undefined reference" errors before a single byte of cargo data is ever processed; understanding this pipeline is what lets you read a Makefile error and know exactly which step broke.
+
 ---
 
 ## Why C for a Cargo Optimizer?

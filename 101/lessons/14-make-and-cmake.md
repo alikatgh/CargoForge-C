@@ -2,6 +2,20 @@
 
 CargoForge-C has fourteen source files, ten headers, eight test binaries, two library outputs, and a WebAssembly build. Compiling all of that by hand — and knowing which pieces to recompile when a single header changes — is exactly the problem that build systems solve. This lesson explains how Make works from first principles, then shows what CMake adds and why the project ships both.
 
+## What this actually means (plain English)
+
+No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
+
+- **Dependency graph** = "a map of which files need which other files to exist and be up to date" — Make reads this map and only recompiles the files that have actually changed, so editing `analysis.c` rebuilds `build/analysis.o` and relinks `cargoforge` without touching the other thirteen source files.
+- **Object file** = "a compiled chunk of one source file — machine code that still has holes where it calls functions from other files" — `analysis.o` knows how to call `hydro_interpolate` but doesn't contain it yet; the linker fills that hole by combining all `.o` files into the final `cargoforge` binary.
+- **Pattern rule** = "one recipe written with a wildcard that handles every matching file automatically" — the single rule `$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c $(HDRS)` covers all fourteen source files so you never have to write a separate compile command for `parser.c`, `placement_3d.c`, or any other file added later.
+- **Target-specific variable** = "a variable override that applies only when building one particular target" — `test-asan` appends `-fsanitize=address` this way, which is how the heap-use-after-free in `parse_cargo_list` was caught: the sanitizer turned a silent stale-pointer read into an immediate crash.
+- **Static vs. shared library** = "static means the engine code is baked into your binary at build time; shared means it's a separate file loaded at runtime and shared across all programs that use it" — the `lib` target produces both `libcargoforge.a` (static, self-contained) and `libcargoforge.dylib`/`.so` (shared, smaller binary but requires the `.so` to be present at runtime).
+- **CMake as a meta-build system** = "a tool that generates Makefiles (or Ninja files, or IDE projects) from a cleaner, platform-neutral description" — `add_library(cargoforge_static STATIC ...)` replaces the `ar rcs` command and the `$(shell uname -s)` platform-detection dance; CMake figures out the right low-level commands for the host OS automatically.
+- **Phony target** = "a Make label for an action, not a file to produce" — `.PHONY: clean test` tells Make to always run `clean` or `test` when asked, even if a file called `clean` or `test` happens to exist on disk.
+
+**Why it matters:** if the dependency graph is wrong or a source file is missing from both `LIB_SRCS` and `LIB_SOURCES`, changes to that file silently won't rebuild — exactly the kind of stale-binary mismatch that shows up at sea rather than at the desk; getting the build system right is what makes every other fix actually land in the shipped binary.
+
 ---
 
 ## The Problem Make Solves

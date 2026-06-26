@@ -8,6 +8,19 @@ and process exit codes. Understanding them together explains how the program can
 reject a malformed manifest without crashing — and why getting it wrong caused a
 real heap-use-after-free bug.
 
+## What this actually means (plain English)
+
+No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
+
+- **Return code** = "a number the function hands back to say whether it worked" — `parse_ship_config` and `parse_cargo_list` return `0` for success and `-1` for failure; `cmd_optimize` checks that number immediately and stops early if something went wrong, instead of blundering forward on bad data.
+- **`errno`** = "a global sticky note the C library leaves when it hits an OS-level problem" — `safe_atof` resets it to zero before calling `strtof`, then reads it afterwards; without the reset, a stale value from an earlier call could falsely report an error.
+- **`NAN` (Not a Number)** = "a float value that means 'this field is broken'" — `safe_atof` returns it instead of `0` or `-1` because both of those are physically valid numbers for weight or length, while `NAN` is unambiguous and can be tested with `isnan()`.
+- **NULL-and-zero after `free()`** = "telling the rest of the code the memory is gone" — after `parse_cargo_list` frees `ship->cargo` on a bad weight, it sets `ship->cargo = NULL` and `ship->cargo_count = 0` in the same block; this is exactly what prevented `ship_cleanup` from walking a freed pointer (the heap-use-after-free bug this code fixed).
+- **Exit code** = "the number your program reports to the shell when it finishes" — `EXIT_PARSE_ERROR` and `EXIT_VALIDATION_ERROR` are distinct so that a CI script or shell wrapper can tell apart "the file was unreadable" from "the file parsed but made no physical sense."
+- **Warning vs. error** = "recoverable vs. unrecoverable" — a missing hydrostatic table gets a `fprintf(stderr, "Warning: …")` and the program continues with the box-hull fallback; an invalid weight or a file that won't open returns `-1` immediately, because there is no sensible fallback for "the ship has no length."
+
+**Why it matters:** if any one of these mechanisms is skipped — the return value goes unchecked, `errno` is not reset, the freed pointer is not nulled — the program either silently produces wrong stability numbers or crashes with undefined behaviour; the heap-use-after-free bug in the lesson is a direct example of what happens when the NULL-and-zero step is missing.
+
 ---
 
 ## Return codes: the primary signalling channel

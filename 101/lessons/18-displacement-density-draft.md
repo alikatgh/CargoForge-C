@@ -7,6 +7,19 @@ This lesson walks through the physics and then traces exactly how `perform_analy
 [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c) derives draft from first principles, with a real hydrostatic table as the
 preferred path and a box-hull formula as the fallback.
 
+## What this actually means (plain English)
+
+No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
+
+- **Displacement** = "the total weight of everything on the ship, in tonnes" — `perform_analysis` adds `lightship_weight`, the weight of all placed cargo (items where `pos_x >= 0`), and tank contents to get this single number; everything else in the lesson flows from it.
+- **Displaced volume** = "the blob of water the hull has to push aside to stay afloat" — computed as `displacement_t / SEAWATER_DENSITY` (1.025 t/m³), it converts tonnes of ship into cubic metres of water, which is the shape the hull must carve out.
+- **Draft** = "how many metres of hull are underwater right now" — the lesson shows two ways CargoForge-C finds it: a quick box-hull formula (`displaced_vol / (length × width × 0.75)`) and an accurate inverse-interpolation through the ship's hydrostatic table via `hydro_draft_from_displacement`.
+- **Block coefficient (C_b)** = "how boxy the underwater hull is, on a 0-to-1 scale" — hardcoded at 0.75 in the fallback path; it shrinks the bounding-box volume to account for the rounded bow and tapered stern that a real hull has.
+- **Hydrostatic table** = "a pre-computed cheat-sheet of hull geometry at every possible draft" — when one is loaded, `hydro_draft_from_displacement` finds draft by bracketing the target displacement between two table rows and interpolating, then `hydro_interpolate` hands back KB, BM, and MTC at that exact draft.
+- **Overweight guard** = "a hard stop before any physics runs" — if total displacement exceeds `ship->max_weight`, `perform_analysis` sets `r.gm = NAN` and returns immediately; downstream code (JSON output, CLI report) treats NaN GM as the signal that the plan is invalid.
+
+**Why it matters:** Draft is the root input for every stability number — GM, trim, KB, BM, and longitudinal strength all depend on it. Get displacement wrong (e.g. by including unplaced cargo, or using fresh-water density instead of 1.025) and every downstream stability calculation will be off.
+
 ---
 
 ## What displacement means

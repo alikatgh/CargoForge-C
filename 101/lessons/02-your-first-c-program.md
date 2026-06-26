@@ -6,6 +6,19 @@ the structure of every program you will ever read. CargoForge-C is a real-world
 example: its [`src/main.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/main.c) is deliberately small so you can see the skeleton without
 distraction.
 
+## What this actually means (plain English)
+
+No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
+
+- **`main`** = "the one front door every C program must have" — the OS calls it when you run the program; in CargoForge-C it is a 21-line skeleton that immediately hands control to `parse_cli_args` and `dispatch_subcommand` rather than doing any real work itself.
+- **`argc` / `argv`** = "the words you typed on the command line, counted and collected" — when you run `cargoforge optimize sample_ship.cfg sample_cargo.txt`, the OS sets `argc = 4` and `argv[2]` / `argv[3]` to the two file paths that every downstream handler depends on.
+- **`CLIContext`** = "a single struct that carries everything `main` learned from the command line" — `init_cli_context` fills it with safe defaults, `parse_cli_args` populates it, and `dispatch_subcommand` reads it to route to `cmd_optimize` (which in turn calls `parse_ship_config`, `parse_cargo_list`, `place_cargo_3d`, and `perform_analysis`).
+- **exit code** = "a number the program hands back to the shell to say whether it succeeded" — CargoForge-C returns `EXIT_SUCCESS` (0) on success, `EXIT_INVALID_ARGS` on bad arguments, and whatever `dispatch_subcommand` returns for runtime errors; shell scripts, `make`, and CI pipelines read this number to decide whether to continue.
+- **`free_cli_context` before every `return`** = "clean up your mess no matter which door you leave through" — `main` calls it in both the early-exit branch and the normal-exit branch; skipping it in either place would leak whatever memory `parse_cli_args` allocated inside `ctx`.
+- **`printf` with format specifiers** = "a fill-in-the-blank template for text" — CargoForge-C uses it inside `print_loading_plan` to emit lines like `Draft: 5.23 m`; `%.2f` means "a decimal number rounded to two places," and `\n` ends the line cleanly.
+
+**Why it matters:** if you misread `argc`/`argv` indexing you silently pass the wrong file to `parse_ship_config` or `parse_cargo_list` and get a corrupt loading plan with no error message; if you skip `free_cli_context` in the early-exit path you introduce a memory leak that only shows up under Valgrind — two bugs that look like stability-analysis bugs but live entirely in `main`.
+
 ---
 
 ## The entry point

@@ -24,6 +24,20 @@ refrigerated items. This lesson explains how those rules are encoded in [`src/co
 <text x="300" y="172" fill="currentColor" font-size="11" text-anchor="middle" opacity="0.65"><tspan font-family="var(--md-code-font,monospace)">src/imdg.c</tspan> rejects any placement that violates the required separation.</text>
 </svg>
 
+## What this actually means (plain English)
+
+No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
+
+- **IMDG segregation** = "international law that says which dangerous goods must be kept apart — and by how much" — `imdg_get_segregation` in `src/imdg.c` looks up the pair of hazard classes in a 17 × 17 table and returns a code (none, 3 m, 6 m, 12 m, 24 m, or "never on the same ship").
+- **`check_cargo_constraints`** = "the bouncer that approves or blocks every candidate position before anything is written" — called inside `find_best_fit_3d` for every bin × space × orientation; returning 0 means "skip this spot," so a violation can never be *introduced* by the optimizer.
+- **Point load** = "weight per square metre of floor" — a small, dense item can punch through decking even if the ship's total weight limit is fine; `calculate_point_load` divides the cargo's weight (converted from kg to tonnes) by its footprint and rejects anything over 5 t/m².
+- **Stacking pressure** = "how much weight the items above are pressing down on whatever you want to place here" — `calculate_stack_pressure` uses axis-aligned bounding box overlap fractions so partial overlaps count proportionally, not as all-or-nothing; fragile cargo gets a tighter ceiling than general cargo.
+- **`SEG_INCOMPATIBLE`** = "these two classes of dangerous goods cannot share the same vessel — full stop" — it maps to −1 in `imdg_min_distance`, and `check_cargo_constraints` treats it as an immediate hard rejection without even computing a distance.
+- **Advisory vs. hard reject** = "some rules are legal limits (reject the spot), others are operational preferences (warn the operator but allow it)" — reefer cargo outside the Deck bin and fragile cargo below −5 m both generate stderr notes but do not block placement, because the ship still needs to sail even when the deck is full.
+- **`imdg_check_all`** = "a second, independent O(n²) sweep run after all placement is done" — it uses edge-to-edge horizontal distance (not centre-to-centre) to catch any pair that slipped through, and collects up to `MAX_IMDG_VIOLATIONS` entries into an `IMDGCheckResult` that library consumers can inspect.
+
+**Why it matters:** if the constraint check ran *after* placement rather than *during* it, the optimizer could commit to a layout that violates IMDG law or punches through decking — and unwinding that after the fact could require replanning the entire stow. Getting it wrong at sea means fire, explosion, or structural failure with no easy fix.
+
 ---
 
 ## Why constraints live in the placement loop

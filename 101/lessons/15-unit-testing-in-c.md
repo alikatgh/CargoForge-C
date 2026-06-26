@@ -2,6 +2,20 @@
 
 C has no built-in test framework, but it does not need one. The standard library's `assert()` macro and a carefully structured `main()` are enough to write tests that catch real bugs — including the heap-use-after-free that CargoForge-C's own fuzzer found. This lesson shows you how CargoForge-C tests its parser and hydrostatics modules, and how to run the whole suite with a single `make test`.
 
+## What this actually means (plain English)
+
+No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
+
+- **`assert(condition)`** = "crash loudly if this is ever false" — it is the whole test mechanism in one macro: if `parse_ship_config` returns the wrong value, `assert` aborts with the file name and line number, and `make test` sees a non-zero exit code and stops.
+- **Heap-use-after-free (UAF)** = "reading memory you already gave back" — in `parse_cargo_list`, the old error path freed `ship->cargo` but left `ship->cargo_count` intact, so `ship_cleanup` later walked the freed block; the regression test guards against this by asserting `s.cargo == NULL && s.cargo_count == 0` right after the failed parse.
+- **Regression test** = "a test whose only job is to make sure a fixed bug stays fixed" — Test 3 in `test_parser.c` writes a deliberately bad cargo manifest at runtime, calls `parse_cargo_list`, and pins the two invariants (`NULL` pointer, zero count) that the original buggy code violated.
+- **`ASSERT_NEAR(a, b, tol, msg)`** = "close enough counts for floating-point" — hydrostatic values like KB, BM, and displacement are stored as `float`; exact `==` comparisons fail on rounding noise, so `test_hydrostatics.c` checks that the absolute difference stays within 0.01 m (1 cm).
+- **Fixture** = "a tiny helper that writes the exact input your test needs, then cleans up after itself" — both `test_parser.c` (writing `_bad_cargo_test.txt` to `build/`) and `test_hydrostatics.c` (writing `test_hydro.csv` to `/tmp`) create their own controlled files at runtime so no stale disk file can corrupt the result.
+- **Counting-macro style** = "run every check, then report the score" — `test_hydrostatics.c`'s custom `ASSERT` / `ASSERT_NEAR` increment `tests_run` and `tests_passed` rather than aborting on the first failure, so you see all failures at once instead of fixing them one by one.
+- **`make test-asan`** = "repeat the whole suite with a memory watchdog enabled" — AddressSanitizer intercepts every heap read and write; if the `ship->cargo = NULL` line were ever removed from `parser.c`, the UAF regression test would trigger an ASan `heap-use-after-free` report with exit code 134.
+
+**Why it matters:** a test that only checks a return value can miss a bug that returns the right code while leaving the `Ship` struct in a corrupt state — exactly the class of error the UAF regression test was written to catch; skipping `make test-asan` before touching `parser.c` or `analysis.c` means memory errors stay invisible until a fuzzer or a production crash finds them.
+
 ---
 
 ## What a unit test actually is

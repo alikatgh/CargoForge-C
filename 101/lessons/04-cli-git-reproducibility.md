@@ -2,6 +2,20 @@
 
 Every program you write eventually has to be compiled, versioned, tested, and shipped — in a way that anyone can reproduce exactly. This lesson walks through how CargoForge-C handles all three: the shell commands you use day-to-day, the [`Makefile`](https://github.com/alikatgh/CargoForge-C/blob/main/Makefile) that automates building, and the GitHub Actions workflow that re-runs those same steps on every change. Understanding this infrastructure is what separates "code that works on my machine" from code you can trust in production.
 
+## What this actually means (plain English)
+
+No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
+
+- **Subcommand** = "the first word you give the program that tells it what job to do" — `./cargoforge optimize` picks the stowage-and-stability path, while `validate`, `info`, or `serve` each activate a completely different code path inside `main.c` and `cli.c`.
+- **Makefile** = "a recipe book that only cooks the dishes whose ingredients have changed" — instead of retyping the full `gcc` incantation for all ten source files, you run `make` and it timestamps each `.o` against its `.c`; only files that changed since last time are recompiled.
+- **Compiler flags (`-std=c99 -D_POSIX_C_SOURCE=200809L`)** = "a contract that locks the dialect of C the project speaks" — any machine with a conforming C99 compiler and a POSIX.1-2008 library will produce the same binary from the same source, which is why a stability calculation gives the same answer on a port authority's server as on your laptop.
+- **Deterministic build** = "the compiler, given the same inputs and flags, always produces bit-for-bit identical output" — CargoForge-C achieves this by pinning the C standard, the POSIX level, and writing every `.c` file by hand with no generated or time-dependent code, so the physics results never drift between environments.
+- **git commit** = "a permanent, labelled snapshot of exactly what the code looked like at one moment, plus a message explaining why" — the lesson uses the use-after-free fix (`fix: null cargo pointer on parse error`) as a concrete example of a commit message that tells the *why*, not just the *what*.
+- **Continuous Integration (CI)** = "a robot that rebuilds and smoke-tests your code on a clean machine every time you push" — the `.github/workflows/c-build.yml` workflow runs `make` and then `./cargoforge examples/...` on a fresh Ubuntu VM, so a change that only worked because of a leftover file on your laptop gets caught before it can reach `main`.
+- **`make test-asan`** = "rebuild everything with memory-error detectors switched on, then run the test suite" — AddressSanitizer and UBSan are the tools that catch the kind of heap-use-after-free bug described elsewhere in the course; the `clean` step inside the target is mandatory because sanitizer-compiled `.o` files cannot be mixed with ordinary ones.
+
+**Why it matters:** if the build is not deterministic and the CI not clean, a stability number that looks correct on a developer's laptop can silently differ on the vessel's navigation system — and in cargo stowage, a wrong GM or free-surface calculation is a safety defect, not just a test failure.
+
 ---
 
 ## The shell and the binary

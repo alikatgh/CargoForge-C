@@ -19,6 +19,21 @@ A ship is not rigid. Under a heavy concentrated cargo load the hull can hog — 
 <text x="290" y="236" fill="currentColor" font-size="11" text-anchor="middle" opacity="0.65">21 stations; integrate net load → shear → bending; compare to class limits (<tspan font-family="var(--md-code-font,monospace)">longitudinal_strength.c</tspan>).</text>
 </svg>
 
+## What this actually means (plain English)
+
+No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
+
+- **Still-water bending moment (SWBM)** = "how much the hull is trying to curve when the ship is sitting still in calm water" — it is the quantity CargoForge-C's `calculate_longitudinal_strength` ultimately computes and compares against class-society limits, because a hull that curves too much will crack.
+- **Hogging vs sagging** = "banana-up vs banana-down" — hogging happens when cargo is piled amidships and the ends are light; sagging happens when the ends are heavy. The code tracks them separately (`max_bm_hog` and `max_bm_sag`) because hull steel resists the two modes differently.
+- **Net load at a station** = "weight minus buoyancy at that slice of the ship" — `r.net_load[i] = r.weight_dist[i] - r.buoyancy_dist[i]` is where all the careful distribution work upstream collapses into a single signed number; positive means the water isn't pushing hard enough at that point.
+- **Integrate twice** = "add up the running imbalance, then add that up again" — the two trapezoidal loops turn net-load tonnes into shear-force tonnes and then into bending-moment tonne-metres; each step multiplies by a length, which is why the units change and why both arrays start and end at zero.
+- **Trapezoidal shape, then normalise** = "draw a rough curve first, then stretch it to hit the right total" — `distribute_lightship` and `distribute_buoyancy` both build a plausible shape and then rescale so the integral equals the actual lightship weight or displacement; this two-step pattern appears in every distribution function in the file.
+- **`check_strength_limits` return values (1 / 0 / −1)** = "pass / fail / not checked" — when `strength_limits` is `NULL` in the `Ship` struct because the config omitted the three permissible-limit keys, the check is simply skipped and `strength_compliant` stays −1; a missing config silently produces an optimistic result.
+
+**Why it matters:** if the bending moment exceeds the permissible limit the hull steel can buckle or fracture; and because unplaced cargo items are silently excluded from `distribute_cargo`, a plan with many unplaced items will under-report the SWBM — making a dangerously loaded ship look compliant.
+
+---
+
 ## The physical picture
 
 Imagine the ship as a beam floating on water. At every cross-section along its length there is some weight acting downward (hull steel, machinery, cargo) and some buoyancy acting upward (the upward pressure of displaced water). Where weight exceeds buoyancy the section is loaded in excess; where buoyancy exceeds weight it is relieved. The difference — the **net load** — varies continuously along the ship.

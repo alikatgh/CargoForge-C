@@ -2,6 +2,19 @@
 
 C is a typed language: every variable has a fixed type declared at compile time, and the type determines how memory is used and what operations are legal. Understanding why CargoForge-C chooses `float` over `double` for physics, and how functions isolate that physics into reusable units, is the first step to reading the codebase fluently.
 
+## What this actually means (plain English)
+
+No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
+
+- **Type** = "a label the compiler uses to know how big a variable is and what you can do with it" — in CargoForge-C this is why every draught, weight, and angle is `float` (4 bytes, enough for six digits) rather than the larger `double`, and why the `Ship` and `Cargo` structs stay compact and cache-friendly.
+- **`float` vs `double`** = "single-precision vs double-precision decimal numbers — about 6–7 digits of accuracy vs 15–16" — real sea-going instruments (draught gauges, load cells) don't resolve beyond a few centimetres or half a tonne, so `float` matches the sensor, and the `f` suffix on every constant like `1.025f` in `analysis.c` tells the compiler to keep it that way.
+- **`memset` zero-init** = "wiping a struct's memory to all zeros before filling it in" — `perform_analysis` does `memset(&r, 0, sizeof(r))` on the `AnalysisResult` before computing anything, because C does not automatically zero local variables and reading uninitialised memory is undefined behaviour.
+- **`static` on a function** = "this function is private to this one `.c` file — nothing else can call it" — `gz_at_angle`, `integrate_gz`, and `find_gz_max` are all marked `static` in `analysis.c` so they stay hidden implementation details; only `perform_analysis` and `print_loading_plan` are visible to the rest of the program.
+- **Pass by value** = "the function gets its own copy of whatever you hand it" — when `perform_analysis` calls `gz_at_angle(gm_effective, r.bm, 30.0f)`, the function works on local copies of those numbers and cannot accidentally change the caller's variables; to write a result back, a pointer (like `float *max_gz` in `find_gz_max`) is passed instead.
+- **Trapezoidal rule in `integrate_gz`** = "slicing the GZ stability curve into 100 thin trapezoids and summing their areas to approximate the area under the curve" — the `for` loop in `integrate_gz` does exactly this, and the `if (gz < 0) gz = 0` guards inside it ensure a negative righting lever never artificially inflates the stability area.
+
+**Why it matters:** if you mix up `float` and `double` (missing the `f` suffix) the compiler silently promotes constants to `double` and back, wasting cycles in the physics hot path; if you read an uninitialised field in an `AnalysisResult` you get garbage GM or KB values that could pass safety checks with nonsense numbers.
+
 ---
 
 ## Primitive types

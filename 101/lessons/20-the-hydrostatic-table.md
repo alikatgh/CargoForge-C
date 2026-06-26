@@ -2,6 +2,20 @@
 
 A ship is not a rectangular box, and treating it as one introduces errors that grow quickly as loading changes. This lesson introduces the hydrostatic table — a pre-computed dataset from a ship's stability booklet — and shows exactly how CargoForge-C reads, validates, and interpolates it to replace the box-hull fallback with real naval-architecture data.
 
+## What this actually means (plain English)
+
+No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
+
+- **Hydrostatic table** = "a lookup table that tells the program exactly how the ship's body behaves at every depth" — rather than guessing with fixed constants (0.75, 0.53, 0.85), `perform_analysis` consults this table so every draft, KB, and BM value matches the real hull geometry the shipyard measured.
+- **KB (centre of buoyancy height)** = "how high the average push of water sits below the ship's centre" — as the ship sinks deeper, this point rises, and the table records that non-linear climb row by row instead of approximating it as `0.53 × draft`.
+- **BM (metacentric radius)** = "a measure of how wide the waterplane is compared to how much water is displaced" — computed from the formula $BM = I_T / \nabla$; it falls dramatically as draft increases (12.14 m at 2 m draft down to 0.96 m at 10 m draft) because the submerged volume grows faster than the waterplane width.
+- **TPC (tonnes per centimetre)** = "how many tonnes you must load or unload to move the waterline by 1 cm" — `parse_hydro_table` reads this per-row so `perform_analysis` can translate a change in cargo weight into a precise change in draft.
+- **`hydro_draft_from_displacement`** = "the function that works backwards: given total weight, find the resulting draft" — this is the direction the analysis always runs in practice (you know the cargo, not the draft), and it requires the table rows to be in strictly ascending order so the binary search finds the right bracket.
+- **`parse_hydro_table` ascending-order check** = "a guard that rejects any table whose rows are out of sequence" — a reversed or duplicate draft row would make the interpolation return a silently wrong answer, so `hydrostatics.c` returns `-1` immediately if order is violated.
+- **`hydro_table_used` flag** = "a field in `AnalysisResult` that records whether real table data or the box-hull fallback was used" — checking this in the JSON output is the only reliable way to confirm that `perform_analysis` reached the table path rather than the approximate constants.
+
+**Why it matters:** if the box-hull constants are used on a vessel with unusual underwater form, GM can be off by metres — enough to classify a stable ship as unsafe or vice versa. And if the table rows are accepted out of order, every interpolation downstream silently produces wrong drafts and wrong stability numbers with no error to catch it.
+
 ---
 
 ## Why the box-hull model is only an approximation

@@ -2,6 +2,20 @@
 
 Every CargoForge-C operation — parsing a manifest, running stability analysis, placing cargo in a hold — ultimately reads or writes two core structs: `Cargo` and `Ship`. Understanding their fields is understanding the program. This lesson walks each field in detail, explains the units, shows how optional extensions hang off the struct as pointers, and introduces the enums that control output behavior.
 
+## What this actually means (plain English)
+
+No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
+
+- **`Cargo` struct** = "a single item's shipping file, in memory" — just as a superintendent's clipboard has one row per crate, `Cargo` holds the id, weight (in kg), dimensions, type, and the three `pos_x/y/z` coordinates that say where it ended up in the hold.
+- **Placement sentinel (`pos_x = -1.0f`)** = "this item hasn't been put anywhere yet" — `perform_analysis` checks `pos_x >= 0` before adding an item to any centre-of-gravity sum, so a crate that didn't fit in a bin is automatically ignored rather than silently corrupting the numbers.
+- **`dg` pointer (NULL or heap)** = "dangerous-goods metadata only when you actually need it" — ordinary cargo pays zero memory cost for DG fields because `dg` is just a `NULL` pointer; it grows into a real heap allocation only when the manifest line carries a `DG:` tag.
+- **`Ship`'s optional extension pointers (`hydro`, `tanks`, `strength_limits`)** = "plug in richer physics only when the config supplies it" — when these are NULL the analysis falls back to simple box-hull formulas; when they point to loaded data, `perform_analysis` interpolates from hydrostatic tables, applies free-surface corrections, or checks class-society strength limits — all without changing any calling code.
+- **`AnalysisResult`** = "the full stability report card, returned on the stack" — because it holds no heap pointers it can be returned by value from `perform_analysis` and copied freely; `gm_corrected` (GM minus the free-surface correction) is the single number that determines whether the vessel is safe.
+- **`OutputFormat` enum** = "a named switch with five positions" — instead of passing a raw integer to `output_results`, the code passes `FORMAT_JSON` or `FORMAT_TABLE`, so the compiler can warn if a future `switch` forgets to handle a new format.
+- **`ship_cleanup`** = "the one safe exit door for all heap memory" — it walks the `cargo[]` array freeing each `dg` pointer, then frees `cargo`, then frees the three extension pointers; calling it once is always safe because every `free` is guarded by a NULL check.
+
+**Why it matters:** if you misread the sentinel and include unplaced cargo in the CG sum, the stability numbers are wrong and the vessel could be declared safe when it isn't; if you bypass `ship_cleanup` and free `ship->cargo` directly, every `DGInfo_` allocation leaks.
+
 ---
 
 ## Why structs mirror the physical world

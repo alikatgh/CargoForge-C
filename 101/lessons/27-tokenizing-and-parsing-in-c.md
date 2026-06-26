@@ -6,6 +6,20 @@ through exactly how the code turns a raw text line into a populated `Cargo` stru
 `fgets`, `strtok_r`, and a carefully written `safe_atof` — and explains why each choice was
 made the way it was.
 
+## What this actually means (plain English)
+
+No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
+
+- **`fgets`** = "read one line at a time, safely" — unlike the banned `gets`, `fgets` takes a size argument so it can never write more bytes than your buffer holds; every `while (fgets(line, sizeof(line), file))` loop in `parse_cargo_list` and `parse_ship_config` relies on this guarantee.
+- **Tokenising** = "chopping a line of text into labelled pieces" — a raw manifest line like `FlammableLiquid 25 6x2.5x2.6 hazardous DG:3.1:UN1203:A:F-E,S-D` is just one long string until `strtok_r` splits it on spaces and tabs into the five fields that fill a `Cargo` struct.
+- **`strtok_r` vs `strtok`** = "thread-safe tokeniser that remembers where it is without using a hidden global" — `parse_cargo_list` needs to split a line on spaces *and then* split the dimension sub-string `"6x2.5x2.6"` on `'x'`; plain `strtok` would lose its place during the inner split, so `strtok_r` is used with two separate `saveptr` variables (`saveptr` and `dim_saveptr`) to keep the two loops independent.
+- **`safe_atof`** = "convert text to a number and refuse to silently accept garbage" — the standard `atof` returns 0.0 for both `"0.0"` and `"abc"`, making errors invisible; `safe_atof` wraps `strtof`, checks four failure conditions, and returns `NAN` so callers can test `isnan(v)` and abort cleanly.
+- **`NAN` as an error sentinel** = "a special floating-point value that says 'something went wrong'" — because `NAN` propagates through arithmetic and is easy to test for with `isnan()`, it avoids the "zero looks valid" trap; every bad field in the manifest triggers a NAN return and a controlled teardown in `parse_cargo_list`.
+- **`memset` + sentinel positions** = "start from a known zero state, then mark fields that haven't been set yet" — each new `Cargo` is zeroed with `memset` before any field is written, and `pos_x`, `pos_y`, `pos_z` are set to `-1.0f` so that `perform_analysis` and `place_cargo_3d` can safely skip unplaced items by checking `pos_x < 0`.
+- **Zeroing the pointer and count on error** = "prevent the cleanup code from chasing a freed array" — the heap-use-after-free bug the fuzzer found happened because a failed parse returned without setting `ship->cargo = NULL` and `ship->cargo_count = 0`; `ship_cleanup` then iterated the already-freed array; the fix is to null both fields before returning `-1`.
+
+**Why it matters:** a parser that silently accepts bad input — wrong units, out-of-range weights, half-written manifests — corrupts the `Ship` struct that every downstream calculation (`perform_analysis`, `place_cargo_3d`, GM and stability checks) trusts completely; one missed null-pointer or stale array pointer turns a parse error into a crash or, worse, a silent wrong answer on a loaded vessel.
+
 ---
 
 ## Reading lines with `fgets`

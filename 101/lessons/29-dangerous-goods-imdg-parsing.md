@@ -9,6 +9,19 @@ manifest line, parses it into a `DGInfo` struct, and later enforces the rules
 through a segregation matrix drawn directly from the IMDG Code. This lesson
 explains the grammar, the parser, and the physics behind the classes.
 
+## What this actually means (plain English)
+
+No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
+
+- **IMDG class** = "a number from 1 to 9 that tells you what kind of danger a cargo item poses" — CargoForge-C reads this as `dg_class` inside the `DGInfo` struct; without it, the engine has no idea whether a crate contains explosives or just a flammable liquid.
+- **UN Number** = "a four-digit universal code that identifies the exact substance, the same on every ship, truck, and train in the world" — stored in `DGInfo.un_number` (e.g. `"UN1203"` for petrol); it is parsed verbatim from the fifth field of the manifest line by `parse_dg_field`.
+- **`strtok_r` instead of `strtok`** = "a thread-safe, re-entrant version of the standard string-splitter that keeps its own position variable" — `parse_dg_field` is called from inside `parse_cargo_list`, which is itself mid-split using `strtok_r`; mixing in plain `strtok` would corrupt both parse states simultaneously.
+- **Segregation matrix** = "a 17 × 17 lookup table that says how many metres two dangerous-goods classes must be kept apart" — `imdg_get_segregation` reads this table by converting each `(dg_class, dg_division)` pair to a row/column index; an entry of `5` (`SEG_INCOMPATIBLE`) means the two items cannot share the same vessel at all.
+- **`cargo.dg = NULL`** = "this item has no IMDG record and is invisible to the full segregation check" — if `parse_dg_field` cannot recognise the class or the fifth field is absent, it frees its allocation and returns `NULL`; `imdg_check_all` then skips that item entirely and only the coarser legacy 3-metre hazmat rule applies.
+- **`imdg_check_all`** = "a final all-pairs scan that confirms every placed DG item is far enough from every other one" — it runs after `find_best_fit_3d` has already packed all cargo, catching any distance violations the greedy packer could not avoid.
+
+**Why it matters:** if a dangerous-goods field is missing or malformed, the item silently falls through to the weaker legacy rule, and a real incompatibility — say, Class 1 explosives next to Class 5 oxidisers — would never be flagged; on a real vessel that is a SOLAS violation and a potential catastrophe.
+
 ---
 
 ## What is the IMDG Code?

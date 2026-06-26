@@ -6,6 +6,20 @@ runtime with `malloc` and `calloc`, how it releases that memory with `free`, and
 how `ship_cleanup` in [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c) answers the central question every C
 program must answer: *who frees this, and when?*
 
+## What this actually means (plain English)
+
+No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
+
+- **Heap allocation** = "ask the OS for a chunk of memory at runtime, sized however you need" — because `parse_cargo_list` cannot know at compile time how many `Cargo` items a manifest contains, it uses `malloc(count * sizeof(Cargo))` to request exactly the right amount after counting the lines.
+- **`calloc` vs `malloc`** = "same allocation, but `calloc` zeroes every byte first" — CargoForge-C uses `calloc(1, sizeof(HydroTable))` for optional sub-structs so every field starts at 0 / NULL, making the "feature absent" state safe to read before anything is populated.
+- **Ownership** = "the agreement about which part of the code is responsible for calling `free`" — in CargoForge-C the rule is simple: the `Ship` struct owns all heap memory it points to, and `ship_cleanup` is the single place that releases it all.
+- **Dangling pointer** = "an address that still looks valid but points to memory already handed back to the heap" — this is why every `free` in `ship_cleanup` is immediately followed by setting the pointer to NULL; a NULL pointer crashes loudly, a dangling pointer silently corrupts data in unpredictable ways.
+- **Double-free** = "calling `free` on the same pointer twice, which is undefined behavior" — nulling every pointer after freeing it means if `ship_cleanup` is ever called again, the `if (ship->cargo)` guard sees NULL and skips safely instead of freeing already-freed memory.
+- **Error-path cleanup** = "undoing every allocation made so far before returning failure" — when `parse_cargo_list` hits an invalid weight midway through a manifest, it frees the DG pointers already parsed, frees the cargo array, and zeros both the pointer and the count so that `ship_cleanup` later sees a clean, NULL state rather than a dangling pointer.
+- **Returning by value** = "copying all fields onto the caller's stack, leaving nothing on the heap" — `perform_analysis` returns an `AnalysisResult` struct containing only scalars, so there is nothing to free; this keeps the analysis layer stateless and ownership concerns entirely in the parser and `ship_cleanup`.
+
+**Why it matters:** if ownership is ambiguous — either nothing frees a block (memory leak) or two things free it (double-free crash or silent corruption) — the program is broken even when it appears to work. Getting allocation and cleanup paired correctly is what separates a stable C program from one that fails unpredictably under load or on unusual manifests.
+
 ---
 
 ## Why static memory is not enough

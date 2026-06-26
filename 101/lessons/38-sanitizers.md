@@ -2,6 +2,19 @@
 
 Unit tests tell you what your program *should* do. Sanitizers tell you what it *is* doing with memory at runtime. AddressSanitizer (ASan) and Undefined Behaviour Sanitizer (UBSan) are compiler-level tools that instrument every memory access and arithmetic operation and report violations the moment they occur — not after the program silently corrupts data downstream. CargoForge-C uses both as a mandatory gate in its CI pipeline, and they caught the real heap-use-after-free bug that lived in `parse_cargo_list`.
 
+## What this actually means (plain English)
+
+No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
+
+- **AddressSanitizer (ASan)** = "a watchdog baked into the compiled binary that screams the instant your code touches memory it shouldn't" — it works by painting freed or out-of-bounds memory with a poison marker, so when `ship_cleanup` reads `ship->cargo[i].dg` after `parse_cargo_list` already freed `ship->cargo`, ASan fires immediately instead of letting the program limp on with garbage data.
+- **Undefined Behaviour Sanitizer (UBSan)** = "a trap on arithmetic and pointer operations that C normally lets silently go wrong" — things like signed integer overflow or a misaligned pointer read are technically undefined in C; UBSan turns them into an immediate, named abort rather than a mystery crash elsewhere.
+- **Heap-use-after-free** = "reading memory you already handed back to the allocator" — the real bug in `parse_cargo_list` did exactly this: an error path freed `ship->cargo` but left `ship->cargo_count` non-zero, so `ship_cleanup` looped over the freed block; the fix was three lines — `free()`, set the pointer to `NULL`, reset the count.
+- **Shadow memory** = "a hidden ledger ASan keeps alongside your real memory, one byte per eight bytes, recording whether each byte is live, freed, or never allocated" — every pointer read or write checks this ledger first; when it finds a poisoned byte the report is instant and pinpoints the exact source line.
+- **`make test-asan` full clean rebuild** = "throw away all the old object files and recompile everything from scratch with sanitizer flags" — this matters because you cannot mix instrumented and un-instrumented `.o` files; one un-instrumented object silently breaks the shadow memory and the sanitizer may miss the bug it was there to catch.
+- **Fuzzer + sanitizer pairing** = "throw random malformed input at a sanitized binary so bugs that only appear on unusual input get caught too" — `scripts/fuzz.sh` builds its own `-O1` ASan/UBSan binary and runs 300 iterations; exit code ≥ 128 (signal-crash) or any sanitizer diagnostic on stderr is a failure, enforcing the contract "never crash on bad input."
+
+**Why it matters:** a heap-use-after-free in `parse_cargo_list` was completely invisible on normal runs — `free()` leaves memory readable for milliseconds, so the program exited cleanly with wrong data and no crash; ASan caught it on the first fuzz iteration and named the exact lines. Without sanitizers in CI, these bugs ship silently and corrupt stability calculations long before anyone notices a crash.
+
 ---
 
 ## What Sanitizers Are

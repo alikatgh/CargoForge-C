@@ -2,6 +2,19 @@
 
 A ship floats because the water it displaces pushes back. Where exactly that push acts — and how it shifts when the ship tilts — determines whether the vessel rights itself or capsizes. This lesson explains the geometry behind buoyancy: KB (the vertical center of buoyancy), BM (the metacentric radius), and the metacenter M — the pivot point that [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c) computes before every stability check.
 
+## What this actually means (plain English)
+
+No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
+
+- **KB (vertical centre of buoyancy)** = "how high up the ship's underwater push is acting" — `perform_analysis` estimates this as `KB_FACTOR * draft` (0.53 × the depth underwater) for a typical cargo hull, or reads it from a hydrostatic table when one is loaded.
+- **BM (metacentric radius)** = "how much the ship's stability cushion grows with beam" — computed in `analysis.c` as waterplane inertia divided by displaced volume (`inertia_t / displaced_vol`); because beam is cubed in the formula, a wider ship gets a dramatically bigger BM for free.
+- **M (metacenter)** = "the pivot point the ship rocks around for small rolls" — it is not a physical fitting on the vessel, just a geometric point; `perform_analysis` locates it with the single line `r.gm = r.kb + r.bm - r.kg`.
+- **GM** = "the safety margin between where the ship rocks and where its weight sits" — positive means the ship pushes back upright; negative means it will capsize; this number is what every call to `perform_analysis` ultimately produces.
+- **Hydrostatic table vs. box-hull fallback** = "measured hull data vs. a good approximation" — when `ship->hydro->loaded == 1`, `hydrostatics.c` does a two-step lookup (displacement → draft via `hydro_draft_from_displacement`, then draft → KB/BM via `hydro_interpolate`); otherwise fixed coefficients (`KB_FACTOR = 0.53`, `WATERPLANE_COEFF = 0.85`) stand in.
+- **Waterplane second moment of area (I_T)** = "how spread-out the ship's footprint at the waterline is" — the wider the ship, the larger I_T, the larger BM, and the more resistant it is to rolling; this is why cargo ships are built wide rather than tall.
+
+**Why it matters:** if KB or BM is wrong, GM is wrong, and a ship declared stable may capsize at sea; getting the two-mode calculation (`hydro_table_used = 0` vs `1`) correct is the difference between a planning estimate and a result fit for classification-society submission.
+
 ---
 
 ## Why geometry matters
