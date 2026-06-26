@@ -1,17 +1,17 @@
 # Validation and robustness
 
-Every program eventually meets bad input — a typo in a weight field, a manifest with a missing dimension, a DG code no one has seen before. CargoForge-C must survive all of that without crashing. This lesson traces the validation strategy embedded in `src/parser.c`, from the single function that guards every numeric field, through the error paths that clean up borrowed memory before returning, to the contract the project holds with its own fuzzer.
+Every program eventually meets bad input — a typo in a weight field, a manifest with a missing dimension, a DG code no one has seen before. CargoForge-C must survive all of that without crashing. This lesson traces the validation strategy embedded in [`src/parser.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/parser.c), from the single function that guards every numeric field, through the error paths that clean up borrowed memory before returning, to the contract the project holds with its own fuzzer.
 
 ## The contract: never crash on bad input
 
-A crash on malformed input is not an acceptable outcome for any safety-relevant program. The CargoForge-C project expresses this as a testable invariant enforced by the fuzzer in `scripts/fuzz.sh`: the binary must never exit with a signal (code ≥ 128). It may reject bad data, print an error, and return a non-zero exit code — that is a clean rejection, not a failure. A crash is always a bug.
+A crash on malformed input is not an acceptable outcome for any safety-relevant program. The CargoForge-C project expresses this as a testable invariant enforced by the fuzzer in [`scripts/fuzz.sh`](https://github.com/alikatgh/CargoForge-C/blob/main/scripts/fuzz.sh): the binary must never exit with a signal (code ≥ 128). It may reject bad data, print an error, and return a non-zero exit code — that is a clean rejection, not a failure. A crash is always a bug.
 
 Implementing that contract requires two things working together:
 
 1. **Input validation** — detecting the problem before bad data reaches any computation.
 2. **Clean error paths** — releasing every resource that was allocated before the bad line arrived, so the caller never sees a partial or dangling state.
 
-Both are visible in `parse_ship_config` and `parse_cargo_list` in `src/parser.c`.
+Both are visible in `parse_ship_config` and `parse_cargo_list` in [`src/parser.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/parser.c).
 
 ## `safe_atof` — the numeric gatekeeper
 
@@ -190,7 +190,7 @@ Every exit point leaves the `Ship` in a state where a subsequent call to `ship_c
 
 ## The fuzzer as enforcer
 
-`scripts/fuzz.sh` is the live proof that this contract holds. It generates manifests with adversarial values — negative weights, zero, `"abc"`, empty strings, malformed DG codes — and runs the binary under AddressSanitizer. Any exit code ≥ 128 (signal) or any ASan/UBSan message is a FAIL. The tests run with `ASAN_OPTIONS=abort_on_error=1` so that even a single invalid memory access is fatal to the process.
+[`scripts/fuzz.sh`](https://github.com/alikatgh/CargoForge-C/blob/main/scripts/fuzz.sh) is the live proof that this contract holds. It generates manifests with adversarial values — negative weights, zero, `"abc"`, empty strings, malformed DG codes — and runs the binary under AddressSanitizer. Any exit code ≥ 128 (signal) or any ASan/UBSan message is a FAIL. The tests run with `ASAN_OPTIONS=abort_on_error=1` so that even a single invalid memory access is fatal to the process.
 
 The heap-use-after-free in the original `parse_cargo_list` was found exactly this way: a manifest with `"-5"` as the weight field triggered the error path, and ASan caught the subsequent access through the dangling pointer in `ship_cleanup`.
 

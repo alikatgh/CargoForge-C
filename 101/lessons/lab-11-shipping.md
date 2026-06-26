@@ -3,7 +3,7 @@
 In this lab you compile `libcargoforge` as a standalone C library and call the
 engine from your own program — no CLI, no subprocess. After finishing, you will
 know how to link against `libcargoforge.a`, navigate the public API in
-`include/libcargoforge.h`, and read the `CfResult` struct that every higher-level
+[`include/libcargoforge.h`](https://github.com/alikatgh/CargoForge-C/blob/main/include/libcargoforge.h), and read the `CfResult` struct that every higher-level
 tool (JSON output, the HTTP server, the WASM build) ultimately consumes.
 
 ---
@@ -12,14 +12,14 @@ tool (JSON output, the HTTP server, the WASM build) ultimately consumes.
 
 - You completed Lab 4 (build system basics) and can run `make` from the repo root.
 - `gcc` and `make` are installed (verify with `gcc --version`).
-- You are in the repo root — the directory that contains the `Makefile` and `src/`.
+- You are in the repo root — the directory that contains the [`Makefile`](https://github.com/alikatgh/CargoForge-C/blob/main/Makefile) and `src/`.
 
 ---
 
 ## Step 1 — Build the library
 
 The `lib` target compiles all engine sources (everything in `LIB_SRCS` inside the
-`Makefile`) into two artefacts: a static archive and a platform-specific shared
+[`Makefile`](https://github.com/alikatgh/CargoForge-C/blob/main/Makefile)) into two artefacts: a static archive and a platform-specific shared
 library.
 
 ```bash
@@ -58,7 +58,7 @@ You should see both files, each several hundred kilobytes.
 ## Step 2 — Read the public header
 
 Only one header file is needed by code that embeds the library:
-`include/libcargoforge.h`. Open it and skim the four sections:
+[`include/libcargoforge.h`](https://github.com/alikatgh/CargoForge-C/blob/main/include/libcargoforge.h). Open it and skim the four sections:
 
 - **Error codes** — `CF_OK` (0), negative values like `CF_ERR_PARSE` and
   `CF_ERR_OVERWEIGHT`.
@@ -80,7 +80,7 @@ cargoforge_open → load ship → load cargo → optimize → read results → c
 
 ## Step 3 — Build the bundled example
 
-The repo ships a ready-made example at `examples/library_example.c`. The
+The repo ships a ready-made example at [`examples/library_example.c`](https://github.com/alikatgh/CargoForge-C/blob/main/examples/library_example.c). The
 `example` Makefile target builds it and links it against `libcargoforge.a`:
 
 ```bash
@@ -384,7 +384,7 @@ gcc -O2 -std=c99 -Iinclude -o solution_lab11 solution_lab11.c libcargoforge.a -l
 - `make lib` produces `libcargoforge.a` (static) and `libcargoforge.dylib/.so`
   (shared); link with the static archive using the pattern
   `gcc ... my_caller.c libcargoforge.a -lm`.
-- `include/libcargoforge.h` is the only header an embedder needs; everything
+- [`include/libcargoforge.h`](https://github.com/alikatgh/CargoForge-C/blob/main/include/libcargoforge.h) is the only header an embedder needs; everything
   else is an implementation detail.
 - The lifecycle is always: `cargoforge_open` → load ship → load cargo →
   `cargoforge_optimize` → read `CfResult *` → `cargoforge_close`.

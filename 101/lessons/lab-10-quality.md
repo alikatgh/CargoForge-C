@@ -136,7 +136,7 @@ completed cleanly.
     The report names the exact file and line. This is the error that was produced
     when `parse_cargo_list` freed `ship->cargo` on a parse error but left
     `ship->cargo_count` non-zero. `ship_cleanup` then walked the freed array.
-    The fix was two lines in `src/parser.c`:
+    The fix was two lines in [`src/parser.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/parser.c):
     ```c
     ship->cargo = NULL;
     ship->cargo_count = 0;
@@ -146,7 +146,7 @@ completed cleanly.
 
 ---
 
-## 3. The Fuzzer — `scripts/fuzz.sh`
+## 3. The Fuzzer — [`scripts/fuzz.sh`](https://github.com/alikatgh/CargoForge-C/blob/main/scripts/fuzz.sh)
 
 Unit tests check the inputs *you thought of*. The fuzzer checks inputs you did not think
 of — malformed configs, numbers out of range, truncated dimension strings, binary garbage,
@@ -154,7 +154,7 @@ adversarial DG field variants.
 
 ### How the fuzzer works
 
-`scripts/fuzz.sh` builds a separate sanitized binary (`build/cargoforge-asan`) if it does
+[`scripts/fuzz.sh`](https://github.com/alikatgh/CargoForge-C/blob/main/scripts/fuzz.sh) builds a separate sanitized binary (`build/cargoforge-asan`) if it does
 not already exist, then runs 300 iterations (by default). Each iteration:
 
 1. Generates a random ship config by mixing keys from a known set with adversarial values
@@ -198,7 +198,7 @@ The fuzzer exits with code 0.
     The fuzzer is a *robustness* tool: it verifies that the program never crashes on bad
     input. It does not verify correctness on valid input — that is the unit tests' job.
     For a correctness guarantee on a specific edge case, write a test in
-    `tests/test_parser.c` or the relevant test file and add it to `make test`.
+    [`tests/test_parser.c`](https://github.com/alikatgh/CargoForge-C/blob/main/tests/test_parser.c) or the relevant test file and add it to `make test`.
 
 ---
 
@@ -268,7 +268,7 @@ the left; lines that were never reached show `#####`:
 
 A `#####` on the hydrostatic-table branch tells you the test inputs all used the
 box-hull fallback. To cover that branch, add a run that uses
-`examples/sample_ship_full.cfg` (which references `examples/sample_hydro.csv`):
+[`examples/sample_ship_full.cfg`](https://github.com/alikatgh/CargoForge-C/blob/main/examples/sample_ship_full.cfg) (which references [`examples/sample_hydro.csv`](https://github.com/alikatgh/CargoForge-C/blob/main/examples/sample_hydro.csv)):
 
 ```bash
 ./cargoforge-cov optimize ../../examples/sample_ship_full.cfg \
@@ -291,7 +291,7 @@ Re-running `gcov` after this should show a higher percentage for `analysis.c`.
 |---|---|---|
 | Unit tests | `make test` | Logic errors on known-good inputs |
 | Sanitizer tests | `make test-asan` | Memory bugs: use-after-free, overflow, UB |
-| Fuzzer | `scripts/fuzz.sh` | Crashes on adversarial / malformed input |
+| Fuzzer | [`scripts/fuzz.sh`](https://github.com/alikatgh/CargoForge-C/blob/main/scripts/fuzz.sh) | Crashes on adversarial / malformed input |
 | Coverage | manual `gcov` build | Untested code paths |
 
 The correct order is the one in this lab: unit tests first (fast, catch regressions),
@@ -299,7 +299,7 @@ then sanitizers (catch the memory bugs unit assertions miss), then the fuzzer (s
 parser and CLI with adversarial input), then coverage (audit what was not exercised).
 
 A branch is ready to merge when all three automated layers pass (`make test`, `make test-asan`,
-`scripts/fuzz.sh`) and coverage does not reveal a known-important path that is completely
+[`scripts/fuzz.sh`](https://github.com/alikatgh/CargoForge-C/blob/main/scripts/fuzz.sh)) and coverage does not reveal a known-important path that is completely
 unreached.
 
 ---
@@ -335,7 +335,7 @@ All parser tests passed.
 ```
 Exit code 0. No `AddressSanitizer:` or `runtime error:` lines on stderr.
 
-**Step 3 (`scripts/fuzz.sh`):**
+**Step 3 ([`scripts/fuzz.sh`](https://github.com/alikatgh/CargoForge-C/blob/main/scripts/fuzz.sh)):**
 
 ```
 Fuzz OK: 300 iterations, no crashes or sanitizer errors.
@@ -359,7 +359,7 @@ exercised. The exact numbers vary by compiler version.
 | Symptom | Likely cause | Fix |
 |---|---|---|
 | `make test-asan` fails on `clean` | Object files from a non-ASan build conflict | Always start `test-asan` from a clean state — it calls `clean` automatically |
-| `scripts/fuzz.sh` exits 127 | Script not executable | `chmod +x scripts/fuzz.sh` |
+| [`scripts/fuzz.sh`](https://github.com/alikatgh/CargoForge-C/blob/main/scripts/fuzz.sh) exits 127 | Script not executable | `chmod +x scripts/fuzz.sh` |
 | `gcov` reports 0 % | `.gcda` files not created | Make sure you ran the coverage binary *before* calling `gcov` |
 | `make test` fails: `undefined reference to sqrt` | Missing `-lm` flag | The Makefile handles this; if building manually, add `-lm` |
 | Fuzzer prints `FUZZ FAIL` | A real crash or sanitizer hit | Read the printed config/manifest and stderr; check `docs/BUG_JOURNAL.md` for known patterns |
@@ -373,7 +373,7 @@ exercised. The exact numbers vary by compiler version.
 - **`make test-asan`** recompiles everything with AddressSanitizer and UBSan, then
   re-runs the suite; it caught the heap-use-after-free in `parse_cargo_list` that
   silent logic assertions could not see.
-- **`scripts/fuzz.sh`** throws 300 adversarial inputs at the parser and CLI; the pass
+- **[`scripts/fuzz.sh`](https://github.com/alikatgh/CargoForge-C/blob/main/scripts/fuzz.sh)** throws 300 adversarial inputs at the parser and CLI; the pass
   condition is "never crash", not "never reject".
 - A **coverage build** (`--coverage` + `gcov`) shows which lines were executed; `#####`
   marks untested paths worth investigating.

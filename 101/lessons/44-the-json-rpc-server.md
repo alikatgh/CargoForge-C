@@ -1,6 +1,6 @@
 # The JSON-RPC server
 
-The `cargoforge serve` subcommand turns the engine into a network service: any program that can send an HTTP POST can now run a full stowage optimisation, stability analysis, or configuration check — without shell access, without linking against `libcargoforge`, and without caring which language it is written in. This lesson walks through how `src/server.c` builds that capability from raw POSIX sockets, why it speaks JSON-RPC 2.0, and what each message looks like on the wire.
+The `cargoforge serve` subcommand turns the engine into a network service: any program that can send an HTTP POST can now run a full stowage optimisation, stability analysis, or configuration check — without shell access, without linking against `libcargoforge`, and without caring which language it is written in. This lesson walks through how [`src/server.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/server.c) builds that capability from raw POSIX sockets, why it speaks JSON-RPC 2.0, and what each message looks like on the wire.
 
 ---
 
@@ -14,14 +14,14 @@ JSON-RPC 2.0 was chosen because it is the simplest call-response protocol with a
 
 ## The public interface
 
-`include/server.h` exports exactly one function:
+[`include/server.h`](https://github.com/alikatgh/CargoForge-C/blob/main/include/server.h) exports exactly one function:
 
 ```c
 /* from include/server.h */
 int cargoforge_serve(int port, int verbose);
 ```
 
-It blocks until the process receives `SIGINT` or `SIGTERM`, then returns `0` on a clean shutdown or `-1` if the socket could not be created. Everything else — accept loop, HTTP framing, JSON parsing, method dispatch — is internal to `src/server.c`.
+It blocks until the process receives `SIGINT` or `SIGTERM`, then returns `0` on a clean shutdown or `-1` if the socket could not be created. Everything else — accept loop, HTTP framing, JSON parsing, method dispatch — is internal to [`src/server.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/server.c).
 
 The CLI reaches it via `cargoforge serve --port=8080`.
 
@@ -65,7 +65,7 @@ The ship config and cargo manifest are passed as **embedded strings** — the sa
 
 ## Standing up the socket
 
-`cargoforge_serve` in `src/server.c` does standard POSIX socket setup: create, set `SO_REUSEADDR`, bind, listen with a backlog of 8, then enter the accept loop.
+`cargoforge_serve` in [`src/server.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/server.c) does standard POSIX socket setup: create, set `SO_REUSEADDR`, bind, listen with a backlog of 8, then enter the accept loop.
 
 ```c
 /* from src/server.c */
@@ -297,7 +297,7 @@ if (body && body_len > 0)
 ## Recap
 
 - `cargoforge serve` exposes the engine as a single-threaded JSON-RPC 2.0 HTTP server with no external library dependencies — only POSIX sockets.
-- The public interface is one function: `int cargoforge_serve(int port, int verbose)`, declared in `include/server.h`.
+- The public interface is one function: `int cargoforge_serve(int port, int verbose)`, declared in [`include/server.h`](https://github.com/alikatgh/CargoForge-C/blob/main/include/server.h).
 - Requests carry `method`, `params`, and `id`; responses carry `result` or `error` plus the echoed `id`.
 - Three methods are implemented: `optimize` (full pipeline), `validate` (parse only), and `version`.
 - Each request creates and destroys its own `CargoForge *` context via `cargoforge_open` / `cargoforge_close`, so failures are isolated and no global state is shared between requests.

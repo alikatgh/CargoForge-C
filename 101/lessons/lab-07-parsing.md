@@ -204,7 +204,7 @@ Validation passed: no critical errors detected.
 
 ## Step 8 — Writing and parsing a valid DG line
 
-Open `examples/sample_cargo_dg.txt` and study the format. Now write your own manifest with a single dangerous-goods item — flammable liquid (IMDG class 3, division 1, UN 1203, stow anywhere, EmS F-E,S-D):
+Open [`examples/sample_cargo_dg.txt`](https://github.com/alikatgh/CargoForge-C/blob/main/examples/sample_cargo_dg.txt) and study the format. Now write your own manifest with a single dangerous-goods item — flammable liquid (IMDG class 3, division 1, UN 1203, stow anywhere, EmS F-E,S-D):
 
 ```bash
 cat > /tmp/dg_test.txt << 'EOF'
@@ -244,7 +244,7 @@ Validation passed: no critical errors detected.
 The item is still loaded as a `hazardous` type, but without a `DGInfo` struct (`c->dg` is NULL). The IMDG segregation engine will not apply class-based rules to it — only the legacy 3-metre hazmat separation applies. This is intentional: a malformed DG field degrades gracefully rather than rejecting the entire manifest.
 
 !!! tip "Try the full DG pipeline"
-    Run `optimize` (not `validate`) on `examples/sample_cargo_dg.txt` and look for the IMDG segregation section in the output. Each DG pair is checked against the IMDG Table 7.2.4 segregation matrix.
+    Run `optimize` (not `validate`) on [`examples/sample_cargo_dg.txt`](https://github.com/alikatgh/CargoForge-C/blob/main/examples/sample_cargo_dg.txt) and look for the IMDG segregation section in the output. Each DG pair is checked against the IMDG Table 7.2.4 segregation matrix.
 
 ```bash
 ./cargoforge optimize examples/sample_ship.cfg examples/sample_cargo_dg.txt
@@ -301,7 +301,7 @@ The null-out fix in `parse_cargo_list` (setting `ship->cargo = NULL` and `ship->
 
 ## Step 11 — The fuzzer
 
-The fuzzer in `scripts/fuzz.sh` generates hundreds of random and adversarial ship configs and manifests — including zero weights, negative values, non-numeric strings, non-existent CSV paths, and malformed DG fields — and feeds them to the ASan binary. A crash or sanitizer trip is a failure; a clean error exit is a pass.
+The fuzzer in [`scripts/fuzz.sh`](https://github.com/alikatgh/CargoForge-C/blob/main/scripts/fuzz.sh) generates hundreds of random and adversarial ship configs and manifests — including zero weights, negative values, non-numeric strings, non-existent CSV paths, and malformed DG fields — and feeds them to the ASan binary. A crash or sanitizer trip is a failure; a clean error exit is a pass.
 
 Run a short session (50 iterations to keep it fast):
 
@@ -360,6 +360,6 @@ Exit code < 128 AND no `AddressSanitizer`/`runtime error:` text on stderr. A cle
 - Manifest lines with too few fields are warned and skipped; they do not abort the entire parse.
 - A malformed DG field (`DG:` prefix with invalid class) causes the item to load as generic hazmat, not as DG — graceful degradation rather than rejection.
 - `make test-asan` rebuilds with AddressSanitizer and UBSan; it is the definitive proof that memory handling is correct on error paths.
-- The fuzzer (`scripts/fuzz.sh`) drives this contract at scale: hundreds of adversarial inputs, none may crash the binary.
+- The fuzzer ([`scripts/fuzz.sh`](https://github.com/alikatgh/CargoForge-C/blob/main/scripts/fuzz.sh)) drives this contract at scale: hundreds of adversarial inputs, none may crash the binary.
 
 *Next: [The stowage problem](30-the-stowage-problem.md).*

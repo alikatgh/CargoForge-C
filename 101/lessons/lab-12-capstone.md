@@ -29,7 +29,7 @@ If `make` fails, check that your compiler supports C99 (`cc --version`) and that
 
 ## Step 2 — Inspect the vessel
 
-The repository ships two ready-made fixtures. `examples/sample_ship_full.cfg` is the *full* ship configuration: it references a hydrostatic table, a tank CSV, and class-society longitudinal-strength limits. Open it and read it before running anything.
+The repository ships two ready-made fixtures. [`examples/sample_ship_full.cfg`](https://github.com/alikatgh/CargoForge-C/blob/main/examples/sample_ship_full.cfg) is the *full* ship configuration: it references a hydrostatic table, a tank CSV, and class-society longitudinal-strength limits. Open it and read it before running anything.
 
 ```
 # examples/sample_ship_full.cfg (key lines)
@@ -45,7 +45,7 @@ permissible_bm_hog_t_m=120000
 permissible_bm_sag_t_m=100000
 ```
 
-The ship displaces about 2 000 t light and can carry up to 50 000 t. The hydrostatic table (`examples/sample_hydro.csv`) covers drafts from 2.0 m to 10.0 m; the tank CSV (`examples/sample_tanks.csv`) declares five partially-filled ballast and fuel tanks whose free surfaces will reduce effective GM.
+The ship displaces about 2 000 t light and can carry up to 50 000 t. The hydrostatic table ([`examples/sample_hydro.csv`](https://github.com/alikatgh/CargoForge-C/blob/main/examples/sample_hydro.csv)) covers drafts from 2.0 m to 10.0 m; the tank CSV ([`examples/sample_tanks.csv`](https://github.com/alikatgh/CargoForge-C/blob/main/examples/sample_tanks.csv)) declares five partially-filled ballast and fuel tanks whose free surfaces will reduce effective GM.
 
 Now ask CargoForge-C for a quick pre-load summary:
 
@@ -76,7 +76,7 @@ Cargo Summary:
   Reefer: 1
 ```
 
-Six items, three of which carry DG (Dangerous Goods) codes. The manifest is `examples/sample_cargo_dg.txt`.
+Six items, three of which carry DG (Dangerous Goods) codes. The manifest is [`examples/sample_cargo_dg.txt`](https://github.com/alikatgh/CargoForge-C/blob/main/examples/sample_cargo_dg.txt).
 
 ---
 
@@ -177,7 +177,7 @@ python3 -m json.tool /tmp/voyage_report.json | grep -A 20 '"hydrostatics"'
 },
 ```
 
-Notice `hydro_table_used: true` — the program used the real hydrostatic table from `examples/sample_hydro.csv` rather than the box-hull fallback. This matters: the box-hull formula uses a fixed block coefficient of 0.75 and `KB_FACTOR = 0.53`; the table gives you interpolated KB and BM from real displacement data.
+Notice `hydro_table_used: true` — the program used the real hydrostatic table from [`examples/sample_hydro.csv`](https://github.com/alikatgh/CargoForge-C/blob/main/examples/sample_hydro.csv) rather than the box-hull fallback. This matters: the box-hull formula uses a fixed block coefficient of 0.75 and `KB_FACTOR = 0.53`; the table gives you interpolated KB and BM from real displacement data.
 
 ---
 
@@ -188,7 +188,7 @@ Notice `hydro_table_used: true` — the program used the real hydrostatic table 
     --format=markdown > /tmp/voyage_report.md
 ```
 
-Open the file. You should see a structured Markdown document with a cargo table, stability values, and an IMO compliance section. This is what you would hand to a surveyor or email to a port agent. The `--format=markdown` path is implemented in `src/cli.c` and calls `print_loading_plan` internally.
+Open the file. You should see a structured Markdown document with a cargo table, stability values, and an IMO compliance section. This is what you would hand to a surveyor or email to a port agent. The `--format=markdown` path is implemented in [`src/cli.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/cli.c) and calls `print_loading_plan` internally.
 
 ---
 
@@ -208,11 +208,11 @@ where $k$ is the roll radius of gyration. A short, violent roll is uncomfortable
 
 ### 7.2 Free-surface correction
 
-The five tanks in `examples/sample_tanks.csv` are partially filled (50–85% fill fractions). Each partially-filled rectangular tank has a free-surface moment:
+The five tanks in [`examples/sample_tanks.csv`](https://github.com/alikatgh/CargoForge-C/blob/main/examples/sample_tanks.csv) are partially filled (50–85% fill fractions). Each partially-filled rectangular tank has a free-surface moment:
 
 $$\text{FSM} = \rho \cdot \frac{l \cdot b^3}{12}$$
 
-CargoForge-C sums these across all tanks in `calculate_total_fsm` (from `src/tanks.c`) and divides by displacement to get the virtual KG rise: **0.339–0.386 m** depending on which manifest is used. This reduces corrected GM from 5.82 m to 5.41 m — a 7% reduction. For a lightly loaded ship the effect is moderate. On a ship near the $GM = 0.15$ m threshold it could be the difference between compliant and non-compliant.
+CargoForge-C sums these across all tanks in `calculate_total_fsm` (from [`src/tanks.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/tanks.c)) and divides by displacement to get the virtual KG rise: **0.339–0.386 m** depending on which manifest is used. This reduces corrected GM from 5.82 m to 5.41 m — a 7% reduction. For a lightly loaded ship the effect is moderate. On a ship near the $GM = 0.15$ m threshold it could be the difference between compliant and non-compliant.
 
 !!! note "Empty and 100%-full tanks contribute zero FSM"
     `calculate_free_surface_moment` returns 0 for any tank with `fill_fraction == 0` or `fill_fraction == 1`. A sealed, pressed-up ballast tank has no free surface; the liquid cannot slosh.
@@ -255,7 +255,7 @@ You should see eight test binaries run and exit cleanly. Then run the suite agai
 make test-asan
 ```
 
-ASan catches heap overflows and use-after-free bugs. The double-NULL pattern you studied in `src/parser.c` — zeroing both `ship->cargo` and `ship->cargo_count` after `free()` — exists precisely because an earlier version failed this check. Both `make test` and `make test-asan` must pass before any voyage plan is considered trustworthy code.
+ASan catches heap overflows and use-after-free bugs. The double-NULL pattern you studied in [`src/parser.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/parser.c) — zeroing both `ship->cargo` and `ship->cargo_count` after `free()` — exists precisely because an earlier version failed this check. Both `make test` and `make test-asan` must pass before any voyage plan is considered trustworthy code.
 
 ---
 
@@ -291,7 +291,7 @@ Exit codes of 1 are expected and correct: the parser rejects invalid input, retu
 - A high GM (> ~2.5 m for this vessel size) is not automatically safe: it produces a stiff roll that can damage cargo and crew in heavy weather.
 - The free-surface correction is the quantity $\sum \rho l b^3/12 \;\div\; \Delta$. Pressing up tanks (filling to 100%) eliminates their contribution entirely.
 - Extreme trim or heel in CargoForge-C output is a signal to re-stow, not just note. The wall-sided GZ formula loses accuracy above ~25°.
-- `make test-asan` and `scripts/fuzz.sh` are the two quality gates that prove the parser never crashes on unexpected input — a property the heap-use-after-free fix in `parse_cargo_list` was specifically designed to guarantee.
+- `make test-asan` and [`scripts/fuzz.sh`](https://github.com/alikatgh/CargoForge-C/blob/main/scripts/fuzz.sh) are the two quality gates that prove the parser never crashes on unexpected input — a property the heap-use-after-free fix in `parse_cargo_list` was specifically designed to guarantee.
 
 ---
 
@@ -301,11 +301,11 @@ If any step produces unexpected output, work through these checks in order:
 
 **Build fails**: confirm `cc -std=c99` works. Run `make clean` then `make`.
 
-**`validate` reports errors on `sample_cargo_dg.txt`**: the file must be at `examples/sample_cargo_dg.txt` relative to the repository root. Run `ls examples/` to confirm.
+**`validate` reports errors on `sample_cargo_dg.txt`**: the file must be at [`examples/sample_cargo_dg.txt`](https://github.com/alikatgh/CargoForge-C/blob/main/examples/sample_cargo_dg.txt) relative to the repository root. Run `ls examples/` to confirm.
 
 **`optimize` shows `X/6 items placed` with X < 6**: this would be a genuine placement failure — all six items should place. Re-run with `--verbose` to see which item failed and why.
 
-**`hydro_table_used: false` in JSON**: the path `examples/sample_hydro.csv` in `sample_ship_full.cfg` is relative to the working directory. Run `./cargoforge` from the repository root, not from a subdirectory.
+**`hydro_table_used: false` in JSON**: the path [`examples/sample_hydro.csv`](https://github.com/alikatgh/CargoForge-C/blob/main/examples/sample_hydro.csv) in `sample_ship_full.cfg` is relative to the working directory. Run `./cargoforge` from the repository root, not from a subdirectory.
 
 **Heel of −62° concerns you**: it is correct given the input. The vessel is lightly loaded with all cargo in the forward port quadrant. Add transversely balanced cargo or split weight between port and starboard positions in the manifest to bring heel below 10°.
 

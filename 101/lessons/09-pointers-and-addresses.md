@@ -53,7 +53,7 @@ printf("%.2f\n", *p);   /* prints 7.5 */
 
 ## Why `perform_analysis` takes `const Ship *ship`
 
-Look at the signature in `src/analysis.c`:
+Look at the signature in [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c):
 
 ```c
 AnalysisResult perform_analysis(const Ship *ship) {
@@ -119,7 +119,7 @@ p->length    /* pointer field access — equivalent to (*p).length */
 `p->length` is shorthand for `(*p).length`: first dereference the pointer to get the struct,
 then access the field. The arrow operator bundles both steps.
 
-You will see this constantly in `src/analysis.c`. The cargo loop is a clear example:
+You will see this constantly in [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c). The cargo loop is a clear example:
 
 ```c
 for (int i = 0; i < ship->cargo_count; i++) {
@@ -146,7 +146,7 @@ The `if (c->pos_x < 0) continue;` check is the sentinel test: unplaced cargo has
 
 Sometimes a function needs to return more than one value. C cannot return multiple values
 directly, but it can write to locations provided by the caller. `find_gz_max` uses this
-pattern in `src/analysis.c`:
+pattern in [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c):
 
 ```c
 static void find_gz_max(float gm, float bm, float *max_gz, float *max_angle) {
@@ -206,7 +206,7 @@ read `loaded`.
 
 ## Cleanup: writing `NULL` after `free`
 
-`ship_cleanup` in `src/analysis.c` shows the safe pattern for freeing heap memory through
+`ship_cleanup` in [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c) shows the safe pattern for freeing heap memory through
 pointer fields:
 
 ```c

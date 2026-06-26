@@ -12,7 +12,7 @@ In C a **struct** is a named block of memory that groups related variables toget
 
 ## The `Cargo` struct
 
-From `include/cargoforge.h` (line 39):
+From [`include/cargoforge.h`](https://github.com/alikatgh/CargoForge-C/blob/main/include/cargoforge.h#L39) (line 39):
 
 ```c
 typedef struct {
@@ -61,7 +61,7 @@ An item that failed to fit in any bin stays at `pos_x = -1.0f` and is silently e
 
 ## The `Ship` struct
 
-From `include/cargoforge.h` (line 53):
+From [`include/cargoforge.h`](https://github.com/alikatgh/CargoForge-C/blob/main/include/cargoforge.h#L53) (line 53):
 
 ```c
 typedef struct {

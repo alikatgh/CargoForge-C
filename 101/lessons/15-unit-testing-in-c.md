@@ -20,8 +20,8 @@ CargoForge-C ships 8 test binaries (see §6.2 of the project digest). Two of the
 
 | Binary | Source | What it covers |
 |---|---|---|
-| `test_parser` | `tests/test_parser.c` | Ship config parsing, cargo manifest parsing, UAF regression |
-| `test_hydrostatics` | `tests/test_hydrostatics.c` | CSV table loading, linear interpolation, boundary clamping |
+| `test_parser` | [`tests/test_parser.c`](https://github.com/alikatgh/CargoForge-C/blob/main/tests/test_parser.c) | Ship config parsing, cargo manifest parsing, UAF regression |
+| `test_hydrostatics` | [`tests/test_hydrostatics.c`](https://github.com/alikatgh/CargoForge-C/blob/main/tests/test_hydrostatics.c) | CSV table loading, linear interpolation, boundary clamping |
 
 ---
 
@@ -70,7 +70,7 @@ int main() {
 
 ## Test 3 — the UAF regression test
 
-The third test in `tests/test_parser.c` is the most important. It is a *regression test*: it exists precisely to prevent a bug from coming back. The bug was a heap-use-after-free in `parse_cargo_list`.
+The third test in [`tests/test_parser.c`](https://github.com/alikatgh/CargoForge-C/blob/main/tests/test_parser.c) is the most important. It is a *regression test*: it exists precisely to prevent a bug from coming back. The bug was a heap-use-after-free in `parse_cargo_list`.
 
 **The original bug.** When `parse_cargo_list` hit a bad field (e.g., a weight that was not a number), the old error path called `free(ship->cargo)` but left `ship->cargo_count` at its previous value and `ship->cargo` pointing at the now-freed memory. When `ship_cleanup` was later called, it iterated `for (int i = 0; i < ship->cargo_count; i++)` and accessed `ship->cargo[i].dg` — reading memory that had already been freed. AddressSanitizer names this **heap-use-after-free**.
 
@@ -256,7 +256,7 @@ For memory-safety checks:
 make test-asan
 ```
 
-This rebuilds every source file with `-fsanitize=address,undefined` and re-runs the suite. AddressSanitizer intercepts every heap allocation and access; if the UAF regression test were to fail (e.g., after someone removed the `ship->cargo = NULL` line from `parser.c`), ASan would report `heap-use-after-free` and abort with exit code 134 — exactly how the original bug was discovered by `scripts/fuzz.sh`.
+This rebuilds every source file with `-fsanitize=address,undefined` and re-runs the suite. AddressSanitizer intercepts every heap allocation and access; if the UAF regression test were to fail (e.g., after someone removed the `ship->cargo = NULL` line from `parser.c`), ASan would report `heap-use-after-free` and abort with exit code 134 — exactly how the original bug was discovered by [`scripts/fuzz.sh`](https://github.com/alikatgh/CargoForge-C/blob/main/scripts/fuzz.sh).
 
 !!! tip "Test-asan is the authoritative check"
     `make test` catches logic errors. `make test-asan` catches memory errors that `make test` misses because freed memory is not always immediately re-used. Run `test-asan` before any commit that touches `parser.c`, `analysis.c`, or any function that allocates and then frees `Ship` or `Cargo` data.

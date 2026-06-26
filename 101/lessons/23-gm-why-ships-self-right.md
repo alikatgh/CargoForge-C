@@ -1,6 +1,6 @@
 # GM: why ships self-right
 
-A ship tilted by a wave, a gust of wind, or a shifting load must develop a force that pushes it back upright. Whether that force exists — and how strong it is — reduces to a single number: the **metacentric height**, GM. This lesson unpacks what GM means physically, how the equation $GM = KB + BM - KG$ is derived from first principles, and how `perform_analysis` in `src/analysis.c` computes and judges it.
+A ship tilted by a wave, a gust of wind, or a shifting load must develop a force that pushes it back upright. Whether that force exists — and how strong it is — reduces to a single number: the **metacentric height**, GM. This lesson unpacks what GM means physically, how the equation $GM = KB + BM - KG$ is derived from first principles, and how `perform_analysis` in [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c) computes and judges it.
 
 ---
 
@@ -86,7 +86,7 @@ $$GZ(\theta) \approx GM \cdot \sin\theta \quad \text{(for small angles)}$$
 
 ## How the code computes it
 
-`perform_analysis` in `src/analysis.c` works in two modes depending on whether a hydrostatic table CSV has been loaded.
+`perform_analysis` in [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c) works in two modes depending on whether a hydrostatic table CSV has been loaded.
 
 ### Box-hull fallback (no CSV table)
 
@@ -159,7 +159,7 @@ Each item's vertical centroid is its `pos_z` (base of the item, from the hull or
 
 ### Assembling GM
 
-With $KB$, $BM$, and $KG$ known, the formula is a single line in `src/analysis.c`:
+With $KB$, $BM$, and $KG$ known, the formula is a single line in [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c):
 
 ```c
 /* GM before free surface correction */
@@ -178,7 +178,7 @@ $$\text{FSC} = \frac{\sum \text{FSM}}{\Delta} \qquad \text{(virtual KG rise, met
 
 where $l$ and $b$ are the tank's length and breadth, $\rho$ is the liquid density, and $\Delta$ is the ship's displacement in tonnes. Empty and 100%-full tanks contribute zero (no free surface).
 
-In `src/analysis.c`:
+In [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c):
 
 ```c
 r.free_surface_correction = 0.0f;
@@ -251,7 +251,7 @@ The area criteria capture energy, not just force: a wider, flatter GZ curve surv
 
 ## What "too tender" and "too stiff" mean
 
-`print_loading_plan` in `src/analysis.c` classifies the corrected GM for the human-readable report:
+`print_loading_plan` in [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c) classifies the corrected GM for the human-readable report:
 
 ```c
 if (gm_display < 0.3f)       gm_str = "CRITICAL - Too tender";

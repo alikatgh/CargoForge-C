@@ -1,6 +1,6 @@
 # CLI, git, and reproducible builds
 
-Every program you write eventually has to be compiled, versioned, tested, and shipped — in a way that anyone can reproduce exactly. This lesson walks through how CargoForge-C handles all three: the shell commands you use day-to-day, the `Makefile` that automates building, and the GitHub Actions workflow that re-runs those same steps on every change. Understanding this infrastructure is what separates "code that works on my machine" from code you can trust in production.
+Every program you write eventually has to be compiled, versioned, tested, and shipped — in a way that anyone can reproduce exactly. This lesson walks through how CargoForge-C handles all three: the shell commands you use day-to-day, the [`Makefile`](https://github.com/alikatgh/CargoForge-C/blob/main/Makefile) that automates building, and the GitHub Actions workflow that re-runs those same steps on every change. Understanding this infrastructure is what separates "code that works on my machine" from code you can trust in production.
 
 ---
 
@@ -18,7 +18,7 @@ Breaking this down:
 
 - `./cargoforge` — the `./` prefix means "look in the current directory for a file named `cargoforge` and run it". Without `./`, the shell would search the system-wide `PATH` instead.
 - `optimize` — a **subcommand**. CargoForge-C uses the same pattern as tools like `git` or `docker`: the first argument selects what the program does. Other subcommands are `validate`, `info`, `serve`, `version`, and `help`.
-- `examples/sample_ship.cfg` and `examples/sample_cargo.txt` — arguments to the subcommand: the ship configuration file and the cargo manifest.
+- [`examples/sample_ship.cfg`](https://github.com/alikatgh/CargoForge-C/blob/main/examples/sample_ship.cfg) and [`examples/sample_cargo.txt`](https://github.com/alikatgh/CargoForge-C/blob/main/examples/sample_cargo.txt) — arguments to the subcommand: the ship configuration file and the cargo manifest.
 
 Other output formats are available via a flag:
 
@@ -40,11 +40,11 @@ Valid formats are `human` (default), `json`, `csv`, `table`, and `markdown`. The
 
 Compiling a C program by hand means invoking `gcc` with a list of source files, flags, and output names. For a project with ten source files and eight test binaries, that list becomes unmanageable — and you'd have to recompile everything even if only one file changed. `make` solves both problems.
 
-The `Makefile` at the root of CargoForge-C is a set of **rules**. Each rule says: "to produce target X, you need files Y and Z; if any of them are newer than X, run this command." `make` compares timestamps and only recompiles what changed.
+The [`Makefile`](https://github.com/alikatgh/CargoForge-C/blob/main/Makefile) at the root of CargoForge-C is a set of **rules**. Each rule says: "to produce target X, you need files Y and Z; if any of them are newer than X, run this command." `make` compares timestamps and only recompiles what changed.
 
 ### The compiler flags
 
-Every object file and binary is compiled with the same flags, declared at the top of the `Makefile`:
+Every object file and binary is compiled with the same flags, declared at the top of the [`Makefile`](https://github.com/alikatgh/CargoForge-C/blob/main/Makefile):
 
 ```makefile
 CC = gcc
@@ -67,7 +67,7 @@ The `-std=c99` and `-D_POSIX_C_SOURCE` flags together define a precise dialect o
 
 ### Source file groups
 
-The `Makefile` splits sources into two groups:
+The [`Makefile`](https://github.com/alikatgh/CargoForge-C/blob/main/Makefile) splits sources into two groups:
 
 ```makefile
 LIB_SRCS = $(SRC_DIR)/parser.c $(SRC_DIR)/analysis.c $(SRC_DIR)/placement_3d.c \
@@ -111,7 +111,7 @@ else
 endif
 ```
 
-macOS uses `.dylib` for shared libraries; Linux uses `.so`. The `Makefile` queries the OS at build time with `$(shell uname -s)` and sets the right extension automatically. This is a simple but real example of cross-platform portability handled in the build system rather than the source code.
+macOS uses `.dylib` for shared libraries; Linux uses `.so`. The [`Makefile`](https://github.com/alikatgh/CargoForge-C/blob/main/Makefile) queries the OS at build time with `$(shell uname -s)` and sets the right extension automatically. This is a simple but real example of cross-platform portability handled in the build system rather than the source code.
 
 ### Other useful targets
 
@@ -122,7 +122,7 @@ macOS uses `.dylib` for shared libraries; Linux uses `.so`. The `Makefile` queri
 | `make test` | Build and run all 8 test binaries |
 | `make test-asan` | Rebuild with AddressSanitizer + UBSan, then run tests |
 | `make test-valgrind` | Run each test binary under Valgrind memory checker |
-| `make fuzz` | Run the random-input fuzzer (`scripts/fuzz.sh`) |
+| `make fuzz` | Run the random-input fuzzer ([`scripts/fuzz.sh`](https://github.com/alikatgh/CargoForge-C/blob/main/scripts/fuzz.sh)) |
 | `make clean` | Delete `build/`, the binary, libs, and all test binaries |
 | `make install` | Copy binary, libs, and header to `/usr/local` (configurable via `PREFIX`) |
 | `make validate` | Run the DNV-SE-0475 benchmark vessel validation |
@@ -228,7 +228,7 @@ The CI workflow above is a minimal smoke test — it verifies compilation and a 
 
 Here is what happens from a code change to a merged PR:
 
-1. You edit `src/parser.c` to fix a bug.
+1. You edit [`src/parser.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/parser.c) to fix a bug.
 2. `make test-asan` — rebuild with sanitizers, run all 8 tests. Fix any failures.
 3. `git add src/parser.c` — stage the changed file only.
 4. `git commit -m "fix: null cargo pointer on parse error to prevent UAF"` — commit with a clear message.
@@ -242,7 +242,7 @@ Here is what happens from a code change to a merged PR:
 ## Recap
 
 - `cargoforge` is invoked as `./cargoforge <subcommand> <ship_cfg> <cargo_manifest>`, with optional `--format` for output style.
-- The `Makefile` encodes the complete build recipe: compiler, flags, source groups, test binaries, and platform detection. `make` only recompiles what changed.
+- The [`Makefile`](https://github.com/alikatgh/CargoForge-C/blob/main/Makefile) encodes the complete build recipe: compiler, flags, source groups, test binaries, and platform detection. `make` only recompiles what changed.
 - `-std=c99 -D_POSIX_C_SOURCE=200809L` pins the language dialect exactly, making the build portable and deterministic across systems.
 - `git` records every change as a committed snapshot with a message; branches and pull requests gate changes through review and CI.
 - The GitHub Actions workflow in `.github/workflows/c-build.yml` re-runs `make` and a smoke test on a clean Ubuntu VM on every push and PR, catching regressions before they reach `main`.

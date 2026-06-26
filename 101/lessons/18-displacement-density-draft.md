@@ -4,7 +4,7 @@ Every stability number in CargoForge-C — GM, trim, heel, the IMO criteria — 
 how deep the ship sits in the water. That depth is **draft**, and it follows directly from two
 physical quantities: how much the ship weighs (its **displacement**) and how dense the water is.
 This lesson walks through the physics and then traces exactly how `perform_analysis` in
-`src/analysis.c` derives draft from first principles, with a real hydrostatic table as the
+[`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c) derives draft from first principles, with a real hydrostatic table as the
 preferred path and a box-hull formula as the fallback.
 
 ---
@@ -16,7 +16,7 @@ equal in *weight* to the body itself. So a ship that weighs 15 000 tonnes displa
 15 000 tonnes of water, regardless of its shape.
 
 In CargoForge-C the displacement in kilograms is assembled in `perform_analysis`
-(`src/analysis.c`):
+([`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c)):
 
 ```c
 float displacement_kg = ship->lightship_weight + r.total_cargo_weight_kg;
@@ -64,7 +64,7 @@ The **displaced volume** is:
 $$V = \frac{\Delta}{\rho}$$
 
 where $\Delta$ is displacement in tonnes and $\rho$ is seawater density in t/m³. In code
-(`src/analysis.c`):
+([`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c)):
 
 ```c
 float displacement_t = displacement_kg / 1000.0f;
@@ -140,7 +140,7 @@ if (ship->hydro && ship->hydro->loaded) {
 }
 ```
 
-Two functions in `src/hydrostatics.c` do the work.
+Two functions in [`src/hydrostatics.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/hydrostatics.c) do the work.
 
 #### `hydro_draft_from_displacement` — inverse interpolation
 
@@ -195,7 +195,7 @@ A hydrostatic table CSV requires at least 7 columns per row, in ascending draft 
 5.0,  7500, 5.68, 2.65, 3.03, 9.1,  62.1
 ```
 
-`parse_hydro_table` (`src/hydrostatics.c`) rejects rows with fewer than 7 fields and enforces
+`parse_hydro_table` ([`src/hydrostatics.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/hydrostatics.c)) rejects rows with fewer than 7 fields and enforces
 the ascending-draft invariant:
 
 ```c

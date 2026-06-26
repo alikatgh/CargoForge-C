@@ -29,7 +29,7 @@ Every earlier lesson has focused on one layer: parsing, physics, placement, or a
 
 ## Entry: `main.c`
 
-The program starts in `src/main.c`, which is deliberately thin:
+The program starts in [`src/main.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/main.c), which is deliberately thin:
 
 ```c
 /* src/main.c */
@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
 }
 ```
 
-Three function calls: initialise a context struct, parse the command line into it, dispatch to the right subcommand. Nothing else. All the real work lives in `src/cli.c` and the modules it calls.
+Three function calls: initialise a context struct, parse the command line into it, dispatch to the right subcommand. Nothing else. All the real work lives in [`src/cli.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/cli.c) and the modules it calls.
 
 `CLIContext` carries the parsed arguments — `ship_file`, `cargo_file`, `format`, `verbose`, `show_viz`, and similar flags. Its fields start as zero/false and are populated by `parse_cli_args`.
 
@@ -59,7 +59,7 @@ Three function calls: initialise a context struct, parse the command line into i
 
 `init_cli_context` sets default values (`FORMAT_HUMAN`, `show_viz = true`, `color = isatty(STDERR_FILENO)`) and reads two optional config files: `~/.cargoforgerc` and a project-local `.cargoforgerc`. Either file can override the format, color, and verbosity defaults without touching the command line.
 
-`parse_cli_args` (from `src/cli.c`) uses POSIX `getopt_long` to process flags such as `--format=json` and `--no-viz`. Positional arguments after the flags are collected into `ctx->ship_file` and `ctx->cargo_file`:
+`parse_cli_args` (from [`src/cli.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/cli.c)) uses POSIX `getopt_long` to process flags such as `--format=json` and `--no-viz`. Positional arguments after the flags are collected into `ctx->ship_file` and `ctx->cargo_file`:
 
 ```c
 /* src/cli.c */
@@ -73,7 +73,7 @@ if (optind < argc) ctx->cargo_file = argv[optind++];
 
 ## Stage 2 — Parsing (`parser.c`)
 
-`cmd_optimize` in `src/cli.c` owns the top-level pipeline. The first thing it does is parse:
+`cmd_optimize` in [`src/cli.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/cli.c) owns the top-level pipeline. The first thing it does is parse:
 
 ```c
 /* src/cli.c — cmd_optimize */
@@ -87,7 +87,7 @@ The `Ship` struct is stack-allocated and zero-initialised. The two parse functio
 
 ### `parse_ship_config`
 
-`parse_ship_config` (from `src/parser.c`) opens the file, then walks it line by line with `fgets`. Lines starting with `#` or empty lines are skipped. Every other line is split on `=` with `strtok` to produce a key and a value.
+`parse_ship_config` (from [`src/parser.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/parser.c)) opens the file, then walks it line by line with `fgets`. Lines starting with `#` or empty lines are skipped. Every other line is split on `=` with `strtok` to produce a key and a value.
 
 String-valued keys (`hydrostatic_table`, `tank_config`) are stashed in local path buffers; numeric keys are passed through `safe_atof`:
 
@@ -113,7 +113,7 @@ When the function returns `0`, `ship` holds every dimensional and mass property 
 
 ### `parse_cargo_list`
 
-`parse_cargo_list` (from `src/parser.c`) needs to allocate the `ship->cargo` array before it can populate it. For files (the common case) it does two passes: count data lines on the first pass, then `rewind` and parse on the second. For stdin it buffers all lines in memory first.
+`parse_cargo_list` (from [`src/parser.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/parser.c)) needs to allocate the `ship->cargo` array before it can populate it. For files (the common case) it does two passes: count data lines on the first pass, then `rewind` and parse on the second. For stdin it buffers all lines in memory first.
 
 Each non-comment line is split into mandatory fields with `strtok_r`:
 
@@ -151,7 +151,7 @@ With both the ship and cargo fully in memory, `cmd_optimize` calls:
 place_cargo_3d(&ship);
 ```
 
-`place_cargo_3d` (from `src/placement_3d.c`) starts by sorting the cargo array in descending volume order — the First Fit Decreasing (FFD) heuristic, which places large items first so they do not get crowded out later:
+`place_cargo_3d` (from [`src/placement_3d.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/placement_3d.c)) starts by sorting the cargo array in descending volume order — the First Fit Decreasing (FFD) heuristic, which places large items first so they do not get crowded out later:
 
 ```c
 /* src/placement_3d.c */
@@ -194,7 +194,7 @@ Back in `cmd_optimize`, the next call is:
 AnalysisResult result = perform_analysis(&ship);
 ```
 
-`perform_analysis` (from `src/analysis.c`) returns an `AnalysisResult` by value. It runs in one logical sequence.
+`perform_analysis` (from [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c)) returns an `AnalysisResult` by value. It runs in one logical sequence.
 
 **Cargo accumulation.** A single loop over `ship->cargo` skips any item with `pos_x < 0` (unplaced). For placed items it accumulates the total weight, transverse moment, longitudinal moment, and vertical moment. The centre of gravity of each item is taken at the geometric centre of its bounding box, for example the vertical position is `pos_z + height / 2`.
 
@@ -245,7 +245,7 @@ The final call in `cmd_optimize` is:
 output_results(&ship, &result, ctx->format, ctx->output_file);
 ```
 
-`output_results` (from `src/cli.c`) switches on format:
+`output_results` (from [`src/cli.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/cli.c)) switches on format:
 
 - `FORMAT_HUMAN` — calls `print_loading_plan` (which re-runs `perform_analysis` internally and prints a structured human-readable report) followed by `print_cargo_layout_ascii` and `print_cargo_summary` if `show_viz` is true.
 - `FORMAT_JSON` — calls `print_json_output` from `json_output.c`, which serialises the full `Ship` and `AnalysisResult` to JSON. Fields that would be meaningless after an overweight rejection (GM is NAN) are emitted as `null`.
@@ -265,7 +265,7 @@ ship_cleanup(&ship);
 return EXIT_SUCCESS;
 ```
 
-`ship_cleanup` (from `src/analysis.c`) frees every heap allocation that was made during parsing: first it iterates the cargo array and frees each `cargo[i].dg`, then it frees the cargo array itself, then `ship->hydro`, `ship->tanks`, and `ship->strength_limits`. It NULLs every pointer after freeing so that a double-call is safe.
+`ship_cleanup` (from [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c)) frees every heap allocation that was made during parsing: first it iterates the cargo array and frees each `cargo[i].dg`, then it frees the cargo array itself, then `ship->hydro`, `ship->tanks`, and `ship->strength_limits`. It NULLs every pointer after freeing so that a double-call is safe.
 
 ---
 

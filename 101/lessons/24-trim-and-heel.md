@@ -1,6 +1,6 @@
 # Trim and heel
 
-A ship is never perfectly level. Cargo placed too far forward or aft causes one end to sink deeper than the other — that is **trim**. Cargo placed off the centreline causes one side to dip — that is **heel**. CargoForge-C computes both quantities inside `perform_analysis` in `src/analysis.c`, and both appear in the printed loading plan and in every output format. Understanding how the code derives them turns stability numbers from opaque floats into quantities you can reason about and trust.
+A ship is never perfectly level. Cargo placed too far forward or aft causes one end to sink deeper than the other — that is **trim**. Cargo placed off the centreline causes one side to dip — that is **heel**. CargoForge-C computes both quantities inside `perform_analysis` in [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c), and both appear in the printed loading plan and in every output format. Understanding how the code derives them turns stability numbers from opaque floats into quantities you can reason about and trust.
 
 <svg viewBox="0 0 600 200" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:580px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
 <title>Trim is fore-aft tilt; heel is side-to-side tilt</title>
@@ -59,7 +59,7 @@ A positive result means trim by stern (stern deeper); a negative result means tr
 
 ### How `analysis.c` computes it
 
-In the single-pass accumulation loop (`src/analysis.c`, lines 102–117), each placed cargo item contributes to a **moment about midship**:
+In the single-pass accumulation loop ([`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c), lines 102–117), each placed cargo item contributes to a **moment about midship**:
 
 ```c
 /* from src/analysis.c */
@@ -189,7 +189,7 @@ const char *cg_str = (a.cg.perc_x >= 45 && a.cg.perc_x <= 55 &&
 
 ## How trim and heel feed the output
 
-The `print_loading_plan` function in `src/analysis.c` surfaces both values in the *Load Summary* and *Stability* sections:
+The `print_loading_plan` function in [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c) surfaces both values in the *Load Summary* and *Stability* sections:
 
 ```
 CG (Lon / Trans)      : 51.3% / 49.1% | Good
@@ -198,13 +198,13 @@ Trim (by stern)       : 0.423 m
 Heel                  : 2.14 deg
 ```
 
-In JSON mode (`src/json_output.c`), the same fields appear as `"trim"` and `"heel"` in the top-level result object, and as `"trim_m"` and `"heel_deg"` in the public `CfResult` struct exposed by `libcargoforge.h`.
+In JSON mode ([`src/json_output.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/json_output.c)), the same fields appear as `"trim"` and `"heel"` in the top-level result object, and as `"trim_m"` and `"heel_deg"` in the public `CfResult` struct exposed by `libcargoforge.h`.
 
 ---
 
 ## What the bin-packer does about it
 
-`place_cargo_3d` in `src/placement_3d.c` uses a First-Fit-Decreasing strategy with three hard-coded bins (ForwardHold, AftHold, Deck). It does **not** attempt to minimise trim or heel during placement — that is a stowage plan, not a stability optimiser. The consequence is that a carelessly loaded manifest can produce trim and heel values that are technically within the code's constraints but still operationally undesirable. Running `perform_analysis` after placement tells you the result; it is then the operator's responsibility to adjust the manifest or the bin assignments.
+`place_cargo_3d` in [`src/placement_3d.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/placement_3d.c) uses a First-Fit-Decreasing strategy with three hard-coded bins (ForwardHold, AftHold, Deck). It does **not** attempt to minimise trim or heel during placement — that is a stowage plan, not a stability optimiser. The consequence is that a carelessly loaded manifest can produce trim and heel values that are technically within the code's constraints but still operationally undesirable. Running `perform_analysis` after placement tells you the result; it is then the operator's responsibility to adjust the manifest or the bin assignments.
 
 !!! tip "Improving trim in practice"
     If the analysis reports excessive trim by stern, move heavy items from AftHold into ForwardHold. For heel, ensure the combined transverse moment is symmetric — the easiest fix is pairing heavy items on port and starboard within the same hold.
@@ -215,7 +215,7 @@ In JSON mode (`src/json_output.c`), the same fields appear as `"trim"` and `"hee
 
 - **Trim** = longitudinal imbalance. `r.lcg` (moment about midship / displacement) drives it; `r.trim = r.lcg × L / GM_L` gives metres by stern.
 - **Heel** = transverse imbalance. `tcg = avg_y − B/2` gives the CG offset; `r.heel = arctan(tcg / GM_corrected)` gives degrees.
-- Both calculations live in `perform_analysis` (`src/analysis.c`) and share the single-pass cargo accumulation loop that also computes KG and displacement.
+- Both calculations live in `perform_analysis` ([`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c)) and share the single-pass cargo accumulation loop that also computes KG and displacement.
 - Heel uses the **corrected** GM (`gm_corrected`, after free-surface correction) — this is not optional.
 - The bin-packer places cargo without minimising trim or heel; `perform_analysis` reports the outcome afterward.
 - Guards (`gm_l > 0.01f`, `gm_effective > 0.01f`) prevent division by near-zero when the ship is tender.

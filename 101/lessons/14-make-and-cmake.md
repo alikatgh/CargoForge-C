@@ -8,7 +8,7 @@ CargoForge-C has fourteen source files, ten headers, eight test binaries, two li
 
 When you type `gcc -O3 -std=c99 -c src/analysis.c -o build/analysis.o`, you create an **object file**: compiled machine code that is not yet a runnable program. Object files cannot run alone because they reference functions defined elsewhere (`perform_analysis` calls `hydro_interpolate`, which lives in `hydrostatics.c`). The **linker** combines object files into a final executable.
 
-Doing this manually for fourteen files is tedious, but the deeper problem is correctness. If you change `include/cargoforge.h`, every `.c` file that includes it must be recompiled. Miss one and you get silent mismatches between the compiled binary and the current source — the kind of bug that only shows up at sea.
+Doing this manually for fourteen files is tedious, but the deeper problem is correctness. If you change [`include/cargoforge.h`](https://github.com/alikatgh/CargoForge-C/blob/main/include/cargoforge.h), every `.c` file that includes it must be recompiled. Miss one and you get silent mismatches between the compiled binary and the current source — the kind of bug that only shows up at sea.
 
 Make solves this by tracking a **dependency graph**: a description of which files depend on which other files, and what command to run when a dependency is newer than its output.
 
@@ -25,7 +25,7 @@ target: dependency1 dependency2 ...
 
 The **target** is the file to build. The **dependencies** are the files it requires. The **command** (indented with a real tab character, not spaces) runs when any dependency is newer than the target.
 
-From `Makefile` in the project root:
+From [`Makefile`](https://github.com/alikatgh/CargoForge-C/blob/main/Makefile) in the project root:
 
 ```makefile
 $(TARGET): $(ALL_OBJS)
@@ -69,7 +69,7 @@ Source paths are converted to object paths using `patsubst` (pattern substitutio
 LIB_OBJS = $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(LIB_SRCS))
 ```
 
-This transforms `src/parser.c` → `build/parser.o`, `src/analysis.c` → `build/analysis.o`, and so on for every file in the list.
+This transforms [`src/parser.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/parser.c) → `build/parser.o`, [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c) → `build/analysis.o`, and so on for every file in the list.
 
 The rule that compiles any single source file is a **pattern rule**:
 
@@ -110,7 +110,7 @@ cargoforge
 
 Make compares the modification timestamp of each `.o` file against its `.c` file and all headers. Only out-of-date object files are recompiled. On a machine with parallel jobs (`make -j8`), independent nodes in the graph can be compiled simultaneously.
 
-**Incremental builds** are the payoff. After the first full compile, editing `src/analysis.c` recompiles only `build/analysis.o` and then relinks `cargoforge` — typically under a second rather than several seconds for a full rebuild.
+**Incremental builds** are the payoff. After the first full compile, editing [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c) recompiles only `build/analysis.o` and then relinks `cargoforge` — typically under a second rather than several seconds for a full rebuild.
 
 ---
 
@@ -185,7 +185,7 @@ The `@` prefix suppresses echoing the command itself to the terminal — only th
 
 Make is powerful but fragile: tabs vs. spaces cause silent failures; paths are written by hand; platform detection is shell scripting embedded in Makefile syntax. CMake is a **meta-build system** — it generates Makefiles (or Ninja files, or Xcode projects) from a higher-level description. The generated files are placed in a separate build directory, keeping the source tree clean.
 
-`CMakeLists.txt` in the project root starts with:
+[`CMakeLists.txt`](https://github.com/alikatgh/CargoForge-C/blob/main/CMakeLists.txt) in the project root starts with:
 
 ```cmake
 cmake_minimum_required(VERSION 3.10)
@@ -303,7 +303,7 @@ ctest --test-dir build-cmake
     Always use an **out-of-tree build** with CMake (`-B build-cmake`). This keeps generated files out of the source tree and makes `git status` clean.
 
 !!! tip
-    When you add a new source file, update both `LIB_SRCS` in the Makefile **and** `LIB_SOURCES` in `CMakeLists.txt`. The project ships both build systems; keeping them in sync is part of adding a file.
+    When you add a new source file, update both `LIB_SRCS` in the Makefile **and** `LIB_SOURCES` in [`CMakeLists.txt`](https://github.com/alikatgh/CargoForge-C/blob/main/CMakeLists.txt). The project ships both build systems; keeping them in sync is part of adding a file.
 
 ---
 

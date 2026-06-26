@@ -41,7 +41,7 @@ strncpy(id, user_input, sizeof(id) - 1);   // correct: leaves room for '\0'
 strcpy(id, user_input);                     // wrong: overflows if input > 31 bytes
 ```
 
-CargoForge-C uses `strncpy` with `sizeof(buf) - 1` everywhere exactly to prevent this. In `parse_dg_field` in `src/parser.c`:
+CargoForge-C uses `strncpy` with `sizeof(buf) - 1` everywhere exactly to prevent this. In `parse_dg_field` in [`src/parser.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/parser.c):
 
 ```c
 char buf[64];
@@ -104,7 +104,7 @@ This is not a textbook example. This is a bug that lived in CargoForge-C until t
 
 ### The setup
 
-`parse_cargo_list` (in `src/parser.c`) reads a whitespace-delimited manifest of cargo items into a heap-allocated array on `ship->cargo`. The array is allocated before the parsing loop, because the function needs to know how many items there are before it can fill them.
+`parse_cargo_list` (in [`src/parser.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/parser.c)) reads a whitespace-delimited manifest of cargo items into a heap-allocated array on `ship->cargo`. The array is allocated before the parsing loop, because the function needs to know how many items there are before it can fill them.
 
 ```c
 ship->cargo = malloc(count * sizeof(Cargo));
@@ -144,7 +144,7 @@ The same pattern appeared in two separate error paths inside `parse_cargo_list`:
 
 ### How the fuzzer found it
 
-`scripts/fuzz.sh` builds a sanitised binary with AddressSanitizer and UBSan enabled, then fires randomly generated malformed inputs at the `optimize` and `validate` subcommands:
+[`scripts/fuzz.sh`](https://github.com/alikatgh/CargoForge-C/blob/main/scripts/fuzz.sh) builds a sanitised binary with AddressSanitizer and UBSan enabled, then fires randomly generated malformed inputs at the `optimize` and `validate` subcommands:
 
 ```bash
 cc -O1 -g -std=c99 -D_POSIX_C_SOURCE=200809L -Iinclude \
@@ -182,7 +182,7 @@ Exit code ≥ 128 means the process was killed by a signal — the fingerprint o
 
 ### The fix
 
-The fix is two lines, applied in both error paths in `src/parser.c`:
+The fix is two lines, applied in both error paths in [`src/parser.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/parser.c):
 
 ```c
 // Weight parse failure error path (parser.c:333–344)
@@ -320,6 +320,6 @@ When an error path owns the free, it must also zero all state that any future co
 - **Buffer overflow** writes past the end of a buffer. Use `strncpy` with `sizeof(buf) - 1` and always write the null terminator explicitly.
 - **Memory leak** loses a pointer without freeing it. Valgrind's `--leak-check=full` finds leaks; `ship_cleanup` is CargoForge-C's single teardown point.
 - The **real bug** in `parse_cargo_list` was a freed `ship->cargo` pointer left non-null, with a non-zero `cargo_count`, so `ship_cleanup` walked into freed memory. Two lines fixed it: `ship->cargo = NULL; ship->cargo_count = 0;`.
-- **AddressSanitizer + fuzzing** is what actually found it: `make test-asan` and `scripts/fuzz.sh` together force error paths that normal tests never exercise.
+- **AddressSanitizer + fuzzing** is what actually found it: `make test-asan` and [`scripts/fuzz.sh`](https://github.com/alikatgh/CargoForge-C/blob/main/scripts/fuzz.sh) together force error paths that normal tests never exercise.
 
 *Next: [Lab 3 — Reproduce the Use-After-Free](lab-03-memory.md).*

@@ -1,6 +1,6 @@
 # Coverage and benchmarks
 
-Writing tests is one thing; knowing whether your tests exercise the code that actually matters is another. This lesson covers two complementary tools CargoForge-C uses to answer that question: `gcov` for line coverage and a purpose-built benchmark harness (`validation/validate_benchmark.c`) that validates the calculation engine against known good values for three vessel types, meeting the requirements of DNV-SE-0475 type approval.
+Writing tests is one thing; knowing whether your tests exercise the code that actually matters is another. This lesson covers two complementary tools CargoForge-C uses to answer that question: `gcov` for line coverage and a purpose-built benchmark harness ([`validation/validate_benchmark.c`](https://github.com/alikatgh/CargoForge-C/blob/main/validation/validate_benchmark.c)) that validates the calculation engine against known good values for three vessel types, meeting the requirements of DNV-SE-0475 type approval.
 
 ## What is line coverage?
 
@@ -38,13 +38,13 @@ This prints a summary and creates `analysis.c.gcov`. Each line is prefixed with 
 
 Coverage is a **necessary condition for confidence, not a sufficient one**.
 
-A line that is never executed cannot be correct. If your error-handling branch for a malformed DG field (`parse_dg_field` in `src/parser.c`) is never reached by any test, you have no evidence it works. Coverage gives you that signal cheaply.
+A line that is never executed cannot be correct. If your error-handling branch for a malformed DG field (`parse_dg_field` in [`src/parser.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/parser.c)) is never reached by any test, you have no evidence it works. Coverage gives you that signal cheaply.
 
 What coverage cannot tell you:
 
 - **Correctness of the values produced.** A line can execute a thousand times with wrong results. The counter only counts; it does not check.
 - **That all interesting inputs were tried.** Reaching the `hydro_interpolate` function once, with a draft that falls exactly on a table entry, tells you nothing about what happens when the draft falls between rows, or above the table's maximum, or below its minimum.
-- **Concurrency or ordering bugs.** The server (`src/server.c`) handles one connection at a time, but even single-threaded timing-sensitive code can misbehave in ways no coverage tool detects.
+- **Concurrency or ordering bugs.** The server ([`src/server.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/server.c)) handles one connection at a time, but even single-threaded timing-sensitive code can misbehave in ways no coverage tool detects.
 
 The rule in CargoForge-C: use coverage to find gaps, then write tests targeted at those gaps. Do not treat a 90% coverage number as a quality certificate.
 
@@ -53,9 +53,9 @@ The rule in CargoForge-C: use coverage to find gaps, then write tests targeted a
 
 ## The benchmark validation harness
 
-Unit tests verify that individual functions return expected values for synthesised inputs. The benchmark harness in `validation/validate_benchmark.c` does something different: it constructs realistic loading conditions for three real vessel types, calls `perform_analysis` (the same function the production CLI uses), and checks the results against stability-booklet reference values.
+Unit tests verify that individual functions return expected values for synthesised inputs. The benchmark harness in [`validation/validate_benchmark.c`](https://github.com/alikatgh/CargoForge-C/blob/main/validation/validate_benchmark.c) does something different: it constructs realistic loading conditions for three real vessel types, calls `perform_analysis` (the same function the production CLI uses), and checks the results against stability-booklet reference values.
 
-This kind of validation is required for DNV-SE-0475 type approval — a class society process that certifies software used aboard ships for regulatory calculations. The header comment in `validation/validate_benchmark.c` states the goal explicitly:
+This kind of validation is required for DNV-SE-0475 type approval — a class society process that certifies software used aboard ships for regulatory calculations. The header comment in [`validation/validate_benchmark.c`](https://github.com/alikatgh/CargoForge-C/blob/main/validation/validate_benchmark.c) states the goal explicitly:
 
 ```c
 /*
@@ -182,7 +182,7 @@ CHECK_ABS("GZ@30 matches formula", r.gz_at_30, exp_gz30, 0.01f);
 
 $$GZ(\theta) = \sin\theta \left(GM + \frac{BM \tan^2\theta}{2}\right)$$
 
-This is the wall-sided formula implemented in `gz_at_angle` in `src/analysis.c`. The test is checking internal consistency — if someone accidentally introduced a sign error or a unit conversion mistake, this check catches it even without an external reference value.
+This is the wall-sided formula implemented in `gz_at_angle` in [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c). The test is checking internal consistency — if someone accidentally introduced a sign error or a unit conversion mistake, this check catches it even without an external reference value.
 
 ### Summary output and exit code
 

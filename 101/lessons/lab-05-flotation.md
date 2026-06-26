@@ -27,8 +27,8 @@ You will use the files that ship with the repository:
 
 | File | Role |
 |---|---|
-| `examples/sample_ship.cfg` | Ship dimensions — 150 m × 25 m, lightship 2 000 t |
-| `examples/sample_cargo.txt` | Five cargo items totalling 1 500 t |
+| [`examples/sample_ship.cfg`](https://github.com/alikatgh/CargoForge-C/blob/main/examples/sample_ship.cfg) | Ship dimensions — 150 m × 25 m, lightship 2 000 t |
+| [`examples/sample_cargo.txt`](https://github.com/alikatgh/CargoForge-C/blob/main/examples/sample_cargo.txt) | Five cargo items totalling 1 500 t |
 
 Open both files and read the numbers. You will need them in step 2.
 
@@ -90,7 +90,7 @@ Keep your answer. The expected result is **approximately 1.21 m**.
 
 ## 3. Running the Tool — Box-Hull Mode
 
-`examples/sample_ship.cfg` does **not** reference a hydrostatic table, so CargoForge-C will use
+[`examples/sample_ship.cfg`](https://github.com/alikatgh/CargoForge-C/blob/main/examples/sample_ship.cfg) does **not** reference a hydrostatic table, so CargoForge-C will use
 the box-hull fallback path. Run:
 
 ```bash
@@ -127,7 +127,7 @@ Expected JSON fragment:
 
 ## 4. What Changes with a Real Hydrostatic Table?
 
-`examples/sample_ship_full.cfg` adds three lines to the same ship definition:
+[`examples/sample_ship_full.cfg`](https://github.com/alikatgh/CargoForge-C/blob/main/examples/sample_ship_full.cfg) adds three lines to the same ship definition:
 
 ```
 hydrostatic_table=examples/sample_hydro.csv
@@ -138,7 +138,7 @@ permissible_bm_sag_t_m=100000
 ```
 
 The table covers drafts from 2.0 m to 10.0 m. Look at the first two rows of
-`examples/sample_hydro.csv`:
+[`examples/sample_hydro.csv`](https://github.com/alikatgh/CargoForge-C/blob/main/examples/sample_hydro.csv):
 
 ```
 # draft_m,displacement_t,KM_m,KB_m,BM_m,TPC_t_cm,MTC_t_m,waterplane_m2,LCB_m

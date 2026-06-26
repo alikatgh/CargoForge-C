@@ -27,7 +27,7 @@ You never see this pasted result — it exists only in memory during compilation
 #define MAX_FREE_RECTS  1024
 ```
 
-These three lines come from `include/cargoforge.h`. Every time the preprocessor encounters `MAX_FREE_RECTS` later in that translation unit, it replaces the token with `1024` before the compiler touches it. There is no variable, no memory address, no type — only text replacement.
+These three lines come from [`include/cargoforge.h`](https://github.com/alikatgh/CargoForge-C/blob/main/include/cargoforge.h). Every time the preprocessor encounters `MAX_FREE_RECTS` later in that translation unit, it replaces the token with `1024` before the compiler touches it. There is no variable, no memory address, no type — only text replacement.
 
 Why use `#define` instead of a variable? Because the compiler can use the literal value for array sizes, `switch` cases, and other contexts that require a compile-time constant. In CargoForge-C, `MAX_FREE_RECTS = 1024` sets the size of the `spaces` array inside every `Bin3D` (the rectangular holds used by the 3D bin-packer). If you ever needed to increase it, changing one line in `cargoforge.h` would propagate to every file that includes it.
 
@@ -35,7 +35,7 @@ Why use `#define` instead of a variable? Because the compiler can use the litera
 #define MAX_HYDRO_ENTRIES 200
 ```
 
-This constant, from `include/hydrostatics.h`, caps how many draft rows a hydrostatic table may have. The `HydroEntry entries[MAX_HYDRO_ENTRIES]` array in `HydroTable` is sized at compile time using this value.
+This constant, from [`include/hydrostatics.h`](https://github.com/alikatgh/CargoForge-C/blob/main/include/hydrostatics.h), caps how many draft rows a hydrostatic table may have. The `HydroEntry entries[MAX_HYDRO_ENTRIES]` array in `HydroTable` is sized at compile time using this value.
 
 ---
 
@@ -54,7 +54,7 @@ Include guards prevent this:
 #endif /* CARGOFORGE_H */
 ```
 
-This is the first and last thing in `include/cargoforge.h`. The logic:
+This is the first and last thing in [`include/cargoforge.h`](https://github.com/alikatgh/CargoForge-C/blob/main/include/cargoforge.h). The logic:
 
 1. `#ifndef CARGOFORGE_H` — "if this symbol has not been defined yet …"
 2. `#define CARGOFORGE_H` — "… define it now (so the next inclusion skips this block) …"
@@ -62,7 +62,7 @@ This is the first and last thing in `include/cargoforge.h`. The logic:
 
 The second time any file tries to include `cargoforge.h`, `CARGOFORGE_H` is already defined, so the preprocessor skips everything between `#ifndef` and `#endif`. The guard symbol itself is just a name — by convention it mirrors the file name in uppercase with `.` replaced by `_`.
 
-`include/hydrostatics.h` uses the same pattern:
+[`include/hydrostatics.h`](https://github.com/alikatgh/CargoForge-C/blob/main/include/hydrostatics.h) uses the same pattern:
 
 ```c
 #ifndef HYDROSTATICS_H
@@ -92,7 +92,7 @@ Headers contain declarations. Source files contain definitions.
 
 ### Function declarations in headers
 
-From `include/cargoforge.h`:
+From [`include/cargoforge.h`](https://github.com/alikatgh/CargoForge-C/blob/main/include/cargoforge.h):
 
 ```c
 /* --- parser.c --- */
@@ -117,7 +117,7 @@ The corresponding **definitions** — the functions with their `{ }` bodies — 
 
 ### Forward declarations: just the name, nothing more
 
-`include/cargoforge.h` uses a more minimal form of declaration for types it needs to reference but does not fully define:
+[`include/cargoforge.h`](https://github.com/alikatgh/CargoForge-C/blob/main/include/cargoforge.h) uses a more minimal form of declaration for types it needs to reference but does not fully define:
 
 ```c
 struct HydroTable_;
@@ -126,7 +126,7 @@ struct StrengthLimits_;
 struct DGInfo_;
 ```
 
-These **forward declarations** tell the compiler "a struct with this tag exists." That is enough to declare a pointer to it — `struct HydroTable_ *hydro` inside `Ship` — without pulling in the full definition. The full `typedef struct HydroTable_ { ... } HydroTable;` lives in `include/hydrostatics.h`, which only the files that actually use hydrostatic data need to include.
+These **forward declarations** tell the compiler "a struct with this tag exists." That is enough to declare a pointer to it — `struct HydroTable_ *hydro` inside `Ship` — without pulling in the full definition. The full `typedef struct HydroTable_ { ... } HydroTable;` lives in [`include/hydrostatics.h`](https://github.com/alikatgh/CargoForge-C/blob/main/include/hydrostatics.h), which only the files that actually use hydrostatic data need to include.
 
 !!! tip
     This technique — forward-declaring a struct so you can hold a pointer without exposing its internals — is called an **opaque pointer**. It keeps compile-time dependencies minimal: a change to `HydroTable`'s fields only forces recompilation of files that include `hydrostatics.h`, not every file that includes `cargoforge.h`.
@@ -154,12 +154,12 @@ src/
 Each `.c` file is compiled independently into an **object file** (`.o`). The linker then combines all the object files into the final binary. This matters because:
 
 - **You only recompile what changed.** If you edit `hydrostatics.c`, only `hydrostatics.o` needs to be rebuilt — not `analysis.o` or `parser.o`.
-- **Each `.c` file includes only the headers it needs.** `src/hydrostatics.c` begins with `#include "hydrostatics.h"` and the standard headers it uses (`<stdio.h>`, `<stdlib.h>`, `<string.h>`, `<math.h>`). It does not include `imdg.h` or `tanks.h`.
+- **Each `.c` file includes only the headers it needs.** [`src/hydrostatics.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/hydrostatics.c) begins with `#include "hydrostatics.h"` and the standard headers it uses (`<stdio.h>`, `<stdlib.h>`, `<string.h>`, `<math.h>`). It does not include `imdg.h` or `tanks.h`.
 - **Circular inclusion is prevented by include guards.** `analysis.c` includes `cargoforge.h`, which forward-declares `HydroTable_`. It also includes `hydrostatics.h` to get the full type. Either order is safe because guards make both idempotent.
 
 ### Tracing one include chain
 
-When `src/hydrostatics.c` is compiled, the translation unit the compiler actually sees begins like this (after preprocessing):
+When [`src/hydrostatics.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/hydrostatics.c) is compiled, the translation unit the compiler actually sees begins like this (after preprocessing):
 
 ```
 [contents of hydrostatics.h]
@@ -185,7 +185,7 @@ The compiler reads that flattened stream. The functions are defined here. Other 
 
 ## `static`: keeping definitions private to one file
 
-`src/hydrostatics.c` defines two helper functions that are not declared in any header:
+[`src/hydrostatics.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/hydrostatics.c) defines two helper functions that are not declared in any header:
 
 ```c
 static float lerp(float a, float b, float t) {
@@ -206,21 +206,21 @@ Without `static`, the linker would see `lerp` as a globally visible symbol, whic
 
 The `HydroTable` type illustrates every concept in this lesson at once.
 
-**In `include/hydrostatics.h`:**
+**In [`include/hydrostatics.h`](https://github.com/alikatgh/CargoForge-C/blob/main/include/hydrostatics.h):**
 - `#define MAX_HYDRO_ENTRIES 200` — a compile-time constant
 - `typedef struct { ... } HydroEntry;` — type declaration, no memory
 - `typedef struct HydroTable_ { HydroEntry entries[MAX_HYDRO_ENTRIES]; int count; int loaded; } HydroTable;` — uses `MAX_HYDRO_ENTRIES` as an array size; `loaded` starts at 0 because `memset(table, 0, ...)` zeroes it
 - Three function prototypes — declarations only
 
-**In `include/cargoforge.h`:**
+**In [`include/cargoforge.h`](https://github.com/alikatgh/CargoForge-C/blob/main/include/cargoforge.h):**
 - `struct HydroTable_;` — forward declaration; enough for `struct HydroTable_ *hydro` inside `Ship`
 
-**In `src/hydrostatics.c`:**
+**In [`src/hydrostatics.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/hydrostatics.c):**
 - `#include "hydrostatics.h"` — pulls in all the declarations above
 - `static float lerp(...)` — private helper, invisible outside this file
 - `int parse_hydro_table(...)` — the definition matching the prototype; sets `table->loaded = 1` on success
 
-When `perform_analysis` in `src/analysis.c` checks `if (ship->hydro != NULL && ship->hydro->loaded)`, it is reading the `loaded` flag that `parse_hydro_table` set. The compiler knew the type of `ship->hydro->loaded` because `analysis.c` includes both `cargoforge.h` (giving it the `Ship` type and the forward declaration of `HydroTable_`) and `hydrostatics.h` (giving it the full `HydroTable` definition).
+When `perform_analysis` in [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c) checks `if (ship->hydro != NULL && ship->hydro->loaded)`, it is reading the `loaded` flag that `parse_hydro_table` set. The compiler knew the type of `ship->hydro->loaded` because `analysis.c` includes both `cargoforge.h` (giving it the `Ship` type and the forward declaration of `HydroTable_`) and `hydrostatics.h` (giving it the full `HydroTable` definition).
 
 ---
 

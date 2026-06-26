@@ -51,6 +51,6 @@ you already know ship stability, skim Modules 5–6 and focus on how it's *imple
 1. **Install once:** `pip install -r 101/requirements.txt`, then `mkdocs serve -f 101/mkdocs.yml`.
 2. **Read in order.** Each lesson is short enough for one sitting and ends with a recap.
 3. **Do the labs.** They're where the understanding sticks — open a terminal and run the code.
-4. Keep a clone of the repo open beside the lessons; we cite real files and line numbers.
+4. **Click any filename** in a lesson (e.g. a citation like `src/analysis.c`) to open the real source on GitHub at the cited line. Keep a clone open too if you want to build and run it.
 
 Ready? Start with **[Lesson 01 · Why C, and the toolchain](01-why-c-and-the-toolchain.md)**.

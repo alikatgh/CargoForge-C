@@ -55,7 +55,7 @@ DeepHoldItem   500       10x8x4     standard
 ```
 
 Before running anything, work through the arithmetic. The box-hull model
-(`perform_analysis` in `src/analysis.c`) uses these constants:
+(`perform_analysis` in [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c)) uses these constants:
 
 | Constant | Value | Meaning |
 |---|---|---|
@@ -88,13 +88,13 @@ $$BM = \frac{I_T}{\nabla} = \frac{7344}{3414.6} = 2.151\ \text{m}$$
 
 **Vertical centre of gravity**
 
-The placement engine (`place_cargo_3d` in `src/placement_3d.c`) puts `DeepHoldItem`
+The placement engine (`place_cargo_3d` in [`src/placement_3d.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/placement_3d.c)) puts `DeepHoldItem`
 into the `ForwardHold` bin. That hold has its floor at $z = -8\ \text{m}$.
 An item of height $h = 4\ \text{m}$ sitting on the floor has its centroid at:
 
 $$c_z = z_{\text{floor}} + \frac{h}{2} = -8 + 2 = -6\ \text{m}$$
 
-The analysis code (`src/analysis.c`, line 99 and 115) sums the vertical moment
+The analysis code ([`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c), line 99 and 115) sums the vertical moment
 over lightship plus every placed cargo item:
 
 $$KG = \frac{\Delta_{\text{ls}} \times KG_{\text{ls}} + W_{\text{cargo}} \times c_z}{\Delta}
@@ -105,7 +105,7 @@ $$KG = \frac{\Delta_{\text{ls}} \times KG_{\text{ls}} + W_{\text{cargo}} \times 
 
 $$GM = KB + BM - KG = 3.351 + 2.151 - 5.143 = \mathbf{0.359\ \text{m}}$$
 
-The IMO minimum is $GM \geq 0.15\ \text{m}$ (`IMO_GM_MIN` in `src/analysis.c`). Your
+The IMO minimum is $GM \geq 0.15\ \text{m}$ (`IMO_GM_MIN` in [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c)). Your
 predicted verdict: **compliant**.
 
 ---
@@ -316,7 +316,7 @@ Expected key values:
 - $GM = KB + BM - KG$. A ship becomes unstable the moment $GM$ drops below zero; IMO mandates $GM \geq 0.15\ \text{m}$ as a minimum safety margin.
 - $BM = I_T / \nabla$. A narrow beam means a small $I_T$ and therefore a small $BM$ — less reserve against a rising $KG$.
 - Adding cargo does not automatically improve stability. Deck cargo raises $KG$ faster than it raises $KB$, and the increase in $BM$ from extra displacement rarely compensates.
-- CargoForge-C's `perform_analysis` in `src/analysis.c` evaluates all six IMO intact-stability criteria; `imo_compliant` is 0 if any single criterion fails.
+- CargoForge-C's `perform_analysis` in [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c) evaluates all six IMO intact-stability criteria; `imo_compliant` is 0 if any single criterion fails.
 - `make test-asan` is the way to run the same crash-detection the development team uses; it found the heap-use-after-free in `parse_cargo_list` that is documented in `docs/BUG_JOURNAL.md`.
 
 *Next: [Config and manifest formats](26-config-and-manifest-formats.md).*

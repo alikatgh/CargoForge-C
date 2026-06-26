@@ -3,7 +3,7 @@
 C gives you direct control over memory — which means it also gives you the full
 responsibility for it. This lesson explains how CargoForge-C allocates memory at
 runtime with `malloc` and `calloc`, how it releases that memory with `free`, and
-how `ship_cleanup` in `src/analysis.c` answers the central question every C
+how `ship_cleanup` in [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c) answers the central question every C
 program must answer: *who frees this, and when?*
 
 ---
@@ -36,7 +36,7 @@ use it, and return it when you are done. The three essential functions live in
 ## Allocating the cargo array
 
 The cargo manifest has an unknown length until the file is read. `parse_cargo_list`
-in `src/parser.c` handles this with a two-pass approach for regular files: count
+in [`src/parser.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/parser.c) handles this with a two-pass approach for regular files: count
 the non-comment lines on the first pass, then allocate exactly the right amount:
 
 ```c
@@ -74,7 +74,7 @@ checked.
 Not every ship has a hydrostatic table, a tank configuration, or structural
 limits defined. These are represented as pointer fields in `Ship` that are NULL
 by default and only allocated when the corresponding config key is present.
-Here is the hydrostatic table case from `src/parser.c`:
+Here is the hydrostatic table case from [`src/parser.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/parser.c):
 
 ```c
 /* from src/parser.c — loading the hydrostatic table */
@@ -109,7 +109,7 @@ Three things to notice:
 
 Each `Cargo` carries a field `dg` of type `DGInfo *`. For ordinary cargo it is
 NULL. For dangerous goods it points to a heap-allocated `DGInfo` struct, created
-by `parse_dg_field` in `src/parser.c`:
+by `parse_dg_field` in [`src/parser.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/parser.c):
 
 ```c
 /* from src/parser.c — parse_dg_field */
@@ -149,7 +149,7 @@ calling `free`. In CargoForge-C the rule is simple:
 
 > **The `Ship` struct owns all heap memory it points to. `ship_cleanup` frees it.**
 
-This is a single, central cleanup function in `src/analysis.c`:
+This is a single, central cleanup function in [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c):
 
 ```c
 /* from src/analysis.c — ship_cleanup */
@@ -246,7 +246,7 @@ pointer to NULL and the count to zero makes `ship_cleanup`'s guard (`if
 
 ## The analysis function owns nothing
 
-`perform_analysis` in `src/analysis.c` takes a `const Ship *` and returns an
+`perform_analysis` in [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c) takes a `const Ship *` and returns an
 `AnalysisResult` by value:
 
 ```c

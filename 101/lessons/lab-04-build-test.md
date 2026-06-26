@@ -61,7 +61,7 @@ All tests passed.
 !!! note
     The two `Error:` lines near the top are expected — they come from
     `tests/test_parser`, which deliberately feeds bad input to the parser
-    (`examples/bad_ship.cfg` contains `length_m=abc`). The test asserts that the
+    ([`examples/bad_ship.cfg`](https://github.com/alikatgh/CargoForge-C/blob/main/examples/bad_ship.cfg) contains `length_m=abc`). The test asserts that the
     parser returns `-1` on that bad input, so seeing the error message is proof
     the parser's validation fired correctly.
 
@@ -69,7 +69,7 @@ All tests passed.
 
 ## Part 2 — Read a test file
 
-Open `tests/test_analysis.c` in your editor. It is one of the simplest tests to
+Open [`tests/test_analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/tests/test_analysis.c) in your editor. It is one of the simplest tests to
 read because each test case is its own function.
 
 Look at **Test 10** (`test_hydrostatic_fields`). It creates a ship in memory —
@@ -85,7 +85,7 @@ assert(fabsf(r.gm - expected_gm) < 0.01f);
 
 This is not arbitrary. The formula $GM = KB + BM - KG$ is the fundamental
 metacentric height equation (covered in Lesson 23). The test is enforcing that
-`perform_analysis` in `src/analysis.c` computes these three quantities
+`perform_analysis` in [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c) computes these three quantities
 consistently with one another — a mistake in any one of them would break this
 assertion.
 
@@ -104,7 +104,7 @@ something the existing test does not: that `KB` stays below half the draft. For
 a box hull with coefficient 0.53, the vertical centre of buoyancy should always
 be less than the waterline.
 
-Open `tests/test_analysis.c` and find the end of `test_hydrostatic_fields`,
+Open [`tests/test_analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/tests/test_analysis.c) and find the end of `test_hydrostatic_fields`,
 just before the `free(ship.cargo)` call. Add one line:
 
 ```c
@@ -166,7 +166,7 @@ test after this one would not run.
     `assert()` calls `abort()`. In a running binary that would be a crash.
     That is intentional for tests — a failing assertion should be loud and
     unmissable. In production code you use explicit error returns instead (see
-    Lesson 8 and `safe_atof` in `src/parser.c`).
+    Lesson 8 and `safe_atof` in [`src/parser.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/parser.c)).
 
 Restore the correct assertion before continuing:
 
@@ -216,8 +216,8 @@ pipeline end to end. Run both sample inputs:
 ./cargoforge optimize examples/sample_ship.cfg examples/sample_cargo.txt
 ```
 
-This reads `examples/sample_ship.cfg` (a 150 m ship, 50 000 t capacity), places
-the five cargo items from `examples/sample_cargo.txt`, runs `perform_analysis`,
+This reads [`examples/sample_ship.cfg`](https://github.com/alikatgh/CargoForge-C/blob/main/examples/sample_ship.cfg) (a 150 m ship, 50 000 t capacity), places
+the five cargo items from [`examples/sample_cargo.txt`](https://github.com/alikatgh/CargoForge-C/blob/main/examples/sample_cargo.txt), runs `perform_analysis`,
 and prints the human-readable loading plan.
 
 Try the `validate` subcommand on the bad ship config to see the parser's error
@@ -240,7 +240,7 @@ parser rejected the input before any calculation was attempted.
 
 ## Solution
 
-The complete change to `tests/test_analysis.c` for Part 3 is a single inserted
+The complete change to [`tests/test_analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/tests/test_analysis.c) for Part 3 is a single inserted
 line inside `test_hydrostatic_fields`, immediately before `free(ship.cargo)`:
 
 ```c

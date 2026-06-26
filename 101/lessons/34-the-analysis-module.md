@@ -1,6 +1,6 @@
 # The analysis module
 
-`src/analysis.c` is the mathematical heart of CargoForge-C. It takes a fully populated `Ship` struct — loaded cargo, tanks, hull data — and produces a single `AnalysisResult` that answers the question every naval architect asks: *is this loading condition safe?* Understanding how `perform_analysis` is structured teaches you both the naval architecture and how a real C program organises a multi-step computation into one clean function.
+[`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c) is the mathematical heart of CargoForge-C. It takes a fully populated `Ship` struct — loaded cargo, tanks, hull data — and produces a single `AnalysisResult` that answers the question every naval architect asks: *is this loading condition safe?* Understanding how `perform_analysis` is structured teaches you both the naval architecture and how a real C program organises a multi-step computation into one clean function.
 
 ---
 

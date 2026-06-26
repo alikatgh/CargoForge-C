@@ -3,7 +3,7 @@
 C gives you raw control over memory — no safety net, no automatic resizing, no
 index checking. Understanding how arrays work at the machine level is what
 separates code that runs reliably from code that corrupts memory silently.
-This lesson traces that understanding through `src/parser.c`, where CargoForge-C
+This lesson traces that understanding through [`src/parser.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/parser.c), where CargoForge-C
 reads an entire cargo manifest into a heap-allocated array before a single item
 is analysed.
 
@@ -51,7 +51,7 @@ These are not pointers. They live inside every `Cargo` object.
 Try to copy a 40-character identifier into it and you overflow into the next
 field.
 
-`src/parser.c` copies user-supplied strings into these buffers using the safe
+[`src/parser.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/parser.c) copies user-supplied strings into these buffers using the safe
 idiom:
 
 ```c

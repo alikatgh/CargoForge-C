@@ -84,7 +84,7 @@ appear in the `DGInfo.ems` field and are preserved exactly as supplied.
 
 ---
 
-## Parsing: `parse_dg_field` in `src/parser.c`
+## Parsing: `parse_dg_field` in [`src/parser.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/parser.c)
 
 The entire DG field is parsed by a single static function. It receives the raw
 fifth token from the cargo line and either returns a heap-allocated `DGInfo`
@@ -200,11 +200,11 @@ tries to place it in `ForwardHold` or `AftHold`.
 
 ---
 
-## The segregation matrix in `src/imdg.c`
+## The segregation matrix in [`src/imdg.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/imdg.c)
 
 Knowing a cargo's class is not sufficient. The IMDG Code Table 7.2.4 defines
 how far apart each pair of classes must be. CargoForge-C encodes this as a
-17 × 17 static integer matrix in `src/imdg.c`.
+17 × 17 static integer matrix in [`src/imdg.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/imdg.c).
 
 The 17 rows and columns map to the class/division entries listed at the top of
 the file:
@@ -284,7 +284,7 @@ distance or incompatibility rules. But the placement engine works greedily and
 may not always achieve the optimal separation. A second, authoritative pass runs
 after all cargo is placed.
 
-`imdg_check_all` in `src/imdg.c` performs an O(n²) all-pairs scan of every
+`imdg_check_all` in [`src/imdg.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/imdg.c) performs an O(n²) all-pairs scan of every
 placed DG item:
 
 ```c
@@ -350,10 +350,10 @@ each axis, then takes the Euclidean magnitude). Violations are collected in
   **division**; the UN Number is a universal four-digit identifier.
 - CargoForge-C's DG field grammar is
   `DG:<class>[.<division>]:<UNnumber>:<stowage>:<EmS>`,
-  parsed by `parse_dg_field` in `src/parser.c` into a heap-allocated `DGInfo`.
+  parsed by `parse_dg_field` in [`src/parser.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/parser.c) into a heap-allocated `DGInfo`.
 - `strtok_r` (re-entrant) is used instead of `strtok` because the outer cargo
   line tokeniser is active in the same call stack.
-- The segregation matrix in `src/imdg.c` is a 17 × 17 integer table encoding
+- The segregation matrix in [`src/imdg.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/imdg.c) is a 17 × 17 integer table encoding
   five levels of required separation, from "away from" (3 m) to
   "incompatible" (hard reject).
 - A first separation check runs during bin-packing; `imdg_check_all` performs

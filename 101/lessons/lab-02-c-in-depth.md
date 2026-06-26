@@ -1,7 +1,7 @@
 # Lab 2 — Read the Data Model
 
 This lab grounds the abstractions from Lessons 5 and 26 in something tangible: you will open
-`include/cargoforge.h`, read the real `Ship` and `Cargo` structs, then trace every field from
+[`include/cargoforge.h`](https://github.com/alikatgh/CargoForge-C/blob/main/include/cargoforge.h), read the real `Ship` and `Cargo` structs, then trace every field from
 a sample config file all the way into the struct. No writing code yet — just reading, running
 commands, and checking that what you see matches what the program reports.
 
@@ -23,7 +23,7 @@ or `clang` installed and that you are in the right directory.
 
 ## Step 1 — Open the header and read the structs
 
-Open `include/cargoforge.h` in any text editor or viewer. Find the two typedef blocks beginning
+Open [`include/cargoforge.h`](https://github.com/alikatgh/CargoForge-C/blob/main/include/cargoforge.h) in any text editor or viewer. Find the two typedef blocks beginning
 around line 39 (`Cargo`) and line 53 (`Ship`).
 
 **Checkpoint 1a — answer these questions before moving on:**
@@ -79,7 +79,7 @@ lightship_kg_m=8.0
     The config file uses tonnes because that is the maritime convention. The struct stores
     kilograms because C arithmetic is easier in a single unit. Every time you see `_tonnes`
     in a key name, multiply by 1 000 mentally when reading the stored value. The function
-    `parse_ship_config` in `src/parser.c` does this with the line
+    `parse_ship_config` in [`src/parser.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/parser.c) does this with the line
     `ship->max_weight = val * 1000.0f;`.
 
 ---
@@ -159,7 +159,7 @@ You should see a block similar to:
 
 ## Step 5 — Trace one key through the source
 
-Open `src/parser.c` and search for the string `"length_m"`. You will find a block like:
+Open [`src/parser.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/parser.c) and search for the string `"length_m"`. You will find a block like:
 
 ```c
 if (strcmp(key, "length_m") == 0) {
@@ -252,7 +252,7 @@ Find the line:
 FlammableLiquid   25        6x2.5x2.6           hazardous   DG:3.1:UN1203:A:F-E,S-D
 ```
 
-The fifth token `DG:3.1:UN1203:A:F-E,S-D` is parsed by `parse_dg_field` in `src/parser.c`.
+The fifth token `DG:3.1:UN1203:A:F-E,S-D` is parsed by `parse_dg_field` in [`src/parser.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/parser.c).
 The grammar is:
 
 ```

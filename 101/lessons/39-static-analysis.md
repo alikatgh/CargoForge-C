@@ -22,7 +22,7 @@ Sanitizers are covered in the next lesson. This lesson focuses on the first two:
 
 ## The compiler as the first static analyzer
 
-CargoForge-C compiles with these flags, as written in the `Makefile`:
+CargoForge-C compiles with these flags, as written in the [`Makefile`](https://github.com/alikatgh/CargoForge-C/blob/main/Makefile):
 
 ```makefile
 CFLAGS = -O3 -Wall -Wextra -std=c99 -D_POSIX_C_SOURCE=200809L -Iinclude
@@ -49,7 +49,7 @@ These are not stylistic preferences. Each warning class has caused real producti
 
 ## What the compiler catches in `parser.c`
 
-`src/parser.c` provides a good case study. The parser handles untrusted text from two sources — ship config files and cargo manifests — so every numeric field goes through `safe_atof`:
+[`src/parser.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/parser.c) provides a good case study. The parser handles untrusted text from two sources — ship config files and cargo manifests — so every numeric field goes through `safe_atof`:
 
 ```c
 static float safe_atof(const char *s, float min, float max, const char *field_name) {
@@ -133,7 +133,7 @@ Static analyzers are conservative: they report what they can prove, not everythi
 - **Semantic range errors**: `safe_atof` enforces `[0.1, 1e9]` for numeric fields. Whether that range is physically meaningful for a given field (e.g. whether 1 000 km is a sensible ship length) is domain knowledge the analyzer does not have.
 - **Integration failures**: the parser may produce a well-formed `Ship` with contradictory values — a box-hull ship with a hydrostatic table path that points to the wrong vessel. Tests and validation cover this; static analysis does not.
 
-This is why CargoForge-C combines multiple layers: `-Wall -Wextra` on every build, sanitizers in `make test-asan`, Valgrind in `make test-valgrind`, and a purpose-built fuzzer in `scripts/fuzz.sh`. Static analysis is the cheapest layer — zero runtime cost — so it should always be on.
+This is why CargoForge-C combines multiple layers: `-Wall -Wextra` on every build, sanitizers in `make test-asan`, Valgrind in `make test-valgrind`, and a purpose-built fuzzer in [`scripts/fuzz.sh`](https://github.com/alikatgh/CargoForge-C/blob/main/scripts/fuzz.sh). Static analysis is the cheapest layer — zero runtime cost — so it should always be on.
 
 ---
 

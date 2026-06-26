@@ -1,7 +1,7 @@
 # Tokenizing and parsing in C
 
 CargoForge-C reads two kinds of text input: a ship configuration file (key=value pairs) and a
-cargo manifest (whitespace-delimited rows). Both live in `src/parser.c`. This lesson walks
+cargo manifest (whitespace-delimited rows). Both live in [`src/parser.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/parser.c). This lesson walks
 through exactly how the code turns a raw text line into a populated `Cargo` struct — using
 `fgets`, `strtok_r`, and a carefully written `safe_atof` — and explains why each choice was
 made the way it was.
@@ -139,7 +139,7 @@ FlammableLiquid   25   6x2.5x2.6   hazardous   DG:3.1:UN1203:A:F-E,S-D
 ```
 
 `parse_cargo_list` turns this into a `Cargo` struct through a precise sequence of steps
-(from `src/parser.c`):
+(from [`src/parser.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/parser.c)):
 
 ### Step 1 — tokenise the five fields
 
