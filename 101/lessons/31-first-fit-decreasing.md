@@ -1,6 +1,6 @@
 # First-Fit-Decreasing
 
-Cargo does not arrange itself. Given a manifest of containers, machinery, and bulk bags, someone — or some algorithm — must decide which item goes where. CargoForge-C solves this with a classical combinatorial heuristic called **First-Fit Decreasing** (FFD), implemented in `src/placement_3d.c`. This lesson walks through why FFD exists, how the code applies it in three dimensions, and why the sort order matters for stability as much as it matters for packing efficiency.
+Cargo does not arrange itself. Given a manifest of containers, machinery, and bulk bags, someone — or some algorithm — must decide which item goes where. CargoForge-C solves this with a classical combinatorial heuristic called **First-Fit Decreasing** (FFD), implemented in [`src/placement_3d.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/placement_3d.c). This lesson walks through why FFD exists, how the code applies it in three dimensions, and why the sort order matters for stability as much as it matters for packing efficiency.
 
 ---
 
@@ -19,7 +19,7 @@ The intuition: large items are the hard constraints. If you place them first, yo
 
 ## Step 1 — Sort by Volume
 
-CargoForge-C sorts the entire cargo array before touching the bins. The entry point is `place_cargo_3d` in `src/placement_3d.c`:
+CargoForge-C sorts the entire cargo array before touching the bins. The entry point is `place_cargo_3d` in [`src/placement_3d.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/placement_3d.c):
 
 ```c
 void place_cargo_3d(Ship *ship) {

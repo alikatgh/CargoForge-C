@@ -16,14 +16,14 @@ The most common convention in C is for functions that can fail to return an
 `int`: **0 on success, -1 (or another negative value) on failure**. The caller
 must check the return value — the language will not do it for you.
 
-Both top-level parsers in `src/parser.c` follow this pattern exactly:
+Both top-level parsers in [`src/parser.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/parser.c) follow this pattern exactly:
 
 ```c
 int parse_ship_config(const char *filename, Ship *ship);
 int parse_cargo_list(const char *filename, Ship *ship);
 ```
 
-In `src/cli.c`, `cmd_optimize` calls them and checks immediately:
+In [`src/cli.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/cli.c), `cmd_optimize` calls them and checks immediately:
 
 ```c
 if (parse_ship_config(ctx->ship_file, &ship) != 0) {
@@ -65,7 +65,7 @@ codes that automation can distinguish:
 | `EXIT_VALIDATION_ERROR` | Manifest was parseable but failed validation |
 | `EXIT_INVALID_ARGS` | Wrong number or type of command-line arguments |
 
-`cmd_validate` in `src/cli.c` illustrates this clearly: it accumulates an
+`cmd_validate` in [`src/cli.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/cli.c) illustrates this clearly: it accumulates an
 `errors` counter across both parse calls, then returns `EXIT_SUCCESS` only when
 the counter is zero, otherwise `EXIT_VALIDATION_ERROR`.
 
@@ -77,7 +77,7 @@ When a C standard-library function fails, it sets the global integer `errno` to
 a code that describes what went wrong. Common values include `ENOENT` (no such
 file), `EACCES` (permission denied), and `ERANGE` (result out of range).
 
-`src/parser.c` uses `errno` in two places.
+[`src/parser.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/parser.c) uses `errno` in two places.
 
 **`perror`** is the quick way to print an `errno`-based message. When
 `parse_ship_config` cannot open the config file, it does:
@@ -246,7 +246,7 @@ ship length or a weight value of `abc` is not recoverable — there is no
 sensible fallback for "the ship has no length." Hard errors abort and return
 `-1`; soft errors warn on `stderr` and proceed.
 
-`src/cli.c` uses `print_warning` for messages like "Total cargo weight exceeds
+[`src/cli.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/cli.c) uses `print_warning` for messages like "Total cargo weight exceeds
 ship capacity!" inside `cmd_validate --verbose`. This reaches `stderr` (not
 `stdout`) so that it does not pollute structured output (JSON, CSV) while still
 being visible to a human watching the terminal.

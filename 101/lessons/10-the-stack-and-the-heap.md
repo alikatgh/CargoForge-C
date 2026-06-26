@@ -74,7 +74,7 @@ Two things to notice:
 
 ## Why the cargo array must be on the heap
 
-`parse_cargo_list` in `src/parser.c` faces a concrete problem: a manifest file can have any number of cargo items, and that number is not known until the file has been read. A stack array is impossible here.
+`parse_cargo_list` in [`src/parser.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/parser.c) faces a concrete problem: a manifest file can have any number of cargo items, and that number is not known until the file has been read. A stack array is impossible here.
 
 The function solves this with a **two-pass strategy for files** and a **dynamic buffer for stdin**:
 
@@ -172,7 +172,7 @@ for (int i = 0; i < ship->cargo_count; i++) free(ship->cargo[i].dg);
 
 `ship->cargo` pointed to freed memory. Reading through it is a **heap-use-after-free** — the memory might have been reused by another allocation, producing silent corruption or, with AddressSanitizer enabled, a crash.
 
-The fix is in both error paths in `src/parser.c`:
+The fix is in both error paths in [`src/parser.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/parser.c):
 
 ```c
 // from src/parser.c (parse_cargo_list, error path)

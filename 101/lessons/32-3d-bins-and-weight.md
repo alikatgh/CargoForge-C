@@ -2,7 +2,7 @@
 
 Before CargoForge-C can compute a ship's centre of gravity or check IMO stability
 criteria, every cargo item needs a position in 3D space. `place_cargo_3d` in
-`src/placement_3d.c` does that job: it divides the ship into rectangular zones called
+[`src/placement_3d.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/placement_3d.c) does that job: it divides the ship into rectangular zones called
 **bins**, then assigns each piece of cargo to a position inside one of them while
 tracking how much weight each bin is already carrying.
 
@@ -62,7 +62,7 @@ smaller free pieces — the guillotine algorithm described in Lesson 33.
 ## The three bins CargoForge-C creates
 
 `place_cargo_3d` hard-codes three bins from the ship's own dimensions. From
-`src/placement_3d.c` (lines 163–218):
+[`src/placement_3d.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/placement_3d.c#L163) (lines 163–218):
 
 ```c
 // Forward hold (30% of length)
@@ -145,7 +145,7 @@ keeps the geometry from assigning cargo to unreachable corners.
 
 After the bins are built, `place_cargo_3d` processes every cargo item in the order
 determined by the FFD sort (largest volume first — covered in Lesson 31). From
-`src/placement_3d.c` (lines 220–256):
+[`src/placement_3d.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/placement_3d.c#L220) (lines 220–256):
 
 ```c
 for (int i = 0; i < ship->cargo_count; i++) {
@@ -197,7 +197,7 @@ Two outcomes are possible for every item:
 ## How `find_best_fit_3d` enforces weight limits
 
 Weight is the very first check inside `find_best_fit_3d`. From
-`src/placement_3d.c` (lines 61–67):
+[`src/placement_3d.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/placement_3d.c#L61) (lines 61–67):
 
 ```c
 for (int b = 0; b < bin_count; b++) {
@@ -252,7 +252,7 @@ the item is marked unplaced.
 ## Six orientations — why they matter
 
 A container that is 6 m × 2.5 m × 2.6 m can be loaded in any of six axis-aligned
-rotations. From `src/placement_3d.c`:
+rotations. From [`src/placement_3d.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/placement_3d.c):
 
 ```c
 switch (orientation) {

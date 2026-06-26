@@ -138,7 +138,7 @@ legacy hazmat separation (3 m), stacking pressure (10 t/m², stricter for
 fragile), reefer-deck preference (advisory), and deck weight ratio.
 
 **Corpus (fuzzing)**
-The seed set of inputs the fuzzer generates from.  CargoForge-C's `scripts/fuzz.sh`
+The seed set of inputs the fuzzer generates from.  CargoForge-C's [`scripts/fuzz.sh`](https://github.com/alikatgh/CargoForge-C/blob/main/scripts/fuzz.sh)
 defines arrays of adversarial values (negative numbers, overflow values, invalid
 DG strings) that are assembled into random ship-config and cargo-manifest files.
 The DG corpus includes both valid entries like `"DG:3.1:UN1203:A:F-E,S-D"` and
@@ -265,7 +265,7 @@ not raw GM.
 **Fuzzing**
 Automated testing that feeds a program large volumes of randomly mutated or
 generated inputs looking for crashes and sanitizer violations.  CargoForge-C's
-`scripts/fuzz.sh` runs 300 iterations by default, each constructing a random
+[`scripts/fuzz.sh`](https://github.com/alikatgh/CargoForge-C/blob/main/scripts/fuzz.sh) runs 300 iterations by default, each constructing a random
 ship config and cargo manifest, running `cargoforge optimize` or `validate`
 under ASan+UBSan, and treating exit code ≥ 128 (signal) or sanitizer output
 as failure.  The real heap-use-after-free bug was discovered this way.
@@ -607,7 +607,7 @@ A compiler runtime that traps C undefined-behaviour violations — signed intege
 overflow, null-pointer dereference, misaligned access, out-of-bounds array
 indexing (where detectable at compile time) — at the exact moment they occur.
 Enabled with `-fsanitize=undefined`.  CargoForge-C runs UBSan alongside ASan in
-`make test-asan` and in `scripts/fuzz.sh`.
+`make test-asan` and in [`scripts/fuzz.sh`](https://github.com/alikatgh/CargoForge-C/blob/main/scripts/fuzz.sh).
 
 **UN number**
 A four-digit United Nations number uniquely identifying a dangerous substance or

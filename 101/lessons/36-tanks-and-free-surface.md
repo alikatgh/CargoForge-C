@@ -4,7 +4,7 @@ Ships carry liquid in tanks — ballast water, fuel oil, fresh water, slop.
 When a tank is only partially filled, the liquid inside can slosh from side to side
 as the ship rolls, effectively raising the centre of gravity and reducing stability.
 CargoForge-C models this effect through the **free-surface correction**, computed in
-`src/tanks.c` and folded into every stability analysis that includes a tank file.
+[`src/tanks.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/tanks.c) and folded into every stability analysis that includes a tank file.
 
 ---
 
@@ -34,7 +34,7 @@ The $b^3$ term is the second moment of area of the free surface about its own ce
 A wide tank contributes far more FSM than a long, narrow one of the same volume — breadth
 is cubed, length is only linear.
 
-`calculate_free_surface_moment` in `src/tanks.c` implements this directly:
+`calculate_free_surface_moment` in [`src/tanks.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/tanks.c) implements this directly:
 
 ```c
 float calculate_free_surface_moment(const Tank *tank) {
@@ -95,7 +95,7 @@ $$
 GM_{\text{corrected}} = GM - \text{FSC}
 $$
 
-`src/tanks.c` provides two helpers that carry this out:
+[`src/tanks.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/tanks.c) provides two helpers that carry this out:
 
 ```c
 float calculate_total_fsm(const TankConfig *config) {
@@ -112,7 +112,7 @@ float calculate_virtual_kg_rise(const TankConfig *config, float displacement_t) 
 }
 ```
 
-`perform_analysis` in `src/analysis.c` calls `calculate_virtual_kg_rise`, stores the
+`perform_analysis` in [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c) calls `calculate_virtual_kg_rise`, stores the
 result in `AnalysisResult.free_surface_correction`, and subtracts it from GM to produce
 `AnalysisResult.gm_corrected`.  Every downstream criterion — GZ curve, IMO checks,
 heel angle — uses `gm_corrected`, never the uncorrected GM.
@@ -136,7 +136,7 @@ DB_FuelOil,   12.0, 8.0, 1.5,  45.0, 0.0, -9.5, 0.60, 0.85
 PS_Ballast,    8.0, 3.5, 4.0,  20.0, 8.5, -8.0, 0.40, 1.025
 ```
 
-`parse_tank_config` in `src/tanks.c` reads this file line by line with `sscanf`:
+`parse_tank_config` in [`src/tanks.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/tanks.c) reads this file line by line with `sscanf`:
 
 ```c
 int parsed = sscanf(line, "%31[^,],%f,%f,%f,%f,%f,%f,%f,%f",

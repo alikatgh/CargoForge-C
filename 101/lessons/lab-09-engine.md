@@ -13,11 +13,11 @@ All commands run from the repository root. The binary must be built first (`make
 
 | File | Role |
 |---|---|
-| `examples/sample_ship.cfg` | Minimal ship — no hydro table, no tanks |
-| `examples/sample_ship_full.cfg` | Same ship plus `hydrostatic_table=` and `tank_config=` keys |
-| `examples/sample_hydro.csv` | Nine-column CSV table: draft → displacement, KB, BM, TPC, MTC, … |
-| `examples/sample_tanks.csv` | Five partially-filled tanks: ballast, double-bottoms, fuel, fresh water |
-| `examples/sample_cargo.txt` | Five general cargo items, total 1 500 t |
+| [`examples/sample_ship.cfg`](https://github.com/alikatgh/CargoForge-C/blob/main/examples/sample_ship.cfg) | Minimal ship — no hydro table, no tanks |
+| [`examples/sample_ship_full.cfg`](https://github.com/alikatgh/CargoForge-C/blob/main/examples/sample_ship_full.cfg) | Same ship plus `hydrostatic_table=` and `tank_config=` keys |
+| [`examples/sample_hydro.csv`](https://github.com/alikatgh/CargoForge-C/blob/main/examples/sample_hydro.csv) | Nine-column CSV table: draft → displacement, KB, BM, TPC, MTC, … |
+| [`examples/sample_tanks.csv`](https://github.com/alikatgh/CargoForge-C/blob/main/examples/sample_tanks.csv) | Five partially-filled tanks: ballast, double-bottoms, fuel, fresh water |
+| [`examples/sample_cargo.txt`](https://github.com/alikatgh/CargoForge-C/blob/main/examples/sample_cargo.txt) | Five general cargo items, total 1 500 t |
 
 ---
 
@@ -62,7 +62,7 @@ Stability
 
 ## Step 3 — Inspect the full config
 
-Open `examples/sample_ship_full.cfg` in any text viewer:
+Open [`examples/sample_ship_full.cfg`](https://github.com/alikatgh/CargoForge-C/blob/main/examples/sample_ship_full.cfg) in any text viewer:
 
 ```
 # Hydrostatic table (enables table-based calculations)

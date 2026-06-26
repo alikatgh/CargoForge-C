@@ -28,7 +28,7 @@ The working directory now contains:
 | `examples/` | Sample ship configs and cargo manifests |
 | `tests/` | Eight unit-test binaries (one per module) |
 | `scripts/` | Helper scripts including the fuzzer |
-| `Makefile` | Single entry point for every build target |
+| [`Makefile`](https://github.com/alikatgh/CargoForge-C/blob/main/Makefile) | Single entry point for every build target |
 
 ---
 

@@ -1,6 +1,6 @@
 # Buoyancy and Archimedes
 
-Steel is about eight times denser than water, yet a ship made of steel floats. Understanding why is not a physics curiosity — it is the prerequisite for every stability number CargoForge-C computes. `perform_analysis` in `src/analysis.c` derives draft, KB, BM, and ultimately GM from a single foundational calculation: how much water does the ship displace, and what does that tell us?
+Steel is about eight times denser than water, yet a ship made of steel floats. Understanding why is not a physics curiosity — it is the prerequisite for every stability number CargoForge-C computes. `perform_analysis` in [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c) derives draft, KB, BM, and ultimately GM from a single foundational calculation: how much water does the ship displace, and what does that tell us?
 
 <svg viewBox="0 0 600 232" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:560px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
 <title>Why a steel ship floats: buoyancy equals the weight of the displaced water</title>
@@ -38,7 +38,7 @@ A steel ship floats because its hull is hollow. The total weight of the steel sh
 
 ## Seawater Density — the One Constant that Connects Weight to Volume
 
-Salt water at 15 °C has a density of approximately 1.025 tonnes per cubic metre. That number appears at the top of `src/analysis.c` as a named constant:
+Salt water at 15 °C has a density of approximately 1.025 tonnes per cubic metre. That number appears at the top of [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c) as a named constant:
 
 ```c
 /* from src/analysis.c */
@@ -58,7 +58,7 @@ where $\Delta$ is displacement in tonnes and $V$ is in cubic metres. This is the
 
 ## From Weight to Displacement to Draft
 
-`perform_analysis` (in `src/analysis.c`) builds displacement by summing all mass contributions:
+`perform_analysis` (in [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c)) builds displacement by summing all mass contributions:
 
 ```c
 /* from src/analysis.c, perform_analysis() */
@@ -94,7 +94,7 @@ The block coefficient `BLOCK_COEFF = 0.75` accounts for the fact that real ship 
 
 ### Table-Based Hydrostatics
 
-Real ships are measured in dry-dock at many drafts and the resulting data is published in a hydrostatic table. `src/hydrostatics.c` reads that table from a CSV file and provides two look-up functions:
+Real ships are measured in dry-dock at many drafts and the resulting data is published in a hydrostatic table. [`src/hydrostatics.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/hydrostatics.c) reads that table from a CSV file and provides two look-up functions:
 
 - `hydro_draft_from_displacement` — given a displacement in tonnes, finds the matching draft by searching the table and interpolating between rows.
 - `hydro_interpolate` — given a draft, returns all hydrostatic properties (KB, BM, TPC, MTC, …) at that draft.
@@ -170,7 +170,7 @@ In `perform_analysis`:
 r.gm = r.kb + r.bm - r.kg;
 ```
 
-A positive GM means the metacentre M is above the centre of gravity G — the ship is stable and will right itself. A negative GM means G is above M — the ship will capsize. The IMO sets a minimum of 0.15 m (the constant `IMO_GM_MIN` in `src/analysis.c`). CargoForge-C uses `gm_corrected` — GM after subtracting any free-surface correction — for all subsequent stability criteria.
+A positive GM means the metacentre M is above the centre of gravity G — the ship is stable and will right itself. A negative GM means G is above M — the ship will capsize. The IMO sets a minimum of 0.15 m (the constant `IMO_GM_MIN` in [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c)). CargoForge-C uses `gm_corrected` — GM after subtracting any free-surface correction — for all subsequent stability criteria.
 
 | Symbol | Meaning | Source (box-hull) | Source (table) |
 |--------|---------|-------------------|---------------|
@@ -183,7 +183,7 @@ A positive GM means the metacentre M is above the centre of gravity G — the sh
 
 ## The Hydrostatic Table in Practice
 
-The CSV format expected by `parse_hydro_table` in `src/hydrostatics.c` requires at least seven comma-separated columns per row in ascending draft order:
+The CSV format expected by `parse_hydro_table` in [`src/hydrostatics.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/hydrostatics.c) requires at least seven comma-separated columns per row in ascending draft order:
 
 ```
 # draft_m, displacement_t, km_m, kb_m, bm_m, tpc_t_per_cm, mtc_tm_per_cm
@@ -203,9 +203,9 @@ The CSV format expected by `parse_hydro_table` in `src/hydrostatics.c` requires 
 
 - Archimedes' principle: a floating body displaces a volume of water whose weight exactly equals the body's own weight. A hollow steel ship floats because its average density (hull plus air) is less than seawater.
 - CargoForge-C uses `SEAWATER_DENSITY = 1.025 t/m³` to convert displacement (tonnes) to displaced volume (m³): $V = \Delta / 1.025$.
-- Draft is found from displaced volume either via the box-hull formula (using `BLOCK_COEFF = 0.75`) or by inverse interpolation in a hydrostatic CSV table loaded through `src/hydrostatics.c`.
+- Draft is found from displaced volume either via the box-hull formula (using `BLOCK_COEFF = 0.75`) or by inverse interpolation in a hydrostatic CSV table loaded through [`src/hydrostatics.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/hydrostatics.c).
 - KB (height of centre of buoyancy) and BM (metacentric radius, $I_T / V$) come from the same table row or from box-hull constants.
-- All three feed into the fundamental stability equation $GM = KB + BM - KG$, computed in `perform_analysis` in `src/analysis.c`.
+- All three feed into the fundamental stability equation $GM = KB + BM - KG$, computed in `perform_analysis` in [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c).
 - IMO requires $GM \geq 0.15\ \text{m}$; CargoForge-C enforces this as part of its six-criterion intact stability check.
 
 *Next: [Displacement, density, and draft](18-displacement-density-draft.md).*

@@ -44,7 +44,7 @@ CargoForge-C uses two well-studied heuristics in combination.
 
 **Idea:** sort items from largest to smallest before placing anything. Large items are the hardest to fit; placing them first leaves smaller gaps that can accommodate smaller items. Small items are flexible and can usually be squeezed in somewhere.
 
-From `src/placement_3d.c`, the comparator and the sort:
+From [`src/placement_3d.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/placement_3d.c), the comparator and the sort:
 
 ```c
 // Comparator for sorting cargo by volume (descending)

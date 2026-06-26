@@ -1,6 +1,6 @@
 # The center of buoyancy and the metacenter
 
-A ship floats because the water it displaces pushes back. Where exactly that push acts — and how it shifts when the ship tilts — determines whether the vessel rights itself or capsizes. This lesson explains the geometry behind buoyancy: KB (the vertical center of buoyancy), BM (the metacentric radius), and the metacenter M — the pivot point that `src/analysis.c` computes before every stability check.
+A ship floats because the water it displaces pushes back. Where exactly that push acts — and how it shifts when the ship tilts — determines whether the vessel rights itself or capsizes. This lesson explains the geometry behind buoyancy: KB (the vertical center of buoyancy), BM (the metacentric radius), and the metacenter M — the pivot point that [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c) computes before every stability check.
 
 ---
 

@@ -3,7 +3,7 @@
 Every C program begins at the same place: a function called `main`. Understanding
 what `main` does — and what the operating system does before and after it — unlocks
 the structure of every program you will ever read. CargoForge-C is a real-world
-example: its `src/main.c` is deliberately small so you can see the skeleton without
+example: its [`src/main.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/main.c) is deliberately small so you can see the skeleton without
 distraction.
 
 ---
@@ -14,7 +14,7 @@ When you run any program on Linux or macOS, the operating system loads the binar
 sets up memory, and then calls one specific function: `main`. Your C code must
 define exactly one `main`. Everything else is optional.
 
-Here is the complete `src/main.c` for CargoForge-C:
+Here is the complete [`src/main.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/main.c) for CargoForge-C:
 
 ```c
 /* main.c — Entry point for CargoForge-C */
@@ -72,8 +72,8 @@ the OS sets `argc = 4`:
 |-------|-------|
 | 0 | `cargoforge` |
 | 1 | `optimize` |
-| 2 | `examples/sample_ship.cfg` |
-| 3 | `examples/sample_cargo.txt` |
+| 2 | [`examples/sample_ship.cfg`](https://github.com/alikatgh/CargoForge-C/blob/main/examples/sample_ship.cfg) |
+| 3 | [`examples/sample_cargo.txt`](https://github.com/alikatgh/CargoForge-C/blob/main/examples/sample_cargo.txt) |
 
 ### `argv` — argument vector
 

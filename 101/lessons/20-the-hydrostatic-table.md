@@ -22,7 +22,7 @@ A hydrostatic table records all of these values at a series of evenly-spaced dra
 
 ## What the CSV columns mean
 
-The file `examples/sample_hydro.csv` ships with CargoForge-C as a worked example for a 150 m × 25 m general cargo vessel (block coefficient 0.75):
+The file [`examples/sample_hydro.csv`](https://github.com/alikatgh/CargoForge-C/blob/main/examples/sample_hydro.csv) ships with CargoForge-C as a worked example for a 150 m × 25 m general cargo vessel (block coefficient 0.75):
 
 ```csv
 # Hydrostatic table for MV Example (150m x 25m general cargo vessel)
@@ -77,7 +77,7 @@ where $LCG$ is the longitudinal distance between the centre of gravity and the c
 
 ## Reading and validating the table in C
 
-`parse_hydro_table` in `src/hydrostatics.c` reads the CSV one line at a time, skipping `#` comments and blank lines:
+`parse_hydro_table` in [`src/hydrostatics.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/hydrostatics.c) reads the CSV one line at a time, skipping `#` comments and blank lines:
 
 ```c
 int parsed = sscanf(line, "%f,%f,%f,%f,%f,%f,%f,%f,%f",
@@ -213,7 +213,7 @@ The tank configuration key (`tank_config`) works identically: one key in the con
 
 - The hydrostatic table encodes how a specific hull's geometry — displacement, KB, BM, TPC, MTC, waterplane area, and LCB — varies with draft, pre-computed by naval architects from the actual hull lines.
 - The nine-column CSV format used by CargoForge-C mirrors what real stability booklets provide; 7- and 8-column variants are also accepted with sensible defaults for missing fields.
-- `parse_hydro_table` in `src/hydrostatics.c` enforces strictly ascending draft order because the interpolation functions require monotonicity.
+- `parse_hydro_table` in [`src/hydrostatics.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/hydrostatics.c) enforces strictly ascending draft order because the interpolation functions require monotonicity.
 - `hydro_draft_from_displacement` performs inverse interpolation: given a displacement (tonnes), it returns the draft — the direction the analysis always runs in practice.
 - When a table is loaded, every approximate box-hull constant (0.75, 0.53, 0.85) is replaced by real data read from the table, and `AnalysisResult.hydro_table_used` is set to 1.
 - Clamping at table boundaries prevents extrapolation; an overweight ship is caught earlier by the weight limit check.

@@ -4,7 +4,7 @@ Every stability calculation in CargoForge-C starts from one number: KG, the
 height of the ship's combined centre of gravity above the keel. This lesson
 explains what a centre of gravity is, how it is computed from first principles
 using moments, why the vertical component (KG) is the one that dominates safety
-decisions, and how `perform_analysis` in `src/analysis.c` translates those
+decisions, and how `perform_analysis` in [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c) translates those
 principles into the code that runs on every voyage plan.
 
 ---
@@ -82,7 +82,7 @@ the fundamental righting lever.
 
 ## How CargoForge-C computes KG
 
-Open `src/analysis.c`. The computation unfolds inside `perform_analysis` in a
+Open [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c). The computation unfolds inside `perform_analysis` in a
 single pass over the cargo array.
 
 ### Step 1 — seed with the lightship moment
@@ -245,7 +245,7 @@ value chosen to warn operators well before the IMO hard floor of 0.15 m.
   $GM = KB + BM - KG$.
 - A high KG reduces GM; when GM reaches zero the ship has no self-righting
   ability and capsizes.
-- `perform_analysis` in `src/analysis.c` computes KG in one line —
+- `perform_analysis` in [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c) computes KG in one line —
   `r.kg = vertical_moment / displacement_kg` — after a single loop that
   accumulates moments from lightship, cargo, and tanks.
 - The corrected GM (`gm_corrected = gm - free_surface_correction`) is used for

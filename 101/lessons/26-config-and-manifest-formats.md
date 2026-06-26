@@ -14,7 +14,7 @@ Ship config files use a minimal `key=value` format. Comment lines begin with `#`
 ignored. There is no section syntax and no quoting — every value is either a number or a file
 path.
 
-The basic example, `examples/sample_ship.cfg`, covers the five keys that are always required:
+The basic example, [`examples/sample_ship.cfg`](https://github.com/alikatgh/CargoForge-C/blob/main/examples/sample_ship.cfg), covers the five keys that are always required:
 
 ```ini
 # Ship Specifications
@@ -66,7 +66,7 @@ mandatory fields and one optional field:
 <ID>  <weight_tonnes>  <LxWxH_m>  <type>  [DG_field]
 ```
 
-From `examples/sample_cargo.txt`:
+From [`examples/sample_cargo.txt`](https://github.com/alikatgh/CargoForge-C/blob/main/examples/sample_cargo.txt):
 
 ```text
 # Cargo Manifest
@@ -136,7 +136,7 @@ the stdin path may over-allocate.
 
 The five basic keys are sufficient for box-hull calculations. To activate table-based
 hydrostatics, free-surface correction, and longitudinal strength checking, add the extended keys
-shown in `examples/sample_ship_full.cfg`:
+shown in [`examples/sample_ship_full.cfg`](https://github.com/alikatgh/CargoForge-C/blob/main/examples/sample_ship_full.cfg):
 
 ```ini
 # Full ship configuration with hydrostatic table, tanks, and strength limits
@@ -241,7 +241,7 @@ All three must be present for strength checking to activate. If any one is absen
 `parse_ship_config` stores the string value of `hydrostatic_table` or `tank_config` into a path
 buffer, then calls the corresponding parser on that path. Paths are resolved relative to the
 working directory from which CargoForge-C is invoked — not relative to the config file itself.
-This is why the examples use paths like `examples/sample_hydro.csv` when the program is expected
+This is why the examples use paths like [`examples/sample_hydro.csv`](https://github.com/alikatgh/CargoForge-C/blob/main/examples/sample_hydro.csv) when the program is expected
 to be run from the repository root.
 
 !!! tip "Reading from stdin"

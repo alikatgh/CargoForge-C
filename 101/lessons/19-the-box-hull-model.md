@@ -14,7 +14,7 @@ But not every operator has that table, especially at early planning stages. The 
 
 ## The four constants
 
-Everything in the box-hull model is controlled by four `#define` constants at the top of `src/analysis.c`:
+Everything in the box-hull model is controlled by four `#define` constants at the top of [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c):
 
 ```c
 #define SEAWATER_DENSITY    1.025f  /* t/m3 at 15C */
@@ -38,7 +38,7 @@ These are fleet-average constants, not measurements of any specific vessel. They
 
 ## Step 1 — How deep will the ship sit? (Draft)
 
-Before we can find draft we need displacement. `perform_analysis` in `src/analysis.c` accumulates it from three sources — lightship weight, placed cargo, and ballast tanks — then computes draft via displaced volume:
+Before we can find draft we need displacement. `perform_analysis` in [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c) accumulates it from three sources — lightship weight, placed cargo, and ballast tanks — then computes draft via displaced volume:
 
 ```c
 float displacement_t = displacement_kg / 1000.0f;

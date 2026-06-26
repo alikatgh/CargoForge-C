@@ -23,7 +23,7 @@ They are not separate programs — they are compiler flags. The overhead is real
 
 ## The `make test-asan` Target
 
-In the `Makefile`, the sanitized test run is a single target:
+In the [`Makefile`](https://github.com/alikatgh/CargoForge-C/blob/main/Makefile), the sanitized test run is a single target:
 
 ```makefile
 # Makefile, lines 94–97
@@ -50,7 +50,7 @@ The `clean` dependency is deliberate. The normal build uses `-O3` without debug 
 
 ## The Fuzzer and Sanitizer Integration
 
-Running the eight unit tests under ASan covers the happy path and known edge cases. But the fuzzer (`scripts/fuzz.sh`) extends coverage to *inputs no human would write* — malformed configs, invalid DG strings, binary noise — precisely because parsers are the most common entry point for real-world crashes.
+Running the eight unit tests under ASan covers the happy path and known edge cases. But the fuzzer ([`scripts/fuzz.sh`](https://github.com/alikatgh/CargoForge-C/blob/main/scripts/fuzz.sh)) extends coverage to *inputs no human would write* — malformed configs, invalid DG strings, binary noise — precisely because parsers are the most common entry point for real-world crashes.
 
 The fuzzer builds its own sanitized binary:
 
@@ -165,7 +165,7 @@ ship->cargo_count = 0; // prevent iteration over freed memory
 
 - ASan and UBSan are compiler flags (`-fsanitize=address,undefined`) that instrument every memory access and arithmetic operation and abort on the first violation with an exact stack trace.
 - `make test-asan` does a **full clean rebuild** with those flags and then runs all eight test binaries — partial builds will miss bugs.
-- The fuzzer (`scripts/fuzz.sh`) builds its own `-O1` sanitized binary and runs 300 iterations of random malformed input; exit code ≥ 128 or any sanitizer diagnostic on stderr is a failure.
+- The fuzzer ([`scripts/fuzz.sh`](https://github.com/alikatgh/CargoForge-C/blob/main/scripts/fuzz.sh)) builds its own `-O1` sanitized binary and runs 300 iterations of random malformed input; exit code ≥ 128 or any sanitizer diagnostic on stderr is a failure.
 - An ASan report gives three stacks: where the bad access happened, where the memory was freed, and where it was allocated — read them together to understand the ownership mistake.
 - ASan does not catch uninitialised stack reads (use Valgrind/MSan) or logic errors; it is one layer of a multi-layer safety net.
 - The real bug in `parse_cargo_list` — heap-use-after-free on the cargo array — was silent without sanitizers and immediately visible with them.

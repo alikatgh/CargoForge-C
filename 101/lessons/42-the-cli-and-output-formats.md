@@ -1,6 +1,6 @@
 # The CLI and output formats
 
-Every calculation this course has covered — displacement, GM, bin-packing, IMDG checks — reaches the user through a single entry point: the command-line interface in `src/cli.c`. This lesson explains how the CLI is structured, how `getopt_long` turns raw `argv` into structured decisions, and why CargoForge-C offers five distinct output formats for the same underlying data.
+Every calculation this course has covered — displacement, GM, bin-packing, IMDG checks — reaches the user through a single entry point: the command-line interface in [`src/cli.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/cli.c). This lesson explains how the CLI is structured, how `getopt_long` turns raw `argv` into structured decisions, and why CargoForge-C offers five distinct output formats for the same underlying data.
 
 ---
 
@@ -8,7 +8,7 @@ Every calculation this course has covered — displacement, GM, bin-packing, IMD
 
 CargoForge-C uses a **subcommand dispatch** pattern, the same model as `git` or `cargo`. A single binary handles conceptually different tasks by reading `argv[1]` before any option parsing begins.
 
-From `src/cli.c`, the dispatch table is a simple chain of `strcmp` calls:
+From [`src/cli.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/cli.c), the dispatch table is a simple chain of `strcmp` calls:
 
 ```c
 // src/cli.c  — dispatch_subcommand()
@@ -129,7 +129,7 @@ The pattern is **global defaults → project-local override → CLI flags**. A p
 
 ## The five output formats
 
-All five are dispatched from `output_results` in `src/cli.c`. The same `Ship *` and `AnalysisResult *` objects are passed to every formatter; what changes is only the representation:
+All five are dispatched from `output_results` in [`src/cli.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/cli.c). The same `Ship *` and `AnalysisResult *` objects are passed to every formatter; what changes is only the representation:
 
 ```c
 // src/cli.c  — output_results()
@@ -151,11 +151,11 @@ switch (format) {
 
 ### FORMAT_HUMAN (default)
 
-The human format calls `print_loading_plan` (defined in `src/analysis.c`), which walks every stability number in plain prose. If `show_viz` is set (default: true) it appends an ASCII plan-view of the cargo layout. This is the format you use at the terminal when inspecting a loading plan interactively.
+The human format calls `print_loading_plan` (defined in [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c)), which walks every stability number in plain prose. If `show_viz` is set (default: true) it appends an ASCII plan-view of the cargo layout. This is the format you use at the terminal when inspecting a loading plan interactively.
 
 ### FORMAT_JSON
 
-Delegated to `fprint_json_output` in `src/json_output.c`. The output is a single JSON object with three top-level keys: `"ship"`, `"cargo"` (an array), and `"analysis"`.
+Delegated to `fprint_json_output` in [`src/json_output.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/json_output.c). The output is a single JSON object with three top-level keys: `"ship"`, `"cargo"` (an array), and `"analysis"`.
 
 The `"analysis"` block contains a critical branch: if `result->gm` is `NAN` (set when the ship is overweight and analysis was rejected), all hydrostatic and stability fields are emitted as `null`:
 
@@ -176,7 +176,7 @@ if (!isnan(result->gm)) {
 
 This means a JSON consumer does not need to distinguish between "field not computed" and "field zero" — it simply checks `overweight` first and skips the null subtree if true.
 
-The `escape_json_string` helper in `src/json_output.c` escapes `"` and `\` characters inside string fields so that cargo IDs containing those characters do not produce malformed JSON.
+The `escape_json_string` helper in [`src/json_output.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/json_output.c) escapes `"` and `\` characters inside string fields so that cargo IDs containing those characters do not produce malformed JSON.
 
 JSON is the format of choice when piping results to another program, calling the CLI from a web backend, or archiving results for later analysis.
 

@@ -22,7 +22,7 @@ The `lib` target compiles only the engine source — `parser.c`, `analysis.c`, `
 
 ## The single public header
 
-From `include/libcargoforge.h`:
+From [`include/libcargoforge.h`](https://github.com/alikatgh/CargoForge-C/blob/main/include/libcargoforge.h):
 
 ```c
 #define CF_VERSION_MAJOR 3
@@ -53,7 +53,7 @@ extern "C" {
 typedef struct CargoForge CargoForge;
 ```
 
-`CargoForge` is an **opaque type**: the struct definition is hidden inside `src/libcargoforge.c`. Callers never see its fields; they only hold a pointer to it. This is the standard C pattern for encapsulation — the equivalent of a private class in C++.
+`CargoForge` is an **opaque type**: the struct definition is hidden inside [`src/libcargoforge.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/libcargoforge.c). Callers never see its fields; they only hold a pointer to it. This is the standard C pattern for encapsulation — the equivalent of a private class in C++.
 
 Inside `libcargoforge.c`, the actual definition reveals what the handle carries:
 
@@ -104,7 +104,7 @@ Every function that can fail returns one of these integers. `CF_OK` (0) is alway
 
 ## Lifecycle: open, use, close
 
-From `src/libcargoforge.c`:
+From [`src/libcargoforge.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/libcargoforge.c):
 
 ```c
 int cargoforge_open(CargoForge **out) {
@@ -179,7 +179,7 @@ int cargoforge_analyze(CargoForge *cf);    // analyse only (positions already se
 int cargoforge_check_imdg(CargoForge *cf); // IMDG segregation check
 ```
 
-`cargoforge_optimize` is the primary call. It chains `place_cargo_3d` (the 3D bin-packing algorithm) with `perform_analysis` (the full stability calculation). Under the hood, from `src/libcargoforge.c`:
+`cargoforge_optimize` is the primary call. It chains `place_cargo_3d` (the 3D bin-packing algorithm) with `perform_analysis` (the full stability calculation). Under the hood, from [`src/libcargoforge.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/libcargoforge.c):
 
 ```c
 /* Run 3D bin-packing */
@@ -258,7 +258,7 @@ Returns the full analysis as a JSON string. The first call generates the JSON in
 
 ## A complete example
 
-`examples/library_example.c` demonstrates the full flow from open to close. The essential structure:
+[`examples/library_example.c`](https://github.com/alikatgh/CargoForge-C/blob/main/examples/library_example.c) demonstrates the full flow from open to close. The essential structure:
 
 ```c
 #include "libcargoforge.h"
@@ -303,7 +303,7 @@ gcc -Iinclude -o library_example examples/library_example.c -L. -lcargoforge -lm
 ./library_example
 ```
 
-The `-Iinclude` flag puts `include/libcargoforge.h` on the include path. `-L.` tells the linker to look for `libcargoforge.a` (or `.so`/`.dylib`) in the current directory. `-lm` links the math library, which the stability calculations require for `sin`, `tan`, and `atan`.
+The `-Iinclude` flag puts [`include/libcargoforge.h`](https://github.com/alikatgh/CargoForge-C/blob/main/include/libcargoforge.h) on the include path. `-L.` tells the linker to look for `libcargoforge.a` (or `.so`/`.dylib`) in the current directory. `-lm` links the math library, which the stability calculations require for `sin`, `tan`, and `atan`.
 
 !!! warning
     When using the shared library (`-lcargoforge` resolving to `.so` or `.dylib`), you must ensure the library is on the dynamic linker's search path at runtime (`LD_LIBRARY_PATH` on Linux, `DYLD_LIBRARY_PATH` on macOS, or installed to a standard prefix). The static library (`libcargoforge.a`) bundles everything into the binary and has no runtime dependency.
@@ -312,7 +312,7 @@ The `-Iinclude` flag puts `include/libcargoforge.h` on the include path. `-L.` t
 
 ## How `fill_result` insulates the ABI
 
-The internal `AnalysisResult` struct (in `cargoforge.h`) is free to change as the engine evolves. The public `CfResult` struct (in `libcargoforge.h`) is the stable interface. `fill_result` in `src/libcargoforge.c` is the explicit bridge:
+The internal `AnalysisResult` struct (in `cargoforge.h`) is free to change as the engine evolves. The public `CfResult` struct (in `libcargoforge.h`) is the stable interface. `fill_result` in [`src/libcargoforge.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/libcargoforge.c) is the explicit bridge:
 
 ```c
 static void fill_result(CargoForge *cf) {
@@ -335,7 +335,7 @@ Any internal reorganisation that does not change the public semantics can be abs
 
 ## Recap
 
-- `make lib` builds `libcargoforge.a` and the shared object; `include/libcargoforge.h` is the only header callers need.
+- `make lib` builds `libcargoforge.a` and the shared object; [`include/libcargoforge.h`](https://github.com/alikatgh/CargoForge-C/blob/main/include/libcargoforge.h) is the only header callers need.
 - `CargoForge *` is an opaque handle — all state is inside the struct, there are no globals, and two handles are fully independent.
 - The API enforces a load → optimize → read state machine; out-of-order calls return `CF_ERR_STATE` or `CF_ERR_NO_SHIP`.
 - `_string` loading variants write a temp file via `mkstemp` and `unlink` it after parsing, so callers can feed in-memory data without managing files.

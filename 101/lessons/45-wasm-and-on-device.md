@@ -30,7 +30,7 @@ line of source change.
 
 ## The `wasm` Makefile target
 
-The `wasm` target in the `Makefile` captures the entire build in one `emcc`
+The `wasm` target in the [`Makefile`](https://github.com/alikatgh/CargoForge-C/blob/main/Makefile) captures the entire build in one `emcc`
 invocation:
 
 ```makefile

@@ -2,7 +2,7 @@
 
 Fuzz testing answers a question that unit tests can't: what happens when the program receives
 input nobody thought to write a test for? CargoForge-C ships a purpose-built fuzzer in
-`scripts/fuzz.sh` that bombards the parser and processing pipeline with random, malformed, and
+[`scripts/fuzz.sh`](https://github.com/alikatgh/CargoForge-C/blob/main/scripts/fuzz.sh) that bombards the parser and processing pipeline with random, malformed, and
 adversarial inputs. When combined with memory sanitizers, fuzzing becomes one of the most
 effective ways to find real bugs — and it found a real one in this codebase.
 
@@ -261,7 +261,7 @@ then you revert to the optimised release build for deployment.
 
 !!! warning "Do not ship the sanitized binary"
     The ASan runtime carries large overhead and exposes internal instrumentation. Always use
-    the release binary (`make all`) for deployment; use `make test-asan` and `scripts/fuzz.sh`
+    the release binary (`make all`) for deployment; use `make test-asan` and [`scripts/fuzz.sh`](https://github.com/alikatgh/CargoForge-C/blob/main/scripts/fuzz.sh)
     only during development and CI.
 
 ---

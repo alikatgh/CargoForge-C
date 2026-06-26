@@ -130,7 +130,7 @@ analysis. Use it when you have edited an input file and want a fast format check
 
 ## Step 5 — Run `optimize` on the DG manifest
 
-`examples/sample_cargo_dg.txt` adds three dangerous-goods items to the same ship. Look at the
+[`examples/sample_cargo_dg.txt`](https://github.com/alikatgh/CargoForge-C/blob/main/examples/sample_cargo_dg.txt) adds three dangerous-goods items to the same ship. Look at the
 file:
 
 ```

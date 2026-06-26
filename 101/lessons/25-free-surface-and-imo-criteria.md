@@ -1,6 +1,6 @@
 # Free surface and the IMO criteria
 
-A ship's tanks are rarely empty or brim-full. When a tank is partially filled, the liquid inside sloshes — and that sloshing effectively raises the vessel's centre of gravity even though no mass has moved upward. CargoForge-C models this effect through the **free-surface correction** computed in `src/tanks.c`, then tests the corrected stability against six mandatory IMO thresholds checked in `src/analysis.c`.
+A ship's tanks are rarely empty or brim-full. When a tank is partially filled, the liquid inside sloshes — and that sloshing effectively raises the vessel's centre of gravity even though no mass has moved upward. CargoForge-C models this effect through the **free-surface correction** computed in [`src/tanks.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/tanks.c), then tests the corrected stability against six mandatory IMO thresholds checked in [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c).
 
 <svg viewBox="0 0 600 220" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:580px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
 <title>Free surface effect: sloshing liquid raises the effective centre of gravity</title>
@@ -56,7 +56,7 @@ The exceptions are the boundary cases: an empty tank has no free surface, and a 
 
 ### How CargoForge-C computes it
 
-`src/tanks.c` implements this directly in `calculate_free_surface_moment`:
+[`src/tanks.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/tanks.c) implements this directly in `calculate_free_surface_moment`:
 
 ```c
 float calculate_free_surface_moment(const Tank *tank) {
@@ -100,7 +100,7 @@ where $\Delta$ is the ship's displacement in tonnes. The corrected metacentric h
 
 $$GM_{corrected} = GM - FSC = (KB + BM - KG) - FSC$$
 
-`src/tanks.c` provides `calculate_virtual_kg_rise` to produce this number:
+[`src/tanks.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/tanks.c) provides `calculate_virtual_kg_rise` to produce this number:
 
 ```c
 float calculate_virtual_kg_rise(const TankConfig *config, float displacement_t) {
@@ -111,7 +111,7 @@ float calculate_virtual_kg_rise(const TankConfig *config, float displacement_t) 
 }
 ```
 
-`perform_analysis` in `src/analysis.c` stores the result as `result.free_surface_correction` and subtracts it to obtain `result.gm_corrected`. Every subsequent stability criterion — GZ curve, IMO checks, heel angle — uses `gm_corrected`, never the raw GM.
+`perform_analysis` in [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c) stores the result as `result.free_surface_correction` and subtracts it to obtain `result.gm_corrected`. Every subsequent stability criterion — GZ curve, IMO checks, heel angle — uses `gm_corrected`, never the raw GM.
 
 !!! warning "Never use uncorrected GM for seakeeping decisions"
     Raw $GM = KB + BM - KG$ ignores tank sloshing entirely. In a vessel with several large double-bottom tanks partially filled, the FSC can exceed 0.5 m. Using the uncorrected figure would give a falsely optimistic stability picture.
@@ -120,7 +120,7 @@ float calculate_virtual_kg_rise(const TankConfig *config, float displacement_t) 
 
 ## Tank weight and vertical moment
 
-Partially-filled tanks also contribute real mass to the ship's displacement and shift its vertical centre of gravity. `src/tanks.c` computes both.
+Partially-filled tanks also contribute real mass to the ship's displacement and shift its vertical centre of gravity. [`src/tanks.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/tanks.c) computes both.
 
 `calculate_tank_weight` finds the total liquid mass in tonnes:
 
@@ -179,7 +179,7 @@ The areas are computed by trapezoidal integration over 100 steps per interval. N
 
 ## Constraints that indirectly protect stability
 
-Placement decisions in `src/constraints.c` also guard stability, even though they operate at the per-cargo level rather than the whole-ship level.
+Placement decisions in [`src/constraints.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/constraints.c) also guard stability, even though they operate at the per-cargo level rather than the whole-ship level.
 
 **Deck weight ratio.** The Deck bin has a weight limit of 40% of the ship's `max_weight`. `check_cargo_constraints` enforces this:
 

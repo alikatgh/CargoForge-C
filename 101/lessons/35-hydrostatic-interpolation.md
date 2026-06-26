@@ -60,7 +60,7 @@ The table is stored as an array of these entries inside a `HydroTable`, which al
 
 ## Parsing the CSV — `parse_hydro_table`
 
-The function lives in `src/hydrostatics.c`. It opens the file, skips comment lines (those
+The function lives in [`src/hydrostatics.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/hydrostatics.c). It opens the file, skips comment lines (those
 starting with `#`) and blank lines, then calls `sscanf` on each remaining line:
 
 ```c
@@ -136,7 +136,7 @@ $$t = \frac{d - d_0}{d_1 - d_0}, \qquad f(d) = f_0 + t \cdot (f_1 - f_0)$$
 $t$ is the *interpolation fraction*, a number in $[0, 1]$. When $t = 0$ you are at the lower
 row; when $t = 1$ you are at the upper row; when $t = 0.5$ you are exactly halfway.
 
-In `src/hydrostatics.c`, this is a two-function stack:
+In [`src/hydrostatics.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/hydrostatics.c), this is a two-function stack:
 
 ```c
 /* from src/hydrostatics.c */
@@ -263,7 +263,7 @@ the fraction is computed from the *displacement* span, and only the *draft* is r
 draft back into `hydro_interpolate` to fill in KB, BM, and the rest.
 
 !!! tip "The two-step pipeline in `perform_analysis`"
-    The analysis code in `src/analysis.c` uses both functions in sequence:
+    The analysis code in [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c) uses both functions in sequence:
 
     1. Compute total displacement (lightship + cargo + tanks).
     2. Call `hydro_draft_from_displacement` → get draft (m).

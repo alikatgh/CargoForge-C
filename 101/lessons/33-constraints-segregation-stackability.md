@@ -4,8 +4,8 @@ Placing a cargo item is not just a geometry problem — it is a safety problem. 
 enforces six distinct rules for every candidate position before accepting it. Two of the most
 consequential rules come from international law: the IMDG Code's segregation requirements for
 dangerous goods, and structural limits on what cargo can be stacked below or above fragile and
-refrigerated items. This lesson explains how those rules are encoded in `src/constraints.c` and
-`src/imdg.c`, and why they are checked at placement time rather than as an afterthought.
+refrigerated items. This lesson explains how those rules are encoded in [`src/constraints.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/constraints.c) and
+[`src/imdg.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/imdg.c), and why they are checked at placement time rather than as an afterthought.
 
 <svg viewBox="0 0 600 196" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:580px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
 <title>IMDG segregation: incompatible dangerous goods need a minimum separation</title>
@@ -54,7 +54,7 @@ The floor of every hold has a structural limit, typically expressed in tonnes pe
 (t/m²). A small but very heavy item concentrates all of its weight onto a tiny footprint and can
 punch through decking.
 
-From `src/constraints.c`:
+From [`src/constraints.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/constraints.c):
 
 ```c
 float calculate_point_load(const Cargo *cargo) {
@@ -153,7 +153,7 @@ nine primary classes and numerous divisions. Two different dangerous goods in pr
 harmless, incompatible, or somewhere in between. The IMDG Code encodes this as a segregation
 table (Table 7.2.4 in Amendment 41-22): a matrix of requirements for every class-pair.
 
-CargoForge-C encodes that table as a static 17 × 17 integer array in `src/imdg.c`:
+CargoForge-C encodes that table as a static 17 × 17 integer array in [`src/imdg.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/imdg.c):
 
 ```c
 static const int seg_matrix[MATRIX_SIZE][MATRIX_SIZE] = {
@@ -169,7 +169,7 @@ static const int seg_matrix[MATRIX_SIZE][MATRIX_SIZE] = {
 
 The matrix has 17 rows and columns, not 9, because classes with important sub-divisions each get
 their own row. The mapping from IMDG class and division to a matrix index is handled by
-`class_to_index` in `src/imdg.c`.
+`class_to_index` in [`src/imdg.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/imdg.c).
 
 ### The 17 row/column indices
 
@@ -206,7 +206,7 @@ Each cell holds an integer code that maps to a `SegregationType` enum:
 | 4 | `SEG_SEPARATED_LONG` | 24 m |
 | 5 | `SEG_INCOMPATIBLE` | Cannot share same vessel |
 
-These distances come directly from `imdg_min_distance` in `src/imdg.c`:
+These distances come directly from `imdg_min_distance` in [`src/imdg.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/imdg.c):
 
 ```c
 float imdg_min_distance(SegregationType seg) {
@@ -253,7 +253,7 @@ oxidizer, `check_cargo_constraints` rejects that space and tries the next candid
 ## Post-placement verification: `imdg_check_all`
 
 The constraint checks during placement are eager — they prevent violations from being
-introduced. But `imdg_check_all` in `src/imdg.c` provides a second, independent O(n²) sweep
+introduced. But `imdg_check_all` in [`src/imdg.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/imdg.c) provides a second, independent O(n²) sweep
 run *after* placement is complete (via `cargoforge_check_imdg` in the public API). It checks
 every placed DG pair using edge-to-edge horizontal distance:
 
@@ -312,11 +312,11 @@ reconfigure the stow.
 
 ## Recap
 
-- `check_cargo_constraints` in `src/constraints.c` is called for every candidate space in the
+- `check_cargo_constraints` in [`src/constraints.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/constraints.c) is called for every candidate space in the
   placement loop; it returns 0 to reject and 1 to accept.
 - Six checks run in order: point load, IMDG/hazmat separation, stacking pressure, reefer
   preference, fragile depth, deck weight ratio — four are hard rejects, two are advisory.
-- The IMDG segregation engine in `src/imdg.c` encodes IMDG Code Table 7.2.4 as a 17 × 17
+- The IMDG segregation engine in [`src/imdg.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/imdg.c) encodes IMDG Code Table 7.2.4 as a 17 × 17
   static integer matrix covering all 17 class/division groupings.
 - `imdg_min_distance` translates segregation codes to required metres: 0, 3, 6, 12, 24, or −1
   (incompatible).

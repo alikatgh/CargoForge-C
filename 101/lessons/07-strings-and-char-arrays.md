@@ -46,7 +46,7 @@ HeavyMachinery    550    20x5x3    standard
 FlammableLiquid    25    6x2.5x2.6    hazardous    DG:3.1:UN1203:A:F-E,S-D
 ```
 
-`parse_cargo_list` in `src/parser.c` tokenises each line with `strtok_r`:
+`parse_cargo_list` in [`src/parser.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/parser.c) tokenises each line with `strtok_r`:
 
 ```c
 char *saveptr;
@@ -85,7 +85,7 @@ Two independent `saveptr` variables keep the two tokenisation loops completely s
 
 ## Copying into fixed buffers: `strncpy` and the explicit guard
 
-Once the tokens are extracted, they are copied into the `Cargo` struct's fixed arrays. The parser does this in two lines for each field (from `src/parser.c`):
+Once the tokens are extracted, they are copied into the `Cargo` struct's fixed arrays. The parser does this in two lines for each field (from [`src/parser.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/parser.c)):
 
 ```c
 strncpy(c->id,   id,   sizeof(c->id)   - 1);
@@ -124,7 +124,7 @@ The optional DG field in the manifest has its own colon-delimited grammar:
 DG:3.1:UN1203:A:F-E,S-D
 ```
 
-`parse_dg_field` in `src/parser.c` handles this entirely within a 64-byte stack buffer so it never touches the caller's memory:
+`parse_dg_field` in [`src/parser.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/parser.c) handles this entirely within a 64-byte stack buffer so it never touches the caller's memory:
 
 ```c
 static DGInfo *parse_dg_field(const char *field) {
