@@ -7,6 +7,23 @@ dangerous goods, and structural limits on what cargo can be stacked below or abo
 refrigerated items. This lesson explains how those rules are encoded in `src/constraints.c` and
 `src/imdg.c`, and why they are checked at placement time rather than as an afterthought.
 
+<svg viewBox="0 0 600 196" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:580px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+<title>IMDG segregation: incompatible dangerous goods need a minimum separation</title>
+<desc>A flammable Class 3 item and an oxidizing Class 5.1 item must be kept apart. The IMDG segregation table maps the class pair to a segregation level, which sets a minimum separation distance. CargoForge-C rejects any placement that violates it.</desc>
+<defs><marker id="dg-ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 1 L9 5 L0 9 Z" fill="currentColor" opacity="0.8"/></marker></defs>
+<text x="300" y="50" fill="currentColor" font-size="10.5" text-anchor="middle" opacity="0.6">IMDG Table 7.2.4 → segregation code → minimum distance</text>
+<rect x="56" y="74" width="130" height="60" rx="5" fill="#D05663" fill-opacity="0.08" stroke="#D05663" stroke-width="1.3"/>
+<text x="121" y="100" fill="#D05663" font-size="12.5" text-anchor="middle" font-weight="600">Class 3</text>
+<text x="121" y="118" fill="currentColor" font-size="10" text-anchor="middle" opacity="0.7">flammable liquid</text>
+<rect x="414" y="74" width="130" height="60" rx="5" fill="#D05663" fill-opacity="0.08" stroke="#D05663" stroke-width="1.3"/>
+<text x="479" y="100" fill="#D05663" font-size="12.5" text-anchor="middle" font-weight="600">Class 5.1</text>
+<text x="479" y="118" fill="currentColor" font-size="10" text-anchor="middle" opacity="0.7">oxidizer</text>
+<line x1="192" y1="104" x2="408" y2="104" stroke="currentColor" stroke-width="1.3" marker-start="url(#dg-ar)" marker-end="url(#dg-ar)" opacity="0.8"/>
+<text x="300" y="98" fill="currentColor" font-size="13" text-anchor="middle" font-weight="600">≥ 6 m</text>
+<text x="300" y="120" fill="currentColor" font-size="10" text-anchor="middle" opacity="0.6">“separated from”</text>
+<text x="300" y="172" fill="currentColor" font-size="11" text-anchor="middle" opacity="0.65"><tspan font-family="var(--md-code-font,monospace)">src/imdg.c</tspan> rejects any placement that violates the required separation.</text>
+</svg>
+
 ---
 
 ## Why constraints live in the placement loop

@@ -6,6 +6,24 @@ interpolate between its rows to obtain draft, KB, BM, TPC, and every other prope
 displacement. This lesson traces that entire pipeline: parsing, validation, forward lookup
 (draft → properties), and reverse lookup (displacement → draft).
 
+<svg viewBox="0 0 560 224" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:540px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+<title>Hydrostatic interpolation: read a property between two table rows</title>
+<desc>The hydrostatic table gives a property such as KB at discrete displacements. For a query displacement that falls between two rows, CargoForge-C interpolates linearly along the straight line joining them to obtain the value.</desc>
+<line x1="72" y1="36" x2="72" y2="172" stroke="currentColor" stroke-width="1" opacity="0.5"/>
+<line x1="72" y1="172" x2="500" y2="172" stroke="currentColor" stroke-width="1" opacity="0.5"/>
+<text x="64" y="40" fill="currentColor" font-size="10.5" text-anchor="end" opacity="0.65">KB</text>
+<text x="498" y="190" fill="currentColor" font-size="10.5" text-anchor="end" opacity="0.65">displacement →</text>
+<line x1="150" y1="140" x2="410" y2="70" stroke="currentColor" stroke-width="1.2" opacity="0.45" stroke-dasharray="2 2"/>
+<circle cx="150" cy="140" r="4" fill="currentColor"/><text x="150" y="158" fill="currentColor" font-size="10" text-anchor="middle" opacity="0.7">row i</text>
+<circle cx="410" cy="70" r="4" fill="currentColor"/><text x="410" y="60" fill="currentColor" font-size="10" text-anchor="middle" opacity="0.7">row i+1</text>
+<line x1="290" y1="172" x2="290" y2="105" stroke="#12A594" stroke-width="1.3" stroke-dasharray="3 2"/>
+<line x1="290" y1="105" x2="72" y2="105" stroke="#12A594" stroke-width="1.3" stroke-dasharray="3 2"/>
+<circle cx="290" cy="105" r="4.5" fill="#12A594"/>
+<text x="290" y="188" fill="#12A594" font-size="10" text-anchor="middle">query Δ</text>
+<text x="80" y="100" fill="#12A594" font-size="10">interpolated KB</text>
+<text x="280" y="214" fill="currentColor" font-size="11" text-anchor="middle" opacity="0.65">Linear interpolation between the two nearest rows (<tspan font-family="var(--md-code-font,monospace)">src/hydrostatics.c</tspan>); box model if no table.</text>
+</svg>
+
 ---
 
 ## Why tables instead of formulas?

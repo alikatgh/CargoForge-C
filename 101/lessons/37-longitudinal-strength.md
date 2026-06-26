@@ -2,6 +2,23 @@
 
 A ship is not rigid. Under a heavy concentrated cargo load the hull can hog — arch upward amidships like a banana — or sag when the ends carry more weight than the middle. Both modes stress the hull steel, and class-society rules define how far each can go before the structure is in danger. CargoForge-C computes the **still-water shear force (SWSF)** and **still-water bending moment (SWBM)** at every hull station and compares the results against the permissible limits stored in the ship config. This lesson traces that calculation from the first array to the final compliance flag.
 
+<svg viewBox="0 0 580 250" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:560px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+<title>Longitudinal strength: net load along the hull integrates to a bending moment, checked against limits</title>
+<desc>Top: along the hull, the stepped weight distribution and the smooth buoyancy distribution differ — their difference is the net load. Bottom: integrating the net load twice gives the still-water bending moment, a hump along the length, which is compared against the permissible class limit.</desc>
+<text x="40" y="22" fill="currentColor" font-size="11" font-weight="600">weight vs buoyancy along the hull</text>
+<line x1="60" y1="80" x2="520" y2="80" stroke="currentColor" stroke-width="1" opacity="0.35"/>
+<path d="M70,72 Q290,42 510,72" fill="none" stroke="#12A594" stroke-width="1.6"/>
+<text x="118" y="54" fill="#12A594" font-size="9.5">buoyancy</text>
+<path d="M70,74 L150,74 L150,60 L250,60 L250,86 L350,86 L350,56 L450,56 L450,76 L510,76" fill="none" stroke="currentColor" stroke-width="1.4" opacity="0.78"/>
+<text x="360" y="48" fill="currentColor" font-size="9.5" opacity="0.7">weight</text>
+<text x="40" y="138" fill="currentColor" font-size="11" font-weight="600">→ still-water bending moment</text>
+<line x1="60" y1="204" x2="520" y2="204" stroke="currentColor" stroke-width="1" opacity="0.35"/>
+<line x1="60" y1="168" x2="520" y2="168" stroke="#D05663" stroke-width="1" stroke-dasharray="4 3" opacity="0.7"/>
+<text x="520" y="164" fill="#D05663" font-size="9.5" text-anchor="end">permissible limit</text>
+<path d="M70,204 Q290,150 510,204" fill="none" stroke="#12A594" stroke-width="1.9"/>
+<text x="290" y="236" fill="currentColor" font-size="11" text-anchor="middle" opacity="0.65">21 stations; integrate net load → shear → bending; compare to class limits (<tspan font-family="var(--md-code-font,monospace)">longitudinal_strength.c</tspan>).</text>
+</svg>
+
 ## The physical picture
 
 Imagine the ship as a beam floating on water. At every cross-section along its length there is some weight acting downward (hull steel, machinery, cargo) and some buoyancy acting upward (the upward pressure of displaced water). Where weight exceeds buoyancy the section is loaded in excess; where buoyancy exceeds weight it is relieved. The difference — the **net load** — varies continuously along the ship.
