@@ -2,6 +2,29 @@
 
 Every earlier lesson has focused on one layer: parsing, physics, placement, or analysis. This lesson joins them by tracing a single real invocation — `cargoforge optimize ship.cfg cargo.txt` — through every function that executes, from the first byte read off disk to the last stability number printed on screen. Follow this trace and the overall architecture becomes concrete.
 
+<svg viewBox="0 0 660 180" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:640px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+<title>The CargoForge-C pipeline: parse, place, analyze, report</title>
+<desc>main and the CLI dispatch one run. The parser fills a Ship struct from the input files; placement assigns each cargo a 3D position; analysis computes stability; the output stage prints the report. The same Ship struct flows through every stage.</desc>
+<defs><marker id="pp-ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 1 L9 5 L0 9 Z" fill="#12A594"/></marker></defs>
+<text x="330" y="32" fill="currentColor" font-size="11.5" text-anchor="middle" opacity="0.7"><tspan font-family="var(--md-code-font,monospace)">cargoforge optimize ship cargo</tspan>  →  main.c / cli.c</text>
+<rect x="20" y="56" width="142" height="56" rx="6" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.75"/>
+<text x="91" y="80" fill="currentColor" font-size="12" text-anchor="middle">parse</text>
+<text x="91" y="98" fill="currentColor" font-size="9.5" text-anchor="middle" opacity="0.6" font-family="var(--md-code-font,monospace)">parser.c</text>
+<rect x="186" y="56" width="142" height="56" rx="6" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.75"/>
+<text x="257" y="80" fill="currentColor" font-size="12" text-anchor="middle">place</text>
+<text x="257" y="98" fill="currentColor" font-size="9.5" text-anchor="middle" opacity="0.6" font-family="var(--md-code-font,monospace)">placement_3d.c</text>
+<rect x="352" y="56" width="142" height="56" rx="6" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.75"/>
+<text x="423" y="80" fill="currentColor" font-size="12" text-anchor="middle">analyze</text>
+<text x="423" y="98" fill="currentColor" font-size="9.5" text-anchor="middle" opacity="0.6" font-family="var(--md-code-font,monospace)">analysis.c</text>
+<rect x="518" y="56" width="122" height="56" rx="6" fill="#12A594" fill-opacity="0.1" stroke="#12A594" stroke-width="1.4"/>
+<text x="579" y="80" fill="#12A594" font-size="12" text-anchor="middle">report</text>
+<text x="579" y="98" fill="#12A594" font-size="9.5" text-anchor="middle" opacity="0.75" font-family="var(--md-code-font,monospace)">json_output.c</text>
+<line x1="162" y1="84" x2="184" y2="84" stroke="#12A594" stroke-width="1.4" marker-end="url(#pp-ar)"/>
+<line x1="328" y1="84" x2="350" y2="84" stroke="#12A594" stroke-width="1.4" marker-end="url(#pp-ar)"/>
+<line x1="494" y1="84" x2="516" y2="84" stroke="#12A594" stroke-width="1.4" marker-end="url(#pp-ar)"/>
+<text x="330" y="150" fill="currentColor" font-size="11.5" text-anchor="middle" opacity="0.65">One <tspan font-family="var(--md-code-font,monospace)">Ship</tspan> struct flows through every stage — each fills in more of it.</text>
+</svg>
+
 ---
 
 ## Entry: `main.c`

@@ -6,6 +6,24 @@ a value and a location, pointer syntax stops looking like line noise and starts 
 CargoForge-C passes ship data through pointers constantly; reading this module explains why,
 and what `->` does when you see it in `analysis.c`.
 
+<svg viewBox="0 0 620 210" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:600px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+<title>A pointer stores the address of another variable</title>
+<desc>The variable ship lives at some address. The pointer p stores that address as its value, so p points to ship. &ship gets the address; *p follows it back to the Ship; p->length reads a field through it.</desc>
+<defs><marker id="pt-ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 1 L9 5 L0 9 Z" fill="#12A594"/></marker></defs>
+<text x="70" y="56" fill="currentColor" font-size="12" font-family="var(--md-code-font,monospace)">Ship *p</text>
+<rect x="60" y="64" width="170" height="58" rx="6" fill="#12A594" fill-opacity="0.08" stroke="#12A594" stroke-width="1.2"/>
+<text x="145" y="90" fill="#12A594" font-size="13" text-anchor="middle" font-family="var(--md-code-font,monospace)">0x7ffe…a0</text>
+<text x="145" y="108" fill="currentColor" font-size="10" text-anchor="middle" opacity="0.6">stores an address</text>
+<text x="394" y="48" fill="currentColor" font-size="11" font-family="var(--md-code-font,monospace)" opacity="0.65">@ 0x7ffe…a0</text>
+<text x="394" y="64" fill="currentColor" font-size="12" font-family="var(--md-code-font,monospace)">ship</text>
+<rect x="384" y="72" width="200" height="70" rx="6" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.75"/>
+<text x="484" y="98" fill="currentColor" font-size="11.5" text-anchor="middle">Ship { length=150,</text>
+<text x="484" y="116" fill="currentColor" font-size="11.5" text-anchor="middle">width=25, … }</text>
+<path d="M230,98 C300,98 320,104 380,104" fill="none" stroke="#12A594" stroke-width="1.6" marker-end="url(#pt-ar)"/>
+<text x="305" y="90" fill="#12A594" font-size="10.5" text-anchor="middle">points to</text>
+<text x="310" y="178" fill="currentColor" font-size="11.5" text-anchor="middle" opacity="0.7"><tspan font-family="var(--md-code-font,monospace)">&amp;ship</tspan> gets the address · <tspan font-family="var(--md-code-font,monospace)">*p</tspan> follows it back · <tspan font-family="var(--md-code-font,monospace)">p-&gt;length</tspan> reads a field</text>
+</svg>
+
 ---
 
 ## Every variable has an address

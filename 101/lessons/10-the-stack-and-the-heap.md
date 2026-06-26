@@ -2,6 +2,30 @@
 
 C gives you two fundamentally different places to store data: the **stack**, where memory is managed automatically, and the **heap**, where you manage it yourself. Understanding the difference is not optional — CargoForge-C uses heap allocation for the cargo array specifically because the number of cargo items is unknown until the manifest file has been read, and that is a problem the stack cannot solve.
 
+<svg viewBox="0 0 660 290" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:640px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+<title>Stack vs heap: the cargo pointer lives on the stack, the array it points to lives on the heap</title>
+<desc>On the stack, main() holds a Ship struct whose cargo field is a pointer. That pointer points across to a block on the heap — the Cargo array allocated by malloc, whose size is known only after the manifest is read. The stack is freed automatically on return; the heap block you must free yourself.</desc>
+<defs><marker id="sh-ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 1 L9 5 L0 9 Z" fill="#12A594"/></marker></defs>
+<rect x="36" y="50" width="250" height="200" rx="8" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.5"/>
+<text x="40" y="40" fill="currentColor" font-size="12.5" font-weight="600">STACK · automatic</text>
+<rect x="52" y="66" width="218" height="68" rx="5" fill="currentColor" fill-opacity="0.04" stroke="currentColor" stroke-width="1" opacity="0.7"/>
+<text x="62" y="84" fill="currentColor" font-size="11.5" font-family="var(--md-code-font,monospace)">main()</text>
+<text x="62" y="106" fill="currentColor" font-size="11.5">Ship ship;</text>
+<rect x="178" y="94" width="84" height="26" rx="4" fill="#12A594" fill-opacity="0.12" stroke="#12A594" stroke-width="1.1"/>
+<text x="220" y="111" fill="#12A594" font-size="10.5" text-anchor="middle" font-family="var(--md-code-font,monospace)">cargo •</text>
+<rect x="52" y="146" width="218" height="40" rx="5" fill="currentColor" fill-opacity="0.04" stroke="currentColor" stroke-width="1" opacity="0.7"/>
+<text x="62" y="170" fill="currentColor" font-size="11.5" font-family="var(--md-code-font,monospace)">parse_cargo_list()</text>
+<text x="161" y="238" fill="currentColor" font-size="10.5" text-anchor="middle" opacity="0.6">freed automatically on return</text>
+<rect x="374" y="50" width="250" height="200" rx="8" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.5"/>
+<text x="378" y="40" fill="#12A594" font-size="12.5" font-weight="600">HEAP · you manage it</text>
+<rect x="396" y="86" width="206" height="92" rx="5" fill="#12A594" fill-opacity="0.06" stroke="#12A594" stroke-width="1.2"/>
+<text x="499" y="112" fill="currentColor" font-size="11.5" text-anchor="middle">Cargo[0]  Cargo[1]  …</text>
+<text x="499" y="134" fill="currentColor" font-size="11.5" text-anchor="middle">Cargo[count-1]</text>
+<text x="499" y="162" fill="currentColor" font-size="10" text-anchor="middle" opacity="0.6" font-family="var(--md-code-font,monospace)">malloc(count·sizeof(Cargo))</text>
+<text x="499" y="238" fill="currentColor" font-size="10.5" text-anchor="middle" opacity="0.6">size known only after parsing — you free() it</text>
+<path d="M262,107 C322,107 338,132 394,132" fill="none" stroke="#12A594" stroke-width="1.6" marker-end="url(#sh-ar)"/>
+</svg>
+
 ---
 
 ## Two memory regions, two lifetimes

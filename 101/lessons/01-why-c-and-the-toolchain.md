@@ -2,6 +2,31 @@
 
 CargoForge-C is described in its own README as "a pure C99 maritime cargo loading optimizer... zero external dependencies." Understanding why the project was written in C — and how C source code becomes a running program — is the foundation for everything that follows. This lesson maps the compile-assemble-link-run pipeline onto the files you can actually see in the repository.
 
+<svg viewBox="0 0 660 170" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:640px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+<title>How C source becomes a running program</title>
+<desc>Each .c source file is compiled to a .o object file; the objects are linked with the math library into the cargoforge executable, which the operating system then loads and runs directly.</desc>
+<defs><marker id="tc-ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 1 L9 5 L0 9 Z" fill="currentColor" opacity="0.7"/></marker></defs>
+<rect x="24" y="52" width="116" height="56" rx="6" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.7"/>
+<text x="82" y="76" fill="currentColor" font-size="13" text-anchor="middle" font-family="var(--md-code-font,monospace)">src/*.c</text>
+<text x="82" y="94" fill="currentColor" font-size="10.5" text-anchor="middle" opacity="0.6">source</text>
+<rect x="196" y="52" width="116" height="56" rx="6" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.7"/>
+<text x="254" y="76" fill="currentColor" font-size="13" text-anchor="middle" font-family="var(--md-code-font,monospace)">build/*.o</text>
+<text x="254" y="94" fill="currentColor" font-size="10.5" text-anchor="middle" opacity="0.6">machine code</text>
+<rect x="368" y="52" width="124" height="56" rx="6" fill="#12A594" fill-opacity="0.1" stroke="#12A594" stroke-width="1.4"/>
+<text x="430" y="76" fill="#12A594" font-size="13" text-anchor="middle" font-family="var(--md-code-font,monospace)">cargoforge</text>
+<text x="430" y="94" fill="#12A594" font-size="10.5" text-anchor="middle" opacity="0.8">executable</text>
+<rect x="548" y="52" width="92" height="56" rx="6" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.7"/>
+<text x="594" y="76" fill="currentColor" font-size="12" text-anchor="middle">stability</text>
+<text x="594" y="94" fill="currentColor" font-size="12" text-anchor="middle">report</text>
+<line x1="142" y1="80" x2="192" y2="80" stroke="currentColor" stroke-width="1.3" marker-end="url(#tc-ar)"/>
+<text x="167" y="72" fill="currentColor" font-size="10" text-anchor="middle" opacity="0.65" font-family="var(--md-code-font,monospace)">cc -c</text>
+<line x1="314" y1="80" x2="364" y2="80" stroke="currentColor" stroke-width="1.3" marker-end="url(#tc-ar)"/>
+<text x="339" y="72" fill="currentColor" font-size="10" text-anchor="middle" opacity="0.65" font-family="var(--md-code-font,monospace)">cc -o · -lm</text>
+<line x1="494" y1="80" x2="544" y2="80" stroke="currentColor" stroke-width="1.3" marker-end="url(#tc-ar)"/>
+<text x="519" y="72" fill="currentColor" font-size="10" text-anchor="middle" opacity="0.65" font-family="var(--md-code-font,monospace)">run</text>
+<text x="330" y="142" fill="currentColor" font-size="11.5" text-anchor="middle" opacity="0.6">Compiled and linked ahead of time — the OS loads the native binary directly, with no interpreter.</text>
+</svg>
+
 ---
 
 ## Why C for a Cargo Optimizer?
