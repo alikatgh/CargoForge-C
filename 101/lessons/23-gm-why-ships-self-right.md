@@ -17,18 +17,6 @@ No jargon — here's what the ideas in this lesson *actually* mean, and why they
 
 ---
 
-## The mental model 🧠
-
-You'll forget the formula — hold THIS picture instead:
-
-> A see-saw with a lump of clay balanced on top of the pivot. Push one end down — does it spring back, or tip over? It springs back only if the pivot is *above* the clay. GM tells you how far above.
-
-In ship terms: the metacentre **M** is the "pivot" — a virtual point where the buoyancy force's line of action crosses the ship's centreline when the hull tilts. The centre of gravity **G** is the "lump of clay" — where all the cargo weight (everything you loaded via `parse_cargo_list`, stacked into the bins, summed into `r.kg`) acts downward. When M sits above G (positive GM), the buoyancy force and gravity form a couple that rotates the ship back upright. When G climbs above M — heavy cargo stowed too high, or a half-full tank raising the effective KG through the free-surface correction — the couple flips direction and tips the ship further over.
-
-`perform_analysis` boils this down to one line: `r.gm = r.kb + r.bm - r.kg`. Positive means the pivot wins. Zero or negative means the clay wins.
-
----
-
 ## The three heights
 
 Every stability calculation pivots on three vertical distances, all measured from the **keel** (the bottom of the hull) upward.

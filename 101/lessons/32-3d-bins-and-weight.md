@@ -50,18 +50,6 @@ No jargon — here's what the ideas in this lesson *actually* mean, and why they
 
 ---
 
-## The mental model 🧠
-
-You'll forget the formula — hold THIS picture instead:
-
-> Imagine a warehouse with three locked rooms (ForwardHold, AftHold, Deck). Each room has a scale at the door with a red light: if adding your box would tip the scale past the posted limit, the door won't open — no matter how much empty floor space is inside. You try the next room. If all three doors stay red, the box sits on the loading dock with a sticky note saying "unplaced."
-
-That's exactly what `find_best_fit_3d` does. The "scale at the door" is the single check `bin->current_weight + cargo->weight > bin->max_weight` — fail it and the whole bin is skipped in O(1), before any geometry is examined. The "rooms" are the three `Bin3D` structs built by `place_cargo_3d`. The "sticky note" is the sentinel `pos_x = pos_y = pos_z = -1.0f`.
-
-One detail the analogy earns for free: the two hold rooms are in the basement (z = −8 m, below the waterline), while the Deck room is at street level (z = 0 m). Basement boxes pull KG down; street-level boxes push it up. That's why the holds carry a tighter weight share (30 % each) and the Deck carries 40 % — and why a heavy item rejected from the holds and dumped on Deck quietly makes the ship less stable.
-
----
-
 ## What a bin is
 
 A bin is a named, axis-aligned rectangular box that represents a usable volume on the

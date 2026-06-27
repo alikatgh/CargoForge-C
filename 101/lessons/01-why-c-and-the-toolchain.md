@@ -42,20 +42,6 @@ No jargon — here's what the ideas in this lesson *actually* mean, and why they
 
 ---
 
-## The mental model 🧠
-
-You'll forget the pipeline steps — hold THIS picture instead:
-
-> A ship's engine room converts raw fuel into shaft rotation. The shaft turns the propeller. The propeller moves the ship. Nobody hands a sailor raw fuel and asks them to swim.
->
-> C source is the fuel. The compiler is the engine room. The `cargoforge` binary is the propeller already spinning.
-
-The analogy maps directly onto what `make` does: `src/analysis.c` (fuel) enters `cc -c` (the engine room) and comes out as `build/analysis.o` (mechanical energy, not yet moving anything). The linker then couples every `.o` shaft together — resolving the call from `cli.c` to `perform_analysis()` the way gears mesh — and the result is the single `cargoforge` executable (propeller). The OS loads it and the ship moves.
-
-That's why omitting `-lm` stalls the build at the linker: you handed the engine room all the shaft segments but forgot the propeller shaft bearing (`sin`, `atan`, `sqrt` live in `libm`). And why `-fsanitize=address` is a flow-rate sensor clamped onto every shaft: it doesn't change the cargo, it catches a crack before it becomes a hull breach.
-
----
-
 ## Why C for a Cargo Optimizer?
 
 Ship-stability software has constraints that rule out many popular languages:

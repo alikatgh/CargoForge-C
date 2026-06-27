@@ -17,18 +17,6 @@ No jargon — here's what the ideas in this lesson *actually* mean, and why they
 
 ---
 
-## The mental model 🧠
-
-You'll forget the formula — hold THIS picture instead:
-
-> Imagine a parking permit stuck to a car windshield. When the car is towed away (freed), the permit sticker stays on the glass — but it now points at an empty lot. If a new car parks in that same spot and you walk up to the sticker's address expecting the old car, you're reading someone else's vehicle. If you then tow the spot again, you're towing a car that was never yours.
-
-In C, `ship->cargo` is the sticker. `free(ship->cargo)` tows the car — the heap block is gone. But the sticker (`ship->cargo`) still shows the old address. When `ship_cleanup` later follows that sticker to loop over `cargo_count` items and free each `dg` pointer, it is reading the empty lot: a **heap-use-after-free**. When it calls `free(ship->cargo)` a second time, it tows the spot again: a **double-free**.
-
-The fix tears up the sticker the moment the car is towed: `ship->cargo = NULL` makes the pointer visibly invalid; `ship->cargo_count = 0` closes the loop that would have followed it. Now `ship_cleanup`'s guard — `if (ship->cargo)` — sees an empty lot and walks away cleanly.
-
----
-
 ## The four categories
 
 Before walking through the real bug, you need a clear mental model of what can go wrong. C gives you raw memory; it gives you no guardrails.

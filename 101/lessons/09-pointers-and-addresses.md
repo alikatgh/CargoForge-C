@@ -40,21 +40,6 @@ No jargon — here's what the ideas in this lesson *actually* mean, and why they
 
 ---
 
-## The mental model 🧠
-
-You'll forget the formula — hold THIS picture instead:
-
-> A pointer is a sticky note on your desk that says "the real document is in drawer 0x7ffe…a0."
-> The drawer is the variable (`ship`). The sticky note is the pointer (`Ship *p`). `&ship` reads
-> the drawer number onto the note. `*p` opens the drawer. `p->length` opens the drawer and flips
-> straight to the "length" page.
-
-In CargoForge-C, the `Ship` struct can be megabytes of cargo arrays and hydrostatic tables. Copying all of that every time `perform_analysis` or `print_loading_plan` runs would be slow and dangerous — two copies of `ship->cargo` pointing at the same heap block is a recipe for a double-free. So the code passes one sticky note (8 bytes, the address) and every function reads the single original document.
-
-`const Ship *ship` is the sticky note with a "READ ONLY" stamp: the compiler refuses to let the function scribble on the pages. Remove `const` — as in `ship_cleanup` — and you're handing over a note that says "you may also edit and then shred."
-
----
-
 ## Every variable has an address
 
 When the compiler allocates a variable, it picks a slot in memory and records where that slot
