@@ -40,18 +40,6 @@ No jargon — here's what the ideas in this lesson *actually* mean, and why they
 
 ---
 
-## The mental model 🧠
-
-You'll forget the call graph — hold THIS picture instead:
-
-> A shipping container is loaded onto a truck at the factory, transferred to a train, then to a port, then craned into a ship's hold. At every handoff, the same physical container travels — workers just move it and update the manifest. If it gets damaged at the train yard, every stop after that inherits the problem.
-
-The `Ship` struct is that container. `parse_ship_config` and `parse_cargo_list` pack it at the factory (filling dimensions, cargo weight, position sentinels). `place_cargo_3d` moves it to the train — setting each cargo's real `pos_x/y/z` and replacing the `-1.0f` sentinels. `perform_analysis` cranes it aboard and reads those positions to compute GM and the GZ curve. `output_results` delivers the manifest.
-
-The sentinel values (`pos_x = -1.0f`, `gm = NAN`) are the damage stickers on the container: every downstream stop checks for them before doing work. `ship_cleanup` is the port authority clearing the manifest at the end — it frees memory in reverse-allocation order and NULLs every pointer so a second check finds nothing to clear.
-
----
-
 ## Entry: `main.c`
 
 The program starts in [`src/main.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/main.c), which is deliberately thin:

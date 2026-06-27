@@ -41,18 +41,6 @@ No jargon — here's what the ideas in this lesson *actually* mean, and why they
 
 ---
 
-## The mental model 🧠
-
-You'll forget the formula — hold THIS picture instead:
-
-> Imagine a ship's mess hall (the stack) and a cargo hold (the heap). The mess hall clears itself after every meal — plates, cups, leftovers, all gone when the crew leaves. The cargo hold is different: you load containers in, and they stay until *you* physically lift them out. Nobody else will do it for you.
-
-In CargoForge-C, every local variable in `safe_atof` — `end`, `val` — is a plate in the mess hall: the moment the function returns, the CPU sweeps the table clean. You never touch them again, and that's fine.
-
-The cargo array (`ship->cargo`) is a container in the hold. `parse_cargo_list` loads it with `malloc(count * sizeof(Cargo))` only after it knows how many items the manifest contains — a size the mess hall can't handle because it demands to know the count before the meal begins. Once loaded, that container stays until you call `free`. Forget to free it and the hold fills up; free it but keep pointing at the slot and you've got a dangling pointer — the next crew reaching into an empty berth, pulling out whatever cargo was loaded since.
-
----
-
 ## Two memory regions, two lifetimes
 
 ### The stack: automatic, scoped, fast

@@ -38,16 +38,6 @@ No jargon — here's what the ideas in this lesson *actually* mean, and why they
 
 ---
 
-## The mental model 🧠
-
-You'll forget the formula — hold THIS picture instead:
-
-> Imagine balancing a plank on two pencils: one pencil runs fore-to-aft under the centre (the longitudinal axis), and one runs side-to-side (the transverse axis). Slide cargo toward the stern — the plank tips down aft: that is trim. Pile cargo on the starboard side — the plank tips right: that is heel. The plank only levels out when the weight sits directly above the crossing point of the two pencils.
-
-In CargoForge-C the "crossing point" is the ship's metacentre — the height above the keel where the righting force acts. `perform_analysis` measures where the cargo mass actually landed (`r.lcg` fore-aft, `tcg` side-to-side) and compares it to where the hull wants it to be. The stiffer the ship (higher `gm_effective`), the less it heels for a given offset. The bins — ForwardHold, AftHold, Deck — are just where `place_cargo_3d` parked the weight; `perform_analysis` is the moment you check whether the plank still balances.
-
----
-
 ## The two axes of imbalance
 
 Think of a ship floating on a pivot point. There are two independent ways the vessel can rotate:

@@ -43,18 +43,6 @@ No jargon — here's what the ideas in this lesson *actually* mean, and why they
 
 ---
 
-## The mental model 🧠
-
-You'll forget the formula — hold THIS picture instead:
-
-> A half-full coffee cup on a rocking train. The coffee sloshes to the low side and the cup tips more easily — not because it got heavier, but because its "balance point" moved outward. Snap a lid on the cup (full tank) or drain it completely (empty tank) and the slosh disappears.
-
-That's the free-surface effect in one image. In CargoForge-C terms: each partially-filled `Tank` has a breadth `b` that dominates via `b³` in `calculate_free_surface_moment`. Summing those moments and dividing by displacement gives the **free-surface correction (FSC)** — a virtual rise in KG that `perform_analysis` subtracts from the raw GM to get `gm_corrected`. Wide tanks are the coffee cups with a large open surface; narrow tanks barely slosh at all.
-
-The six IMO criteria then ask: given this lower, corrected GM, does the ship's GZ curve still have enough area beneath it — enough restoring energy — to survive realistic waves? The cup analogy extends: a stiff mug (high GM) rights itself fast; a shallow bowl (low GM after FSC) barely makes it back before the next wave hits.
-
----
-
 ## Why partial fill is dangerous
 
 Imagine a rectangular tank half-full of fuel. If the ship heels slightly to starboard, liquid flows toward the low side. The ship's total weight has not changed, but the centre of that liquid shifted transversely. The result is a reduction in the **righting lever** at every angle of heel — as if the entire ship's centre of gravity had risen by some amount $\delta KG$. This is the **free-surface effect**.

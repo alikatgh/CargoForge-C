@@ -17,49 +17,6 @@ No jargon — here's what the ideas in this lesson *actually* mean, and why they
 
 ---
 
-## The mental model 🧠
-
-You'll forget the formula — hold THIS picture instead:
-
-> A home mechanic can tune an engine beautifully, but that same engine cannot be bolted into a commercial aircraft until an aviation authority stamps every weld and every calculation. The mechanic's physics are correct. The stamp is not about correctness — it is about *documented, verified, insured correctness*.
-
-CargoForge-C is the skilled mechanic. Its `gz_at_angle` formula in `analysis.c` is sound for small heels; its `lerp` in `hydrostatics.c` genuinely tracks displacement through the CSV rows; the `imo_compliant` flag really does check the six MSC.267(85) §2.2 criteria. The physics are right. What is missing is the aviation-authority stamp — the benchmark runs against three vessel types, the technical manual citing every IMO source, the >95% test coverage demanded by DNV-SE-0475.
-
-The box-hull fallback ($C_b = 0.75$, $KB = 0.53T$) and the wall-sided GZ are not bugs — they are the mechanic choosing a workbench approximation over a certified instrument. Fine for teaching; grounded in the chapter.
-
-<svg viewBox="0 0 620 210" role="img" xmlns="http://www.w3.org/2000/svg"
-  style="max-width:600px;width:100%;height:auto;display:block;margin:1.8rem auto;
-  font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
-  <title>CargoForge-C vs class-approved software gap diagram</title>
-  <desc>Two boxes side by side. Left box labelled CargoForge-C lists its core modules: gz_at_angle (wall-sided), lerp hydrostatics, 20 stations, box-hull KB. Right box labelled Class-Approved (e.g. NAPA / GHS) lists NURBS hull geometry, cubic splines, hundreds of stations, damage stability, weather criterion. An arrow from left to right is labelled DNV-SE-0475 approval path (benchmarks, technical manual, 95% coverage).</desc>
-  <!-- left box: CargoForge-C -->
-  <rect x="10" y="20" width="240" height="170" rx="6" fill="none" stroke="currentColor" stroke-width="1.5"/>
-  <text x="130" y="44" text-anchor="middle" font-size="13" font-weight="700" fill="currentColor">CargoForge-C</text>
-  <line x1="10" y1="52" x2="250" y2="52" stroke="currentColor" stroke-width="1" opacity="0.35"/>
-  <text x="24" y="72" font-size="11" fill="currentColor">gz_at_angle — wall-sided formula</text>
-  <text x="24" y="90" font-size="11" fill="currentColor">lerp — linear hydrostatic interpolation</text>
-  <text x="24" y="108" font-size="11" fill="currentColor">20 stations, trapezoidal lightship</text>
-  <text x="24" y="126" font-size="11" fill="currentColor">box-hull fallback (C&#x1D47; = 0.75)</text>
-  <text x="24" y="144" font-size="11" fill="currentColor">imo_compliant — §2.2 only (0–40°)</text>
-  <text x="24" y="168" font-size="11.5" font-weight="600" fill="#D05663">No type-approval certificate</text>
-  <!-- right box: Class-approved -->
-  <rect x="370" y="20" width="240" height="170" rx="6" fill="none" stroke="#12A594" stroke-width="1.8"/>
-  <text x="490" y="44" text-anchor="middle" font-size="13" font-weight="700" fill="#12A594">Class-Approved (NAPA / GHS)</text>
-  <line x1="370" y1="52" x2="610" y2="52" stroke="#12A594" stroke-width="1" opacity="0.4"/>
-  <text x="384" y="72" font-size="11" fill="currentColor">NURBS / mesh hull geometry</text>
-  <text x="384" y="90" font-size="11" fill="currentColor">Cubic-spline hydrostatics</text>
-  <text x="384" y="108" font-size="11" fill="currentColor">Hundreds of stations (frame data)</text>
-  <text x="384" y="126" font-size="11" fill="currentColor">Damage stability + weather criterion</text>
-  <text x="384" y="144" font-size="11" fill="currentColor">Trimmed hydrostatics (bilinear)</text>
-  <text x="384" y="168" font-size="11.5" font-weight="600" fill="#12A594">DNV-SE-0475 type-approved</text>
-  <!-- arrow -->
-  <line x1="258" y1="105" x2="362" y2="105" stroke="currentColor" stroke-width="1.5" stroke-dasharray="5,3" opacity="0.6"/>
-  <polygon points="362,100 374,105 362,110" fill="currentColor" opacity="0.6"/>
-  <text x="311" y="96" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.8">approval path</text>
-  <text x="311" y="119" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.8">benchmarks + manual</text>
-  <text x="311" y="133" text-anchor="middle" font-size="10" fill="currentColor" opacity="0.8">+ 95% coverage</text>
-</svg>
-
 ## What "classed" means and why it matters
 
 A vessel cannot sail under an approved flag without a valid stability instrument — software or hardware — that a classification society has type-approved. The five societies that control most of the world fleet are DNV (Norway), Lloyd's Register (UK), Bureau Veritas (France), ClassNK (Japan), and ABS (USA). Their type-approval programs for software require:
