@@ -27,6 +27,12 @@ A ship's tanks are rarely empty or brim-full. When a tank is partially filled, t
 <text x="300" y="213" fill="#12A594" font-size="11.5" text-anchor="middle" font-weight="600">GM_corrected = GM − FSC,  FSM = ρ·l·b³⁄12  (src/tanks.c)</text>
 </svg>
 
+## The mental model 🧠
+
+A tank that is *completely* full or *completely* empty is honest dead weight — it sits still. A tank that is half-full is a traitor: heel the ship and the liquid runs to the low side, dragging the centre of gravity with it and deepening the heel. That is the **free-surface effect**, and the cruel part is that it barely depends on how much liquid there is — only on how *wide* the open surface is, because a broad pool has more room to slosh.
+
+CargoForge never lets that danger hide in the optimistic number. It computes a **free-surface correction** and *subtracts* it from GM before any check runs, so every criterion is judged on `gm_corrected = gm − free_surface_correction`, never the raw value. The **IMO criteria** are the international pass/fail bar those corrected numbers must clear — a minimum GM, a minimum righting arm at 30°, enough area under the GZ curve — the codified line between "this loading sails" and "redo it."
+
 ## What this actually means (plain English)
 
 No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.

@@ -2,6 +2,12 @@
 
 A ship tilted by a wave, a gust of wind, or a shifting load must develop a force that pushes it back upright. Whether that force exists — and how strong it is — reduces to a single number: the **metacentric height**, GM. This lesson unpacks what GM means physically, how the equation $GM = KB + BM - KG$ is derived from first principles, and how `perform_analysis` in [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c) computes and judges it.
 
+## The mental model 🧠
+
+GM is the length of the lever that fights to stand the ship back up. When the hull heels, gravity pulling down through G and buoyancy pushing up through the shifted B no longer line up — they are offset by a horizontal gap, and that gap times the ship's weight is a *righting moment* that twists the vessel upright. A tall GM means a stiff ship that snaps back hard; a small GM means a tender ship that lolls and rolls slowly.
+
+It all rides on one subtraction: `GM = KB + BM − KG`. `KB + BM` is how high the metacentre M sits — fixed by the hull and how deep it floats. `KG` is how high the centre of gravity sits — fixed by how you load. As long as M stays *above* G the ship self-rights. Stack cargo too high and KG climbs until it passes M: GM goes negative, the lever now pushes the *wrong way*, and the ship capsizes. That sign flip is the line between a voyage and a casualty, which is why every IMO check in CargoForge keys off `r.gm`.
+
 ## What this actually means (plain English)
 
 No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.

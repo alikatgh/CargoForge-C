@@ -2,6 +2,12 @@
 
 A ship is never perfectly level. Cargo placed too far forward or aft causes one end to sink deeper than the other — that is **trim**. Cargo placed off the centreline causes one side to dip — that is **heel**. CargoForge-C computes both quantities inside `perform_analysis` in [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c), and both appear in the printed loading plan and in every output format. Understanding how the code derives them turns stability numbers from opaque floats into quantities you can reason about and trust.
 
+## The mental model 🧠
+
+Trim and heel are the same idea pointed in two directions. Put the combined centre of gravity anywhere but directly over the ship's centre of flotation and the hull tilts until buoyancy re-balances it: **trim** is that tilt nose-to-tail (a forward-heavy load buries the bow), **heel** is that tilt side-to-side (a load to starboard lists the ship to starboard). The waterline always stays level — it is the ship that leans.
+
+Both fall straight out of the same moment arithmetic as the centre of gravity. `perform_analysis` sums each item's weight times its distance from the reference point; a bow-heavy `lcg_moment` surfaces as negative trim (bow down), an off-centre `moment_y` surfaces as heel. And they are not just comfort: too much trim ruins propeller immersion and steering, while heel spends directly from the righting-arm budget of Lesson 23. Loading evenly is the cheapest stability you can buy.
+
 <svg viewBox="0 0 600 200" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:580px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
 <title>Trim is fore-aft tilt; heel is side-to-side tilt</title>
 <desc>Left, a side view: the ship sits deeper aft than forward — trim by the stern, draft aft greater than draft fore. Right, a front view: the ship leans to one side — heel, or list. The waterline stays horizontal in both; it is the ship that tilts.</desc>
