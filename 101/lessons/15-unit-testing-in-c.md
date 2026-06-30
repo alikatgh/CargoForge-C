@@ -2,6 +2,29 @@
 
 C has no built-in test framework, but it does not need one. The standard library's `assert()` macro and a carefully structured `main()` are enough to write tests that catch real bugs — including the heap-use-after-free that CargoForge-C's own fuzzer found. This lesson shows you how CargoForge-C tests its parser and hydrostatics modules, and how to run the whole suite with a single `make test`.
 
+## The mental model 🧠
+
+A unit test is a tripwire you set for your future self. `assert(condition)` is the entire mechanism: it declares "this must be true right here — and if it ever isn't, stop the program loudly with the exact file and line." You don't need a framework. A `main()` that calls a dozen asserts, plus a `make test` that checks the exit code, is a complete test suite.
+
+The most valuable kind is a **regression test** — a tripwire placed exactly where a bug once stood, so it can never creep back. Test 3 in `test_parser.c` writes a deliberately broken manifest, runs the parser, and asserts the two invariants the old use-after-free violated: `cargo == NULL` and `cargo_count == 0`. One subtlety: physics values are `float`, so you never compare them with `==` (rounding noise would fail a correct result); you check `fabs(a - b) < tolerance` — "close enough," within a centimetre.
+
+<svg viewBox="0 0 600 200" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:560px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+<title>A unit test is an assert tripwire: true continues, false aborts with file and line</title>
+<desc>The regression test feeds a deliberately bad manifest to parse_cargo_list, then asserts the invariants the old use-after-free violated. If the condition holds the suite continues; if it fails, assert aborts with the exact file and line.</desc>
+<rect x="12" y="48" width="92" height="44" rx="5" fill="currentColor" fill-opacity="0.04" stroke="currentColor" stroke-opacity="0.4"/><text x="58" y="68" font-size="10" text-anchor="middle" fill="currentColor">bad</text><text x="58" y="82" font-size="10" text-anchor="middle" fill="currentColor">manifest</text>
+<line x1="104" y1="70" x2="126" y2="70" stroke="currentColor" stroke-opacity="0.5"/><path d="M119,66 L126,70 L119,74" fill="none" stroke="currentColor" stroke-opacity="0.6"/>
+<rect x="128" y="48" width="142" height="44" rx="5" fill="#12A594" fill-opacity="0.08" stroke="#12A594" stroke-width="1.1"/><text x="199" y="74" font-size="11" text-anchor="middle" fill="currentColor" font-family="var(--md-code-font,monospace)">parse_cargo_list()</text>
+<line x1="270" y1="70" x2="288" y2="70" stroke="currentColor" stroke-opacity="0.5"/><path d="M281,66 L288,70 L281,74" fill="none" stroke="currentColor" stroke-opacity="0.6"/>
+<path d="M345,42 L400,70 L345,98 L290,70 Z" fill="currentColor" fill-opacity="0.05" stroke="currentColor" stroke-opacity="0.55"/>
+<text x="345" y="67" font-size="10.5" text-anchor="middle" fill="currentColor">assert</text>
+<text x="345" y="80" font-size="8.5" text-anchor="middle" fill="currentColor" opacity="0.6">cond?</text>
+<line x1="398" y1="60" x2="438" y2="46" stroke="#12A594" stroke-opacity="0.8"/><path d="M431,45 L438,46 L434,52" fill="none" stroke="#12A594"/>
+<line x1="398" y1="82" x2="438" y2="122" stroke="#D05663" stroke-opacity="0.8"/><path d="M431,116 L438,122 L432,124" fill="none" stroke="#D05663"/>
+<rect x="440" y="26" width="150" height="40" rx="5" fill="#12A594" fill-opacity="0.12" stroke="#12A594" stroke-width="1.1"/><text x="515" y="44" font-size="10.5" text-anchor="middle" fill="currentColor">true ✓ — continue</text><text x="515" y="58" font-size="8.5" text-anchor="middle" fill="currentColor" opacity="0.6">run the next test</text>
+<rect x="440" y="104" width="150" height="44" rx="5" fill="#D05663" fill-opacity="0.1" stroke="#D05663" stroke-width="1.1"/><text x="515" y="122" font-size="10.5" text-anchor="middle" fill="currentColor">false ✗ — abort</text><text x="515" y="137" font-size="8.5" text-anchor="middle" fill="#D05663" opacity="0.9" font-family="var(--md-code-font,monospace)">test_parser.c:46</text>
+<text x="270" y="174" font-size="10" text-anchor="middle" fill="currentColor" opacity="0.7" font-family="var(--md-code-font,monospace)">assert(s.cargo == NULL &amp;&amp; s.cargo_count == 0);</text>
+</svg>
+
 ## What this actually means (plain English)
 
 No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.

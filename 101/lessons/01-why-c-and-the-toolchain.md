@@ -2,6 +2,12 @@
 
 CargoForge-C is described in its own README as "a pure C99 maritime cargo loading optimizer... zero external dependencies." Understanding why the project was written in C — and how C source code becomes a running program — is the foundation for everything that follows. This lesson maps the compile-assemble-link-run pipeline onto the files you can actually see in the repository.
 
+## The mental model 🧠
+
+Choosing C is choosing to work one floor above the bare machine — no garbage collector sweeping up behind you, no interpreter standing between your code and the CPU. That is the bargain: you get exact control over every byte and a binary that depends on almost nothing (CargoForge's engine links against only the C standard library and the math library `libm`), and in return you accept responsibility for the memory a higher-level language would have managed for you.
+
+"Compiling" is not one step but an assembly line. Your `.c` text is translated to machine code in `.o` object files, the linker bolts those objects together with `libm` into a single executable, and only then does the operating system load and run it. Almost everything else in this course is a tour of what can go right — and wrong — at each station on that line.
+
 <svg viewBox="0 0 660 170" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:640px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
 <title>How C source becomes a running program</title>
 <desc>Each .c source file is compiled to a .o object file; the objects are linked with the math library into the cargoforge executable, which the operating system then loads and runs directly.</desc>

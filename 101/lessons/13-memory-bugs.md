@@ -2,6 +2,12 @@
 
 Memory errors are the most dangerous class of bugs in C: they are silent, they corrupt program state invisibly, and they are the primary vector for security vulnerabilities. This lesson uses a real heap-use-after-free that CargoForge-C's own fuzzer caught in `parse_cargo_list` to teach the four canonical memory bug types — and the small, disciplined habits that prevent all of them.
 
+## The mental model 🧠
+
+All four classic C memory bugs are the same mistake wearing different clothes: a gap between what you *think* you own and what you *actually* own. **Use-after-free** is reading a library book after you returned it. A **dangling pointer** is keeping the old key after the lock was changed — it still looks valid, which is exactly what makes the bug invisible. A **double free** is trying to return the same book twice. A **leak** is never returning it at all.
+
+CargoForge's own fuzzer caught a real one: an error path in `parse_cargo_list` called `free(ship->cargo)` but left the pointer holding the dead address, so `ship_cleanup` later read memory the allocator had already reclaimed. The fix is the single habit that kills the whole family — *free, then immediately set the pointer to `NULL`* — so a stale read hits an honest crash instead of silently corrupting state. AddressSanitizer (Lesson 38) is the tool that turns these silent bugs loud.
+
 ## What this actually means (plain English)
 
 No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
