@@ -6,6 +6,38 @@ these formats lets you feed real data to the program, interpret parse errors, an
 configuration with hydrostatic tables, tank definitions, or structural limits — capabilities that
 unlock the full physics engine.
 
+## The mental model 🧠
+
+Two files, two shapes. The ship config is a *recipe card*: a handful of `key=value` lines — length, width, lightship weight — that describe the one vessel. The cargo manifest is a *packing list*: one whitespace-separated row per item — id, weight, dimensions, type. CargoForge reads the recipe card into a single `Ship` struct, then turns each packing-list row into its own `Cargo` entry.
+
+The split is deliberate. `key=value` is order-independent and self-describing — right for a fixed set of named vessel properties. Columns are compact and repeatable — right for a list that might hold three items or three thousand. Get the format wrong in one line and `parse_ship_config` / `parse_cargo_list` reject the file with a line number rather than guessing; the formats are strict precisely so a typo cannot quietly become bad physics.
+
+<svg viewBox="0 0 600 240" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:560px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+<title>Two input files, two parsers, two structures</title>
+<desc>The ship configuration file uses key=value lines and is parsed into a single Ship struct. The cargo manifest uses whitespace-delimited columns, one row per item, and is parsed into an array of Cargo structs.</desc>
+<rect x="20" y="26" width="214" height="82" rx="5" fill="currentColor" fill-opacity="0.04" stroke="currentColor" stroke-opacity="0.4"/>
+<text x="30" y="44" font-size="10.5" fill="currentColor" opacity="0.8" font-family="var(--md-code-font,monospace)">ship.cfg</text><text x="226" y="44" font-size="8.5" text-anchor="end" fill="currentColor" opacity="0.5">key = value</text>
+<text x="30" y="64" font-size="10" fill="currentColor" opacity="0.65" font-family="var(--md-code-font,monospace)">length=100</text>
+<text x="30" y="80" font-size="10" fill="currentColor" opacity="0.65" font-family="var(--md-code-font,monospace)">width=20</text>
+<text x="30" y="96" font-size="10" fill="currentColor" opacity="0.65" font-family="var(--md-code-font,monospace)">lightship_weight=8000</text>
+<rect x="20" y="128" width="214" height="86" rx="5" fill="currentColor" fill-opacity="0.04" stroke="currentColor" stroke-opacity="0.4"/>
+<text x="30" y="146" font-size="10.5" fill="currentColor" opacity="0.8" font-family="var(--md-code-font,monospace)">cargo.txt</text><text x="226" y="146" font-size="8.5" text-anchor="end" fill="currentColor" opacity="0.5">whitespace columns</text>
+<text x="30" y="168" font-size="9.5" fill="currentColor" opacity="0.65" font-family="var(--md-code-font,monospace)">CRATE01 1200 2x3x1 standard</text>
+<text x="30" y="186" font-size="9.5" fill="currentColor" opacity="0.65" font-family="var(--md-code-font,monospace)">DRUM02   800 1x1x1 hazardous</text>
+<text x="30" y="204" font-size="9.5" fill="currentColor" opacity="0.4" font-family="var(--md-code-font,monospace)">…one row per item</text>
+<line x1="234" y1="66" x2="394" y2="68" stroke="#12A594" stroke-opacity="0.7"/><path d="M387,64 L394,68 L387,72" fill="none" stroke="#12A594"/>
+<text x="314" y="60" font-size="9" text-anchor="middle" fill="#12A594" opacity="0.9" font-family="var(--md-code-font,monospace)">parse_ship_config</text>
+<line x1="234" y1="170" x2="394" y2="172" stroke="#12A594" stroke-opacity="0.7"/><path d="M387,168 L394,172 L387,176" fill="none" stroke="#12A594"/>
+<text x="314" y="164" font-size="9" text-anchor="middle" fill="#12A594" opacity="0.9" font-family="var(--md-code-font,monospace)">parse_cargo_list</text>
+<rect x="396" y="44" width="184" height="60" rx="5" fill="#12A594" fill-opacity="0.1" stroke="#12A594" stroke-width="1.2"/>
+<text x="488" y="68" font-size="11" text-anchor="middle" fill="currentColor" font-family="var(--md-code-font,monospace)">Ship</text>
+<text x="488" y="86" font-size="8.5" text-anchor="middle" fill="currentColor" opacity="0.6">one struct: dims + weight</text>
+<rect x="396" y="140" width="184" height="62" rx="5" fill="#12A594" fill-opacity="0.1" stroke="#12A594" stroke-width="1.2"/>
+<text x="488" y="160" font-size="11" text-anchor="middle" fill="currentColor" font-family="var(--md-code-font,monospace)">Cargo[ ]</text>
+<text x="488" y="178" font-size="8.5" text-anchor="middle" fill="currentColor" opacity="0.6">one entry per manifest row</text>
+<text x="488" y="193" font-size="8.5" text-anchor="middle" fill="currentColor" opacity="0.5">weight in kg, dims split</text>
+</svg>
+
 ## What this actually means (plain English)
 
 No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
