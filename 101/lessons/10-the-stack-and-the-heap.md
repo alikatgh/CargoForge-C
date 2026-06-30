@@ -2,6 +2,12 @@
 
 C gives you two fundamentally different places to store data: the **stack**, where memory is managed automatically, and the **heap**, where you manage it yourself. Understanding the difference is not optional — CargoForge-C uses heap allocation for the cargo array specifically because the number of cargo items is unknown until the manifest file has been read, and that is a problem the stack cannot solve.
 
+## The mental model 🧠
+
+The **stack** is a hotel notepad. Scribble a number on it, and the instant you leave the room — the moment a function returns — the maid tears off the page and throws it away. Automatic, effortless, gone. You never clean up after yourself, but you also can't keep anything past checkout.
+
+The **heap** is a storage locker you rent. It stays yours, holding whatever you put inside, until *you* go back and unlock it to hand it back (`free`). CargoForge keeps the cargo array in a locker, not on the notepad, for one concrete reason: you don't know how many crates the manifest lists until you've read it, and you can't reserve a notepad page of unknown size — but you *can* rent a locker of exactly the right size once you know. The catch, which is Lesson 11's whole subject: forget to hand the locker back and you keep paying rent forever — a memory leak.
+
 <svg viewBox="0 0 660 290" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:640px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
 <title>Stack vs heap: the cargo pointer lives on the stack, the array it points to lives on the heap</title>
 <desc>On the stack, main() holds a Ship struct whose cargo field is a pointer. That pointer points across to a block on the heap — the Cargo array allocated by malloc, whose size is known only after the manifest is read. The stack is freed automatically on return; the heap block you must free yourself.</desc>

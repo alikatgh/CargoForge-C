@@ -2,6 +2,38 @@
 
 Cargo does not arrange itself. Given a manifest of containers, machinery, and bulk bags, someone — or some algorithm — must decide which item goes where. CargoForge-C solves this with a classical combinatorial heuristic called **First-Fit Decreasing** (FFD), implemented in [`src/placement_3d.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/placement_3d.c). This lesson walks through why FFD exists, how the code applies it in three dimensions, and why the sort order matters for stability as much as it matters for packing efficiency.
 
+## The mental model 🧠
+
+First-Fit Decreasing is the rule you already use packing a car boot: load the big awkward things first, and drop each one into the first space it actually fits. *Decreasing* — `place_cargo_3d` sorts the whole cargo array largest-first with `qsort` (by volume) before touching a bin. *First-fit* — for each item it then walks the holds (`ForwardHold`, `AftHold`, `Deck`) in order, looking for a spot. Do the big rocks first and the small ones pour into the gaps; do it the other way and the big rocks never fit.
+
+No fast rule is provably optimal, but FFD lands famously close while staying *predictable* and *fast* — exactly what an operator needs. CargoForge tightens it slightly: among the legal spots it prefers the one that wastes the least room (a Best-Fit twist), and it will rotate a crate through all six orientations before giving up. Each placement must clear geometry, the bin's weight cap, and the segregation rules of Lesson 33; the first legal, tightest spot wins, and the next item starts the scan again.
+
+<svg viewBox="0 0 600 220" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:560px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+<title>First-Fit Decreasing: sort items largest-first, place each in the first hold it fits</title>
+<desc>The cargo is sorted from largest to smallest. The largest unplaced item is tried against the holds in order: hold 1 is too full to take it, hold 2 has room so the item is placed there. The next item then starts the scan again from hold 1.</desc>
+<text x="80" y="28" font-size="10" text-anchor="middle" fill="currentColor" opacity="0.7">sorted: largest first</text>
+<g stroke="#12A594" stroke-width="1.1" fill="#12A594" fill-opacity="0.12">
+<rect x="30" y="40" width="96" height="34" rx="2"/>
+<rect x="38" y="82" width="76" height="28" rx="2"/>
+<rect x="44" y="118" width="58" height="22" rx="2"/>
+<rect x="50" y="148" width="42" height="18" rx="2"/>
+</g>
+<text x="80" y="186" font-size="8.5" text-anchor="middle" fill="currentColor" opacity="0.5">↓ take the largest</text>
+<line x1="130" y1="57" x2="232" y2="57" stroke="currentColor" stroke-opacity="0.5"/><path d="M225,53 L232,57 L225,61" fill="none" stroke="currentColor" stroke-opacity="0.6"/>
+<rect x="234" y="62" width="92" height="120" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.6" stroke-width="1.2"/>
+<rect x="236" y="76" width="88" height="104" fill="#12A594" fill-opacity="0.1"/>
+<rect x="238" y="66" width="84" height="26" fill="none" stroke="#D05663" stroke-opacity="0.7" stroke-dasharray="4 3"/>
+<text x="280" y="200" font-size="9.5" text-anchor="middle" fill="#D05663" opacity="0.9">hold 1 · full ✗</text>
+<path d="M326,76 L348,76" fill="none" stroke="currentColor" stroke-opacity="0.4"/><path d="M341,72 L348,76 L341,80" fill="none" stroke="currentColor" stroke-opacity="0.5"/>
+<rect x="350" y="62" width="92" height="120" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.6" stroke-width="1.2"/>
+<rect x="352" y="140" width="88" height="40" fill="#12A594" fill-opacity="0.1"/>
+<rect x="354" y="66" width="84" height="30" rx="2" fill="#12A594" fill-opacity="0.22" stroke="#12A594" stroke-width="1.2"/>
+<text x="396" y="85" font-size="9" text-anchor="middle" fill="currentColor">placed</text>
+<text x="396" y="200" font-size="9.5" text-anchor="middle" fill="#12A594" opacity="0.95">hold 2 · fits ✓</text>
+<rect x="466" y="62" width="92" height="120" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.6" stroke-width="1.2"/>
+<text x="512" y="200" font-size="9.5" text-anchor="middle" fill="currentColor" opacity="0.5">hold 3 · —</text>
+</svg>
+
 ## What this actually means (plain English)
 
 No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.

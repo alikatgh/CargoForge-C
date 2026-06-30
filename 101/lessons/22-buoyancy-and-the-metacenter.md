@@ -2,6 +2,34 @@
 
 A ship floats because the water it displaces pushes back. Where exactly that push acts — and how it shifts when the ship tilts — determines whether the vessel rights itself or capsizes. This lesson explains the geometry behind buoyancy: KB (the vertical center of buoyancy), BM (the metacentric radius), and the metacenter M — the pivot point that [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c) computes before every stability check.
 
+## The mental model 🧠
+
+The centre of buoyancy B is the balance point of *the water the hull pushes aside* — and unlike the centre of gravity, it refuses to stay put. Tip the ship and the underwater shape changes: more hull plunges in on the low side, less on the high side, so B slides toward the side that went under.
+
+Now draw the upward buoyancy force as a line through that shifted B and extend it up to the ship's centreline. The point where it crosses is the **metacentre M** — and here is the magic: for small angles M barely moves, so the heeling hull effectively swings about M like a pendulum hung from a fixed pivot. The height of that pivot above B is `BM = I / V` — the very waterplane inertia from the box-hull lesson, which is why beam (cubed in `I`) buys stability so cheaply. M is what turns "B wandered off-centre" into a predictable restoring geometry, and it is the middle term of the equation everything rides on: `GM = KB + BM − KG`.
+
+<svg viewBox="0 0 600 280" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:520px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+<title>The metacentre M: when the hull heels, the buoyancy line through the shifted B crosses the centreline at M</title>
+<desc>As the ship heels, the centre of buoyancy moves from B on the centreline to B prime on the low side, because more hull is immersed there. The upward buoyancy force through B prime, extended to the ship's centreline, crosses it at the metacentre M. The height of M above B is the metacentric radius BM. For small angles M stays nearly fixed, so the hull swings about it like a pendulum.</desc>
+<path d="M248,148 Q254,244 286,245 Q330,246 360,148" fill="currentColor" fill-opacity="0.03" stroke="currentColor" stroke-opacity="0.3" stroke-width="1"/>
+<line x1="272" y1="240" x2="272" y2="86" stroke="currentColor" stroke-opacity="0.3" stroke-dasharray="4 3"/>
+<text x="272" y="80" font-size="9" text-anchor="middle" fill="currentColor" opacity="0.45">upright</text>
+<line x1="272" y1="239" x2="312" y2="64" stroke="currentColor" stroke-opacity="0.75" stroke-width="1.4"/>
+<text x="244" y="150" font-size="9" text-anchor="middle" fill="currentColor" opacity="0.5" transform="rotate(-13 244 150)">centreline</text>
+<path d="M272,212 A30,30 0 0,1 281,214" fill="none" stroke="currentColor" stroke-opacity="0.5"/>
+<text x="288" y="210" font-size="10" fill="currentColor" opacity="0.7">θ</text>
+<line x1="312" y1="212" x2="312" y2="70" stroke="#12A594" stroke-width="1.6"/><path d="M307,77 L312,66 L317,77" fill="#12A594"/>
+<text x="320" y="200" font-size="10" fill="#12A594">buoyancy ↑</text>
+<line x1="290" y1="161" x2="309" y2="161" stroke="#D05663" stroke-opacity="0.7" stroke-dasharray="3 2"/>
+<text x="300" y="150" font-size="8.5" text-anchor="middle" fill="#D05663" opacity="0.9">B shifts to low side</text>
+<circle cx="312" cy="64" r="3.2" fill="#12A594"/><text x="320" y="62" font-size="11" fill="currentColor">M — metacentre</text>
+<circle cx="290" cy="161" r="3" fill="currentColor"/><text x="272" y="166" font-size="11" text-anchor="end" fill="currentColor">B</text>
+<circle cx="312" cy="161" r="3" fill="#D05663"/><text x="318" y="173" font-size="11" fill="#D05663">B′</text>
+<circle cx="272" cy="239" r="3" fill="currentColor"/><text x="264" y="252" font-size="11" text-anchor="end" fill="currentColor">K</text>
+<text x="318" y="116" font-size="10" fill="currentColor" opacity="0.7">BM</text>
+<text x="300" y="272" font-size="10" text-anchor="middle" fill="currentColor" opacity="0.7">GM = KB + BM − KG  ·  M must stay above G for the ship to self-right</text>
+</svg>
+
 ## What this actually means (plain English)
 
 No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.

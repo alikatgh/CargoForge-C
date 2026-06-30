@@ -2,6 +2,40 @@
 
 Fitting cargo into ship holds sounds mechanical — a matter of measuring boxes and doing arithmetic. In practice, it belongs to a family of combinatorial problems that have resisted exact polynomial-time solutions for decades. This lesson explains what bin packing is, why it is computationally hard, and how CargoForge-C trades optimality for speed with a set of practical heuristics.
 
+## The mental model 🧠
+
+Stowage is Tetris where you never see the next piece and you are not allowed to lose. You have a fixed set of holds and a pile of boxes of every size, and you must fit them in with nothing overlapping, no hold over its weight cap, and the heavy items kept low and centred. `place_cargo_3d` is the engine that attempts it.
+
+The trap is that the number of arrangements explodes. Every box can go in many positions, in any of six orientations, in any order — so for even a few dozen items, trying them all is hopeless. That is what *NP-hard* means: no known shortcut, and brute force that blows up faster than any computer can chase. So CargoForge never searches for the perfect plan; it makes fast, sensible greedy choices (Lesson 31) and produces a valid, stable stow in milliseconds. When a piece genuinely has no home it is stamped with the `pos_x = -1` sentinel and left out of the stability sums rather than forced. "Optimal" is off the table; "safe and quick" is the whole game.
+
+<svg viewBox="0 0 600 220" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:560px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+<title>The stowage problem: pack varied boxes into holds without overlap or overload</title>
+<desc>A pile of cargo boxes of different sizes must be packed into the ship's holds without overlapping, without exceeding weight limits, and keeping the load stable. The number of possible arrangements grows so fast that finding the perfect one is infeasible (NP-hard), so CargoForge uses a fast heuristic instead.</desc>
+<text x="92" y="40" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.7">cargo</text>
+<g stroke="#12A594" stroke-width="1.1" fill="#12A594" fill-opacity="0.1">
+<rect x="40" y="54" width="64" height="40" rx="2"/>
+<rect x="112" y="64" width="40" height="30" rx="2"/>
+<rect x="40" y="104" width="44" height="34" rx="2"/>
+<rect x="92" y="104" width="60" height="50" rx="2"/>
+<rect x="40" y="146" width="36" height="26" rx="2"/>
+</g>
+<line x1="166" y1="110" x2="206" y2="110" stroke="currentColor" stroke-opacity="0.5"/><path d="M199,106 L206,110 L199,114" fill="none" stroke="currentColor" stroke-opacity="0.6"/>
+<rect x="214" y="42" width="240" height="148" rx="4" fill="none" stroke="currentColor" stroke-width="1.3" stroke-opacity="0.6"/>
+<text x="334" y="36" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.7">hold</text>
+<g stroke="#12A594" stroke-width="1" fill="#12A594" fill-opacity="0.12">
+<rect x="220" y="126" width="80" height="58"/>
+<rect x="304" y="146" width="56" height="38"/>
+<rect x="364" y="100" width="50" height="84"/>
+<rect x="220" y="86" width="40" height="36"/>
+<rect x="264" y="92" width="36" height="30"/>
+</g>
+<rect x="304" y="100" width="56" height="42" fill="currentColor" fill-opacity="0.03" stroke="currentColor" stroke-opacity="0.25" stroke-dasharray="3 3"/>
+<text x="332" y="125" font-size="8" text-anchor="middle" fill="currentColor" opacity="0.45">gap</text>
+<rect x="418" y="100" width="30" height="84" fill="currentColor" fill-opacity="0.03" stroke="currentColor" stroke-opacity="0.25" stroke-dasharray="3 3"/>
+<text x="528" y="116" font-size="9.5" text-anchor="middle" fill="#D05663" opacity="0.85"><tspan x="528" dy="0">arrangements</tspan><tspan x="528" dy="13">explode</tspan><tspan x="528" dy="13">(NP-hard)</tspan></text>
+<text x="300" y="210" font-size="10" text-anchor="middle" fill="currentColor" opacity="0.7">can't try them all → a fast heuristic (Lesson 31), not a perfect search</text>
+</svg>
+
 ## What this actually means (plain English)
 
 No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.

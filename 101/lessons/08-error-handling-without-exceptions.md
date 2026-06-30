@@ -8,6 +8,34 @@ and process exit codes. Understanding them together explains how the program can
 reject a malformed manifest without crashing — and why getting it wrong caused a
 real heap-use-after-free bug.
 
+## The mental model 🧠
+
+With no `try`/`catch`, an error in C can't teleport up to a handler — it has to be *carried up the stairs by hand*, one function at a time. Each function returns a verdict: `0` for success, `-1` for failure, or `NAN` for a physics result that simply doesn't exist (an unstable ship has no real GM). The caller's job is to *check that verdict and pass it on*. Skip the check, and the bad value keeps flowing downstream as if nothing went wrong.
+
+That is not a hypothetical. A skipped error path is exactly how a parse failure once slid through and became a real heap-use-after-free: the function that should have stopped, cleaned up, and returned `-1` instead kept running on memory it had already freed. The fix wasn't cleverer code — it was making the error propagate honestly and clearing the dangling pointer (`docs/BUG_JOURNAL.md`).
+
+Hold this: **in C, errors don't propagate themselves — you do.** Every `return -1` you ignore is a bug the compiler will never warn you about.
+
+<svg viewBox="0 0 600 240" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:560px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+<title>In C, an error is carried up the call chain by hand, one return at a time</title>
+<desc>parse_cargo_list hits a bad weight, frees its buffer, and returns -1. parse_ship_config checks that return code and propagates -1 upward; main checks it and exits non-zero. If any caller skips the check, the bad value keeps flowing — the cause of a real use-after-free.</desc>
+<rect x="40" y="28" width="360" height="50" rx="6" fill="currentColor" fill-opacity="0.04" stroke="currentColor" stroke-opacity="0.45"/>
+<text x="54" y="48" font-size="11.5" fill="currentColor" font-family="var(--md-code-font,monospace)">main()</text>
+<text x="54" y="68" font-size="10" fill="currentColor" opacity="0.7" font-family="var(--md-code-font,monospace)">if (rc != 0) return EXIT_FAILURE;</text>
+<rect x="40" y="100" width="360" height="50" rx="6" fill="currentColor" fill-opacity="0.04" stroke="currentColor" stroke-opacity="0.45"/>
+<text x="54" y="120" font-size="11.5" fill="currentColor" font-family="var(--md-code-font,monospace)">parse_ship_config()</text>
+<text x="54" y="140" font-size="10" fill="currentColor" opacity="0.7" font-family="var(--md-code-font,monospace)">if (rc != 0) return -1;</text>
+<rect x="40" y="172" width="360" height="50" rx="6" fill="#D05663" fill-opacity="0.07" stroke="#D05663" stroke-opacity="0.6"/>
+<text x="54" y="192" font-size="11.5" fill="currentColor" font-family="var(--md-code-font,monospace)">parse_cargo_list()</text>
+<text x="54" y="210" font-size="10" fill="#D05663" opacity="0.9" font-family="var(--md-code-font,monospace)">bad weight  →  free + return -1</text>
+<line x1="430" y1="186" x2="430" y2="141" stroke="#D05663" stroke-width="1.3"/><path d="M426,148 L430,140 L434,148" fill="none" stroke="#D05663" stroke-width="1.3"/>
+<line x1="430" y1="114" x2="430" y2="69" stroke="#D05663" stroke-width="1.3"/><path d="M426,76 L430,68 L434,76" fill="none" stroke="#D05663" stroke-width="1.3"/>
+<text x="446" y="167" font-size="10.5" fill="#D05663" font-family="var(--md-code-font,monospace)">-1</text>
+<text x="446" y="95" font-size="10.5" fill="#D05663" font-family="var(--md-code-font,monospace)">-1</text>
+<text x="515" y="120" font-size="9.5" text-anchor="middle" fill="currentColor" opacity="0.55">the error is</text>
+<text x="515" y="134" font-size="9.5" text-anchor="middle" fill="currentColor" opacity="0.55">carried up by hand</text>
+</svg>
+
 ## What this actually means (plain English)
 
 No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.

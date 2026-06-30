@@ -7,6 +7,32 @@ This lesson walks through the physics and then traces exactly how `perform_analy
 [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c) derives draft from first principles, with a real hydrostatic table as the
 preferred path and a box-hull formula as the fallback.
 
+## The mental model 🧠
+
+**Displacement** is the ship's weight told as a volume of water. A loaded ship floats at exactly the depth where it has pushed aside its own weight in water — so "how much does it weigh?" and "how much water has it shoved out of the way?" are the same question in different units. The depth it settles to is the **draft**.
+
+Two things move the draft. Add cargo and the ship must displace more water, so it sinks deeper — draft rises. Sail from salt sea into a fresh-water river and the *water* gets less dense, so the same weight needs *more* volume to balance, and the ship sinks deeper there too — which is why load lines are marked separately for salt and fresh water. CargoForge runs the calculation in the direction operators actually need: it knows the total weight and works *backwards* to the draft — preferring a measured hydrostatic table, and falling back to the box-hull formula when none is loaded.
+
+<svg viewBox="0 0 600 240" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:560px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+<title>Displacement and draft: weight down balances the buoyancy of displaced water up</title>
+<desc>The ship floats at the draft where its weight (its displacement) is exactly balanced by the upward buoyancy of the water its hull pushes aside. Adding cargo increases displacement, so the ship sinks deeper and the draft increases.</desc>
+<rect x="0" y="96" width="600" height="120" fill="#12A594" fill-opacity="0.06"/>
+<line x1="0" y1="96" x2="600" y2="96" stroke="#12A594" stroke-opacity="0.5"/>
+<text x="20" y="90" font-size="9.5" fill="#12A594" opacity="0.8">water surface</text>
+<path d="M180,60 L420,60 L408,182 L192,182 Z" fill="currentColor" fill-opacity="0.06" stroke="currentColor" stroke-opacity="0.6" stroke-width="1.2"/>
+<text x="300" y="50" font-size="10" text-anchor="middle" fill="currentColor" opacity="0.7">hull</text>
+<line x1="284" y1="70" x2="284" y2="146" stroke="#D05663" stroke-width="1.6"/><path d="M279,139 L284,148 L289,139" fill="#D05663"/>
+<text x="250" y="86" font-size="10" text-anchor="end" fill="#D05663">W ↓</text>
+<text x="250" y="100" font-size="8.5" text-anchor="end" fill="currentColor" opacity="0.6">weight</text>
+<line x1="316" y1="176" x2="316" y2="100" stroke="#12A594" stroke-width="1.6"/><path d="M311,107 L316,98 L321,107" fill="#12A594"/>
+<text x="330" y="170" font-size="10" fill="#12A594">ρgV ↑</text>
+<text x="330" y="184" font-size="8.5" fill="currentColor" opacity="0.6">buoyancy</text>
+<line x1="452" y1="96" x2="452" y2="182" stroke="currentColor" stroke-opacity="0.6"/><path d="M448,103 L452,95 L456,103" fill="none" stroke="currentColor" stroke-opacity="0.6"/><path d="M448,175 L452,183 L456,175" fill="none" stroke="currentColor" stroke-opacity="0.6"/>
+<text x="462" y="143" font-size="10.5" fill="currentColor" opacity="0.8">draft T</text>
+<line x1="192" y1="120" x2="414" y2="120" stroke="#D05663" stroke-opacity="0.5" stroke-dasharray="4 3"/>
+<text x="300" y="206" font-size="10" text-anchor="middle" fill="currentColor" opacity="0.7">add cargo → more displacement → sinks deeper (draft ↑)</text>
+</svg>
+
 ## What this actually means (plain English)
 
 No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.

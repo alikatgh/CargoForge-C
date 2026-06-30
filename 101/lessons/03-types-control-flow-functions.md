@@ -2,6 +2,36 @@
 
 C is a typed language: every variable has a fixed type declared at compile time, and the type determines how memory is used and what operations are legal. Understanding why CargoForge-C chooses `float` over `double` for physics, and how functions isolate that physics into reusable units, is the first step to reading the codebase fluently.
 
+## The mental model 🧠
+
+A **type** is a labelled container that fixes both the *size* of the bits inside and what they *mean*. Declare `float weight` and the compiler reserves exactly 4 bytes and treats them as a decimal number; declare `int count` and it reserves space for a whole number. The compiler is a strict clerk — it won't let you post a sentence into a slot built for a number.
+
+A **function** is a machine with a typed intake slot and a typed output chute. `float calculate_gm(Ship *s)` is a promise: *feed me one ship, I hand you back exactly one float.* CargoForge keeps each piece of physics in its own machine — and marks the helpers `static` so they stay sealed inside [`analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c), invisible to the rest of the program. **Control flow** (`if`, `for`, `while`) is just the wiring that decides which machines run, and how often.
+
+The catch the clerk *won't* save you from: types pin size and meaning, not truth. Store a negative number in an `unsigned` and it silently wraps to a huge positive one. The type system catches typos, not wrong physics — that is what the tests in Lesson 15 are for.
+
+<svg viewBox="0 0 600 210" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:560px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+<title>A function is a machine with a typed input and a typed output</title>
+<desc>calculate_gm takes one Ship pointer, runs its body with control flow that branches on a condition, and returns exactly one float. The compiler enforces the declared types at both ends.</desc>
+<rect x="18" y="80" width="118" height="46" rx="5" fill="#12A594" fill-opacity="0.1" stroke="#12A594" stroke-width="1.1"/>
+<text x="77" y="101" font-size="12" text-anchor="middle" fill="currentColor" font-family="var(--md-code-font,monospace)">Ship *ship</text>
+<text x="77" y="117" font-size="9.5" text-anchor="middle" fill="currentColor" opacity="0.55">typed input</text>
+<line x1="136" y1="103" x2="192" y2="103" stroke="currentColor" stroke-opacity="0.5"/>
+<path d="M185,99 L192,103 L185,107" fill="none" stroke="currentColor" stroke-opacity="0.6"/>
+<rect x="194" y="34" width="212" height="142" rx="6" fill="currentColor" fill-opacity="0.04" stroke="currentColor" stroke-opacity="0.4"/>
+<text x="300" y="54" font-size="11.5" text-anchor="middle" fill="currentColor" opacity="0.8" font-family="var(--md-code-font,monospace)">calculate_gm</text>
+<line x1="210" y1="64" x2="390" y2="64" stroke="currentColor" stroke-opacity="0.15"/>
+<text x="210" y="86" font-size="10.5" fill="currentColor" opacity="0.7" font-family="var(--md-code-font,monospace)">kg = vmoment / disp;</text>
+<text x="210" y="110" font-size="10.5" fill="currentColor" opacity="0.7" font-family="var(--md-code-font,monospace)">if (overweight)</text>
+<text x="224" y="128" font-size="10.5" fill="#D05663" opacity="0.85" font-family="var(--md-code-font,monospace)">return NAN;</text>
+<text x="210" y="150" font-size="10.5" fill="currentColor" opacity="0.7" font-family="var(--md-code-font,monospace)">gm = kb + bm - kg;</text>
+<line x1="406" y1="103" x2="462" y2="103" stroke="currentColor" stroke-opacity="0.5"/>
+<path d="M455,99 L462,103 L455,107" fill="none" stroke="currentColor" stroke-opacity="0.6"/>
+<rect x="464" y="80" width="116" height="46" rx="5" fill="#12A594" fill-opacity="0.1" stroke="#12A594" stroke-width="1.1"/>
+<text x="522" y="101" font-size="12" text-anchor="middle" fill="currentColor" font-family="var(--md-code-font,monospace)">float gm</text>
+<text x="522" y="117" font-size="9.5" text-anchor="middle" fill="currentColor" opacity="0.55">one typed output</text>
+</svg>
+
 ## What this actually means (plain English)
 
 No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.

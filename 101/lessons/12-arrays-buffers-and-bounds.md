@@ -7,6 +7,38 @@ This lesson traces that understanding through [`src/parser.c`](https://github.co
 reads an entire cargo manifest into a heap-allocated array before a single item
 is analysed.
 
+## The mental model 🧠
+
+An array is a row of identical boxes numbered from **zero**, and C finds box `i` by literally jumping `i` box-widths from the start of the row — no questions asked, no fence at the end. Ask for box 6 of a 6-box array (whose valid indices are 0 through 5) and C cheerfully computes an address one box past the end and reads or writes whatever lives there: another struct field, a saved return address, anything. That single off-by-one is the most common memory-corruption bug in all of C.
+
+CargoForge's defence is bookkeeping. It tracks two numbers that are easy to confuse: `cargo_count` — how many items are actually in use — and `cargo_capacity` — how many the allocated block can hold. The parser never reads or writes past `cargo_count`, and when the count is about to exceed the capacity it grows the heap block first. The boundary is enforced by *discipline*, because the language enforces nothing.
+
+The rule: **an index is a raw offset, not a request the array can refuse.** Every `array[i]` is a promise you are making that `i` is in range — and only your own code can keep it.
+
+<svg viewBox="0 0 600 210" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:560px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+<title>A C array has no fence: indexing past the end corrupts neighbouring memory</title>
+<desc>The cargo array has capacity for six items and currently uses four. C computes element i as the start address plus i element-widths with no bounds check, so reading or writing index six lands one slot past the array, in whatever memory follows. CargoForge tracks count separately from capacity and never indexes past count.</desc>
+<text x="40" y="30" font-size="11" fill="currentColor" opacity="0.75" font-family="var(--md-code-font,monospace)">Cargo cargo[6];   // capacity 6, count 4</text>
+<g font-family="var(--md-code-font,monospace)" font-size="12" text-anchor="middle">
+<rect x="40" y="42" width="58" height="46" rx="3" fill="#12A594" fill-opacity="0.13" stroke="#12A594" stroke-width="1.1"/><text x="69" y="70" fill="currentColor">C0</text>
+<rect x="100" y="42" width="58" height="46" rx="3" fill="#12A594" fill-opacity="0.13" stroke="#12A594" stroke-width="1.1"/><text x="129" y="70" fill="currentColor">C1</text>
+<rect x="160" y="42" width="58" height="46" rx="3" fill="#12A594" fill-opacity="0.13" stroke="#12A594" stroke-width="1.1"/><text x="189" y="70" fill="currentColor">C2</text>
+<rect x="220" y="42" width="58" height="46" rx="3" fill="#12A594" fill-opacity="0.13" stroke="#12A594" stroke-width="1.1"/><text x="249" y="70" fill="currentColor">C3</text>
+<rect x="280" y="42" width="58" height="46" rx="3" fill="currentColor" fill-opacity="0.03" stroke="currentColor" stroke-opacity="0.35"/><text x="309" y="70" fill="currentColor" opacity="0.4">·</text>
+<rect x="340" y="42" width="58" height="46" rx="3" fill="currentColor" fill-opacity="0.03" stroke="currentColor" stroke-opacity="0.35"/><text x="369" y="70" fill="currentColor" opacity="0.4">·</text>
+<rect x="416" y="42" width="58" height="46" rx="3" fill="#D05663" fill-opacity="0.1" stroke="#D05663" stroke-width="1.2" stroke-dasharray="4 3"/><text x="445" y="70" fill="#D05663">a[6]</text>
+</g>
+<g font-size="9.5" text-anchor="middle" fill="currentColor" opacity="0.5">
+<text x="69" y="104">0</text><text x="129" y="104">1</text><text x="189" y="104">2</text><text x="249" y="104">3</text><text x="309" y="104">4</text><text x="369" y="104">5</text>
+</g>
+<text x="445" y="104" font-size="9.5" text-anchor="middle" fill="#D05663" opacity="0.9">out of bounds</text>
+<path d="M40,118 L40,126 L278,126 L278,118" fill="none" stroke="#12A594" stroke-opacity="0.7"/>
+<text x="159" y="142" font-size="10" text-anchor="middle" fill="#12A594" opacity="0.9">cargo_count = 4  (in use)</text>
+<path d="M40,158 L40,166 L398,166 L398,158" fill="none" stroke="currentColor" stroke-opacity="0.4"/>
+<text x="219" y="182" font-size="10" text-anchor="middle" fill="currentColor" opacity="0.6">cargo_capacity = 6  (allocated)</text>
+<text x="445" y="142" font-size="9" text-anchor="middle" fill="#D05663" opacity="0.85">corrupts a neighbour</text>
+</svg>
+
 ## What this actually means (plain English)
 
 No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.

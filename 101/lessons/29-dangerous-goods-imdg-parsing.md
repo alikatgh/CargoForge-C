@@ -9,6 +9,34 @@ manifest line, parses it into a `DGInfo` struct, and later enforces the rules
 through a segregation matrix drawn directly from the IMDG Code. This lesson
 explains the grammar, the parser, and the physics behind the classes.
 
+## The mental model 🧠
+
+A dangerous-goods tag is a lot of safety law compressed into one field. Most cargo is inert and carries nothing extra — but a drum of flammable liquid rides with a compact code, `DG:3.1:UN1203:A:F-E`, that names its hazard class, its UN number, and its handling rules. CargoForge parses that string into a `DGInfo` struct that hangs off the cargo item by a pointer, so ordinary cargo pays nothing for fields it does not need (its `dg` is simply `NULL`).
+
+The class is not decoration — it is the key into a **segregation matrix** lifted straight from the IMDG Code, the table that says which hazards may not ride near which (an oxidiser must stay clear of a flammable). Parsing the tag is step one; Lesson 33 enforces the distances. The grammar is strict on purpose: a mis-parsed hazard class is not a cosmetic bug, it is two incompatible chemicals stowed side by side.
+
+<svg viewBox="0 0 600 220" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:560px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+<title>Parsing a dangerous-goods tag into a DGInfo struct</title>
+<desc>A manifest line for hazardous cargo ends in a compact DG tag naming the hazard class and UN number. parse_dg_field turns it into a DGInfo struct that hangs off the cargo item by a pointer; ordinary cargo leaves that pointer NULL. The hazard class feeds the segregation matrix that keeps incompatible goods apart.</desc>
+<rect x="18" y="18" width="564" height="30" rx="4" fill="currentColor" fill-opacity="0.04" stroke="currentColor" stroke-opacity="0.35"/>
+<text x="28" y="37" font-size="10.5" fill="currentColor" opacity="0.7" font-family="var(--md-code-font,monospace)">FlammableLiquid 25 6x2.5x2.6 hazardous <tspan fill="#12A594" font-weight="600">DG:3.1:UN1203:A:F-E</tspan></text>
+<line x1="333" y1="49" x2="412" y2="76" stroke="#12A594" stroke-opacity="0.7"/><path d="M405,73 L413,77 L406,80" fill="none" stroke="#12A594"/>
+<rect x="356" y="78" width="160" height="30" rx="5" fill="#12A594" fill-opacity="0.1" stroke="#12A594" stroke-width="1.1"/><text x="436" y="98" font-size="10.5" text-anchor="middle" fill="currentColor" font-family="var(--md-code-font,monospace)">parse_dg_field()</text>
+<line x1="436" y1="108" x2="436" y2="126" stroke="currentColor" stroke-opacity="0.45"/><path d="M432,119 L436,127 L440,119" fill="none" stroke="currentColor" stroke-opacity="0.5"/>
+<rect x="350" y="128" width="172" height="74" rx="5" fill="currentColor" fill-opacity="0.04" stroke="currentColor" stroke-opacity="0.45"/>
+<text x="362" y="146" font-size="10.5" fill="currentColor" opacity="0.85" font-family="var(--md-code-font,monospace)">DGInfo</text>
+<text x="362" y="164" font-size="9.5" fill="currentColor" opacity="0.7">class 3.1 — flammable</text>
+<text x="362" y="180" font-size="9.5" fill="currentColor" opacity="0.7">UN 1203</text>
+<text x="362" y="196" font-size="9.5" fill="currentColor" opacity="0.7">segregation: F-E, S-D</text>
+<line x1="350" y1="165" x2="246" y2="165" stroke="#D05663" stroke-opacity="0.6"/><path d="M253,161 L245,165 L253,169" fill="none" stroke="#D05663" stroke-opacity="0.7"/>
+<rect x="60" y="146" width="184" height="40" rx="5" fill="#D05663" fill-opacity="0.07" stroke="#D05663" stroke-opacity="0.55"/>
+<text x="152" y="164" font-size="10" text-anchor="middle" fill="currentColor">segregation matrix</text>
+<text x="152" y="178" font-size="8.5" text-anchor="middle" fill="#D05663" opacity="0.9">keeps incompatibles apart · Lesson 33</text>
+<text x="28" y="92" font-size="9.5" fill="currentColor" opacity="0.6" font-family="var(--md-code-font,monospace)">ordinary cargo:</text>
+<text x="28" y="108" font-size="9.5" fill="currentColor" opacity="0.6" font-family="var(--md-code-font,monospace)">dg = NULL</text>
+<text x="28" y="123" font-size="8.5" fill="currentColor" opacity="0.45">(no DGInfo allocated)</text>
+</svg>
+
 ## What this actually means (plain English)
 
 No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.

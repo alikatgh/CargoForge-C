@@ -2,6 +2,37 @@
 
 Every program eventually meets bad input — a typo in a weight field, a manifest with a missing dimension, a DG code no one has seen before. CargoForge-C must survive all of that without crashing. This lesson traces the validation strategy embedded in [`src/parser.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/parser.c), from the single function that guards every numeric field, through the error paths that clean up borrowed memory before returning, to the contract the project holds with its own fuzzer.
 
+## The mental model 🧠
+
+Treat every input as guilty until proven valid. A manifest is untrusted text — a typo'd weight, a missing dimension, a DG code from the future — and the parser's whole job on the front line is to *reject cleanly*: say no, free anything it borrowed, return −1, and never crash. `safe_atof` is the single bouncer every number must pass; it wraps `strtof` with four checks and returns `NAN` — a value that fails its own equality test, so callers detect it with `isnan` and bail.
+
+Robustness is just as much about what happens *after* you say no. The error path must leave memory in a safe state — the lesson the fuzzer taught the hard way: freeing `ship->cargo` but leaving the pointer non-NULL let `ship_cleanup` walk a dead array (a use-after-free, exit 134). The fix — `free`, then null the pointer and zero the count — plus a two-pass allocation (count the lines, `malloc` once) means every error path has exactly one clean thing to undo. Good rejection is as engineered as good acceptance.
+
+<svg viewBox="0 0 600 200" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:560px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+<title>safe_atof is the bouncer every number must pass</title>
+<desc>safe_atof wraps strtof with four checks — overflow, at least one digit, no trailing garbage, and in range. A token that passes all four becomes a trusted float; failing any check returns NAN, which the caller detects with isnan and rejects cleanly with -1.</desc>
+<rect x="14" y="44" width="64" height="34" rx="5" fill="currentColor" fill-opacity="0.05" stroke="currentColor" stroke-opacity="0.4"/><text x="46" y="65" font-size="11" text-anchor="middle" fill="currentColor" font-family="var(--md-code-font,monospace)">"1200"</text>
+<g font-size="9.5" text-anchor="middle">
+<rect x="100" y="44" width="92" height="34" rx="5" fill="#12A594" fill-opacity="0.08" stroke="#12A594" stroke-opacity="0.6"/><text x="146" y="65" fill="currentColor">overflow?</text>
+<rect x="208" y="44" width="92" height="34" rx="5" fill="#12A594" fill-opacity="0.08" stroke="#12A594" stroke-opacity="0.6"/><text x="254" y="65" fill="currentColor">has digits?</text>
+<rect x="316" y="44" width="92" height="34" rx="5" fill="#12A594" fill-opacity="0.08" stroke="#12A594" stroke-opacity="0.6"/><text x="362" y="65" fill="currentColor">no junk?</text>
+<rect x="424" y="44" width="92" height="34" rx="5" fill="#12A594" fill-opacity="0.08" stroke="#12A594" stroke-opacity="0.6"/><text x="470" y="65" fill="currentColor">in range?</text>
+</g>
+<g stroke="#12A594" stroke-opacity="0.6">
+<line x1="78" y1="61" x2="98" y2="61"/><line x1="192" y1="61" x2="206" y2="61"/><line x1="300" y1="61" x2="314" y2="61"/><line x1="408" y1="61" x2="422" y2="61"/>
+</g>
+<line x1="516" y1="61" x2="536" y2="61" stroke="#12A594" stroke-opacity="0.7"/><path d="M529,57 L536,61 L529,65" fill="none" stroke="#12A594"/>
+<text x="560" y="58" font-size="10" text-anchor="middle" fill="#12A594">1200.0</text>
+<text x="560" y="72" font-size="8" text-anchor="middle" fill="currentColor" opacity="0.6">trusted</text>
+<g stroke="#D05663" stroke-opacity="0.55" stroke-dasharray="4 3">
+<line x1="146" y1="78" x2="146" y2="128"/><line x1="254" y1="78" x2="254" y2="128"/><line x1="362" y1="78" x2="362" y2="128"/><line x1="470" y1="78" x2="470" y2="128"/>
+</g>
+<line x1="146" y1="128" x2="470" y2="128" stroke="#D05663" stroke-opacity="0.5"/>
+<rect x="220" y="136" width="180" height="40" rx="5" fill="#D05663" fill-opacity="0.08" stroke="#D05663" stroke-opacity="0.6"/>
+<text x="310" y="154" font-size="10" text-anchor="middle" fill="currentColor">any check fails → NAN</text>
+<text x="310" y="169" font-size="9" text-anchor="middle" fill="#D05663" opacity="0.9" font-family="var(--md-code-font,monospace)">isnan(v) → return -1</text>
+</svg>
+
 ## What this actually means (plain English)
 
 No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.

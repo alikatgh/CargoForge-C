@@ -6,6 +6,38 @@ through exactly how the code turns a raw text line into a populated `Cargo` stru
 `fgets`, `strtok_r`, and a carefully written `safe_atof` — and explains why each choice was
 made the way it was.
 
+## The mental model 🧠
+
+Parsing is turning a flat ribbon of characters into labelled meaning. A manifest line arrives as one undifferentiated string — `CRATE01 1200 2x3x1 standard` — and the parser's job is to cut it at the spaces into *tokens*, then hand each token to the field it belongs to: first token is the id, second the weight, and so on. `strtok_r` is the scissors; `safe_atof` is the gate that turns the weight token from text into a number it trusts.
+
+Every cut is a place a bug can hide, which is why the choices are conservative. `fgets` reads a line without ever overrunning the buffer (unlike the banned `gets`), and `strtok_r` carries its own bookmark so the outer field-loop and the inner dimension-loop (`2x3x1`) can run at the same time without clobbering each other. The discipline is always the same: tokenize first, validate each piece, *then* build the struct — never trust the ribbon as a whole.
+
+<svg viewBox="0 0 600 210" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:560px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+<title>Tokenizing: one text line is split into the fields that fill a Cargo struct</title>
+<desc>The manifest line CRATE01 1200 2x3x1 standard is split by strtok_r on spaces into four tokens, each mapped to a Cargo field: id, weight (converted to kilograms by safe_atof), dimensions split on x, and type.</desc>
+<rect x="118" y="16" width="364" height="28" rx="4" fill="currentColor" fill-opacity="0.05" stroke="currentColor" stroke-opacity="0.35"/>
+<text x="300" y="34" font-size="12" text-anchor="middle" fill="currentColor" font-family="var(--md-code-font,monospace)">CRATE01 1200 2x3x1 standard</text>
+<text x="300" y="60" font-size="9.5" text-anchor="middle" fill="#12A594" opacity="0.9">strtok_r splits on spaces ✂</text>
+<g font-family="var(--md-code-font,monospace)" font-size="11" text-anchor="middle">
+<rect x="28" y="70" width="120" height="32" rx="4" fill="#12A594" fill-opacity="0.12" stroke="#12A594" stroke-width="1.1"/><text x="88" y="91" fill="currentColor">CRATE01</text>
+<rect x="176" y="70" width="120" height="32" rx="4" fill="#12A594" fill-opacity="0.12" stroke="#12A594" stroke-width="1.1"/><text x="236" y="91" fill="currentColor">1200</text>
+<rect x="324" y="70" width="120" height="32" rx="4" fill="#12A594" fill-opacity="0.12" stroke="#12A594" stroke-width="1.1"/><text x="384" y="91" fill="currentColor">2x3x1</text>
+<rect x="472" y="70" width="120" height="32" rx="4" fill="#12A594" fill-opacity="0.12" stroke="#12A594" stroke-width="1.1"/><text x="532" y="91" fill="currentColor">standard</text>
+</g>
+<g stroke="currentColor" stroke-opacity="0.4">
+<line x1="88" y1="102" x2="88" y2="132"/><line x1="236" y1="102" x2="236" y2="132"/><line x1="384" y1="102" x2="384" y2="132"/><line x1="532" y1="102" x2="532" y2="132"/>
+</g>
+<g font-size="9.5" text-anchor="middle">
+<text x="88" y="148" fill="currentColor" opacity="0.75" font-family="var(--md-code-font,monospace)">.id</text>
+<text x="236" y="148" fill="currentColor" opacity="0.75" font-family="var(--md-code-font,monospace)">.weight</text>
+<text x="384" y="148" fill="currentColor" opacity="0.75" font-family="var(--md-code-font,monospace)">.dimensions[3]</text>
+<text x="532" y="148" fill="currentColor" opacity="0.75" font-family="var(--md-code-font,monospace)">.type</text>
+<text x="236" y="164" fill="#12A594" opacity="0.9" font-size="8.5">safe_atof → 1200.0 kg</text>
+<text x="384" y="164" fill="currentColor" opacity="0.5" font-size="8.5">split on 'x'</text>
+</g>
+<text x="300" y="194" font-size="10" text-anchor="middle" fill="currentColor" opacity="0.7">tokenize first, validate each piece, then build the Cargo struct</text>
+</svg>
+
 ## What this actually means (plain English)
 
 No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.

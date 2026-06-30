@@ -2,6 +2,38 @@
 
 A ship is not a rectangular box, and treating it as one introduces errors that grow quickly as loading changes. This lesson introduces the hydrostatic table — a pre-computed dataset from a ship's stability booklet — and shows exactly how CargoForge-C reads, validates, and interpolates it to replace the box-hull fallback with real naval-architecture data.
 
+## The mental model 🧠
+
+A hydrostatic table is the ship's body measured once and written down, so the program never has to guess. Where the box-hull model uses fixed constants (0.75, 0.53), the table gives the *real* draft, KB, and BM at every depth — the shipyard measured the actual hull and recorded one row per draft. The numbers it captures are stubbornly non-linear: BM, for instance, plunges from about 12 m at a 2 m draft to under 1 m at 10 m, because the submerged volume grows far faster than the waterplane widens — exactly the curve fixed constants cannot follow.
+
+The table is used *backwards* from how it reads. You don't start by knowing the draft; you know the total weight. `hydro_draft_from_displacement` takes that weight, finds the two rows that bracket it, and interpolates the draft between them. That only works if the rows are in strictly ascending order — so `parse_hydro_table` rejects any table that is out of sequence rather than returning a quietly wrong answer.
+
+<svg viewBox="0 0 600 230" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:560px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+<title>Reading a hydrostatic table backwards: from known weight to draft by interpolation</title>
+<desc>The table lists displacement, KB, and BM at each draft. In practice you know the total weight, not the draft, so the code finds the two rows that bracket the weight and interpolates the draft between them. The rows must be in strictly ascending order.</desc>
+<rect x="16" y="96" width="104" height="44" rx="5" fill="#12A594" fill-opacity="0.1" stroke="#12A594" stroke-width="1.1"/>
+<text x="68" y="116" font-size="11" text-anchor="middle" fill="currentColor" font-family="var(--md-code-font,monospace)">W = 8400 t</text>
+<text x="68" y="131" font-size="9" text-anchor="middle" fill="currentColor" opacity="0.6">known weight</text>
+<line x1="120" y1="118" x2="156" y2="118" stroke="#12A594" stroke-opacity="0.7"/><path d="M149,114 L156,118 L149,122" fill="none" stroke="#12A594"/>
+<g font-family="var(--md-code-font,monospace)" font-size="10.5" text-anchor="middle">
+<rect x="158" y="34" width="300" height="28" fill="currentColor" fill-opacity="0.06"/>
+<text x="196" y="53" fill="currentColor" opacity="0.8">draft</text><text x="276" y="53" fill="currentColor" opacity="0.8">displ</text><text x="356" y="53" fill="currentColor" opacity="0.8">KB</text><text x="424" y="53" fill="currentColor" opacity="0.8">BM</text>
+<text x="196" y="79" fill="currentColor" opacity="0.7">2.0</text><text x="276" y="79" fill="currentColor" opacity="0.7">3200</text><text x="356" y="79" fill="currentColor" opacity="0.7">1.06</text><text x="424" y="79" fill="currentColor" opacity="0.7">12.1</text>
+<text x="196" y="105" fill="currentColor" opacity="0.7">4.0</text><text x="276" y="105" fill="currentColor" opacity="0.7">6500</text><text x="356" y="105" fill="currentColor" opacity="0.7">2.12</text><text x="424" y="105" fill="currentColor" opacity="0.7">4.30</text>
+<rect x="158" y="114" width="300" height="26" fill="#12A594" fill-opacity="0.12"/><text x="196" y="131" fill="currentColor">6.0</text><text x="276" y="131" fill="currentColor">8000</text><text x="356" y="131" fill="currentColor">3.18</text><text x="424" y="131" fill="currentColor">2.05</text>
+<rect x="158" y="140" width="300" height="26" fill="#12A594" fill-opacity="0.12"/><text x="196" y="157" fill="currentColor">8.0</text><text x="276" y="157" fill="currentColor">11000</text><text x="356" y="157" fill="currentColor">4.24</text><text x="424" y="157" fill="currentColor">1.32</text>
+</g>
+<rect x="158" y="34" width="300" height="132" fill="none" stroke="currentColor" stroke-opacity="0.35"/>
+<line x1="232" y1="34" x2="232" y2="166" stroke="currentColor" stroke-opacity="0.18"/>
+<line x1="320" y1="34" x2="320" y2="166" stroke="currentColor" stroke-opacity="0.18"/>
+<line x1="392" y1="34" x2="392" y2="166" stroke="currentColor" stroke-opacity="0.18"/>
+<path d="M464,114 L476,114 L476,166 L464,166" fill="none" stroke="#12A594" stroke-opacity="0.7"/>
+<text x="498" y="136" font-size="9.5" fill="#12A594">8400 t</text>
+<text x="498" y="148" font-size="9.5" fill="#12A594">sits here</text>
+<text x="300" y="192" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.8">interpolate between the two rows → draft ≈ 6.3 m</text>
+<text x="300" y="214" font-size="9.5" text-anchor="middle" fill="#D05663" opacity="0.85">rows must be strictly ascending, or parse_hydro_table rejects the table</text>
+</svg>
+
 ## What this actually means (plain English)
 
 No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.

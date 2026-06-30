@@ -2,6 +2,34 @@
 
 [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c) is the mathematical heart of CargoForge-C. It takes a fully populated `Ship` struct — loaded cargo, tanks, hull data — and produces a single `AnalysisResult` that answers the question every naval architect asks: *is this loading condition safe?* Understanding how `perform_analysis` is structured teaches you both the naval architecture and how a real C program organises a multi-step computation into one clean function.
 
+## The mental model 🧠
+
+`perform_analysis` is the assembly line that turns a loaded ship into a verdict. One `Ship` goes in the front — hull, cargo, tanks — and one `AnalysisResult` comes out the back, answering the only question that matters: *is this loading safe to sail?* In between, the stations run in a fixed order, each feeding the next: sum the weights and moments → find the draft from displacement → get KB and BM from the hull → divide moments to get KG → assemble `GM = KB + BM − KG` → subtract the free-surface penalty → grade it against the six IMO criteria.
+
+Two engineering choices make it trustworthy. It is a **pure function** — it reads the ship and changes nothing, so the same ship always yields the same answer, which is the bedrock of testability. And it threads **sentinels** cleanly through the line: a cargo item marked `pos_x < 0` is silently skipped, and an overweight ship sets `r.gm = NAN`, which flows harmlessly through every downstream step instead of crashing. Everything you learned in Lessons 17–25 lives inside this one function, in order.
+
+<svg viewBox="0 0 600 286" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:520px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+<title>perform_analysis: one Ship in, one AnalysisResult out, through fixed stages</title>
+<desc>perform_analysis runs a fixed sequence: sum weights and moments, find draft from displacement, get KB and BM from the hull, divide to get KG, assemble GM as KB plus BM minus KG, subtract the free-surface correction, then grade the result against the six IMO criteria to produce an AnalysisResult. It is a pure function; an overweight ship sets GM to NAN and unplaced cargo with pos_x below zero is skipped.</desc>
+<g text-anchor="middle">
+<rect x="150" y="20" width="300" height="26" rx="5" fill="#12A594" fill-opacity="0.14" stroke="#12A594" stroke-width="1.2"/><text x="300" y="37" font-size="11" fill="currentColor" font-family="var(--md-code-font,monospace)">Ship — cargo · tanks · hull</text>
+<rect x="150" y="54" width="300" height="26" rx="5" fill="currentColor" fill-opacity="0.04" stroke="currentColor" stroke-opacity="0.4"/><text x="300" y="71" font-size="10" fill="currentColor">sum weight &amp; moments  (skip pos_x &lt; 0)</text>
+<rect x="150" y="88" width="300" height="26" rx="5" fill="currentColor" fill-opacity="0.04" stroke="currentColor" stroke-opacity="0.4"/><text x="300" y="105" font-size="10.5" fill="currentColor">draft  ←  displacement</text>
+<rect x="150" y="122" width="300" height="26" rx="5" fill="currentColor" fill-opacity="0.04" stroke="currentColor" stroke-opacity="0.4"/><text x="300" y="139" font-size="10.5" fill="currentColor">KB, BM  ←  hull table / box-hull</text>
+<rect x="150" y="156" width="300" height="26" rx="5" fill="currentColor" fill-opacity="0.04" stroke="currentColor" stroke-opacity="0.4"/><text x="300" y="173" font-size="10.5" fill="currentColor" font-family="var(--md-code-font,monospace)">KG = Σ(w·z) / Σw</text>
+<rect x="150" y="190" width="300" height="26" rx="5" fill="#12A594" fill-opacity="0.16" stroke="#12A594" stroke-width="1.3"/><text x="300" y="207" font-size="11" fill="currentColor" font-family="var(--md-code-font,monospace)">GM = KB + BM − KG</text>
+<rect x="150" y="224" width="300" height="26" rx="5" fill="currentColor" fill-opacity="0.04" stroke="currentColor" stroke-opacity="0.4"/><text x="300" y="241" font-size="10" fill="currentColor">− free-surface correction → six IMO checks</text>
+<rect x="150" y="258" width="300" height="26" rx="5" fill="#12A594" fill-opacity="0.14" stroke="#12A594" stroke-width="1.2"/><text x="300" y="275" font-size="11" fill="currentColor" font-family="var(--md-code-font,monospace)">AnalysisResult — safe?</text>
+</g>
+<g stroke="currentColor" stroke-opacity="0.4">
+<path d="M300,46 L300,54"/><path d="M300,80 L300,88"/><path d="M300,114 L300,122"/><path d="M300,148 L300,156"/><path d="M300,182 L300,190"/><path d="M300,216 L300,224"/><path d="M300,250 L300,258"/>
+</g>
+<text x="460" y="103" font-size="8.5" fill="#D05663" opacity="0.85" text-anchor="start">overweight</text>
+<text x="460" y="115" font-size="8.5" fill="#D05663" opacity="0.85" text-anchor="start">→ GM = NAN</text>
+<text x="92" y="200" font-size="8.5" fill="currentColor" opacity="0.5" text-anchor="middle">pure</text>
+<text x="92" y="212" font-size="8.5" fill="currentColor" opacity="0.5" text-anchor="middle">function</text>
+</svg>
+
 ## What this actually means (plain English)
 
 No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.

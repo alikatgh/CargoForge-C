@@ -2,6 +2,42 @@
 
 Every CargoForge-C operation — parsing a manifest, running stability analysis, placing cargo in a hold — ultimately reads or writes two core structs: `Cargo` and `Ship`. Understanding their fields is understanding the program. This lesson walks each field in detail, explains the units, shows how optional extensions hang off the struct as pointers, and introduces the enums that control output behavior.
 
+## The mental model 🧠
+
+A **struct** is a labelled form, and every `Ship` in memory is one filled-out copy of it. Instead of juggling a dozen loose variables — length here, width there, a weight somewhere else — you staple them onto one sheet called `Ship` and pass the whole clipboard around by its address.
+
+One field is special. `cargo` isn't data itself — it's an *arrow* pointing at a separate stack of `Cargo` forms allocated elsewhere (the heap, Lesson 10). That indirection is the trick that lets a fixed-size `Ship` carry a cargo list of any length: the struct stays the same few bytes whether it holds three crates or three thousand; only the thing the arrow points at grows.
+
+An **enum** is the form's drop-down menu. Rather than a free-text "output format" field where someone could scribble anything, the value can only be one of a named, fixed set — so an impossible state can't be written down in the first place. Get the data model right and half the bugs in the rest of the program simply cannot occur.
+
+<svg viewBox="0 0 600 250" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:560px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+<title>A Ship struct holds scalar fields plus a pointer to a separate Cargo array</title>
+<desc>The Ship struct bundles fixed fields such as length, width, and cargo_count, plus a cargo pointer. That pointer points at a separately allocated array of Cargo structs on the heap, so one fixed-size Ship can carry a cargo list of any length.</desc>
+<rect x="24" y="26" width="190" height="200" rx="6" fill="#12A594" fill-opacity="0.05" stroke="#12A594" stroke-width="1.3"/>
+<text x="119" y="47" font-size="12.5" text-anchor="middle" fill="#12A594" font-family="var(--md-code-font,monospace)">struct Ship</text>
+<line x1="34" y1="56" x2="204" y2="56" stroke="currentColor" stroke-opacity="0.15"/>
+<text x="40" y="80" font-size="11" fill="currentColor" opacity="0.8" font-family="var(--md-code-font,monospace)">float length</text><text x="198" y="80" font-size="11" text-anchor="end" fill="currentColor" opacity="0.6" font-family="var(--md-code-font,monospace)">100.0</text>
+<text x="40" y="104" font-size="11" fill="currentColor" opacity="0.8" font-family="var(--md-code-font,monospace)">float width</text><text x="198" y="104" font-size="11" text-anchor="end" fill="currentColor" opacity="0.6" font-family="var(--md-code-font,monospace)">20.0</text>
+<text x="40" y="128" font-size="11" fill="currentColor" opacity="0.8" font-family="var(--md-code-font,monospace)">int cargo_count</text><text x="198" y="128" font-size="11" text-anchor="end" fill="currentColor" opacity="0.6" font-family="var(--md-code-font,monospace)">3</text>
+<rect x="32" y="150" width="174" height="64" rx="4" fill="#12A594" fill-opacity="0.1" stroke="#12A594" stroke-opacity="0.5"/>
+<text x="40" y="172" font-size="11" fill="currentColor" opacity="0.85" font-family="var(--md-code-font,monospace)">Cargo *cargo</text>
+<text x="40" y="190" font-size="9" fill="currentColor" opacity="0.55">a pointer, not the data —</text>
+<text x="40" y="205" font-size="9" fill="currentColor" opacity="0.55">it points to the heap →</text>
+<circle cx="196" cy="183" r="4" fill="#12A594"/>
+<path d="M196,183 C250,183 270,71 316,71" fill="none" stroke="#12A594" stroke-width="1.2"/>
+<path d="M309,67 L317,71 L309,76" fill="none" stroke="#12A594" stroke-width="1.2"/>
+<text x="403" y="40" font-size="9.5" text-anchor="middle" fill="currentColor" opacity="0.55">heap — malloc(capacity × sizeof(Cargo))</text>
+<rect x="318" y="50" width="170" height="42" rx="4" fill="currentColor" fill-opacity="0.05" stroke="currentColor" stroke-opacity="0.4"/>
+<text x="328" y="68" font-size="10.5" fill="currentColor" opacity="0.8" font-family="var(--md-code-font,monospace)">Cargo[0]</text>
+<text x="328" y="83" font-size="8.5" fill="currentColor" opacity="0.5">id, weight, pos_x/y/z</text>
+<rect x="318" y="100" width="170" height="42" rx="4" fill="currentColor" fill-opacity="0.05" stroke="currentColor" stroke-opacity="0.4"/>
+<text x="328" y="118" font-size="10.5" fill="currentColor" opacity="0.8" font-family="var(--md-code-font,monospace)">Cargo[1]</text>
+<text x="328" y="133" font-size="8.5" fill="currentColor" opacity="0.5">id, weight, pos_x/y/z</text>
+<rect x="318" y="150" width="170" height="42" rx="4" fill="currentColor" fill-opacity="0.05" stroke="currentColor" stroke-opacity="0.4"/>
+<text x="328" y="168" font-size="10.5" fill="currentColor" opacity="0.8" font-family="var(--md-code-font,monospace)">Cargo[2]</text>
+<text x="328" y="183" font-size="8.5" fill="currentColor" opacity="0.5">id, weight, pos_x/y/z</text>
+</svg>
+
 ## What this actually means (plain English)
 
 No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.

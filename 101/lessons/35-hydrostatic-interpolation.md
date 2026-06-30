@@ -24,6 +24,12 @@ displacement. This lesson traces that entire pipeline: parsing, validation, forw
 <text x="280" y="214" fill="currentColor" font-size="11" text-anchor="middle" opacity="0.65">Linear interpolation between the two nearest rows (<tspan font-family="var(--md-code-font,monospace)">src/hydrostatics.c</tspan>); box model if no table.</text>
 </svg>
 
+## The mental model 🧠
+
+A table only knows the rows the shipyard measured — draft 6.0 m, draft 7.0 m — but a real ship floats wherever its weight puts it, usually *between* two rows. Interpolation is reading between the lines: if the ship sits 30% of the way from the 6 m row to the 7 m row, you take each property 30% of the way too. Straight-line (linear) interpolation assumes the property changes evenly across that gap, which is close enough when the rows are spaced sensibly.
+
+CargoForge runs it both directions. The *forward* lookup goes draft → properties; the one the analysis actually needs is the *reverse* — you know the displacement, not the draft, so `hydro_draft_from_displacement` finds the bracketing rows by weight and interpolates the draft, then a second pass interpolates KB and BM at that draft. It works only because the rows are sorted (Lesson 20): a binary search finds the right pair, and the fraction between them does the rest. Read between measured points — never invent beyond them.
+
 ## What this actually means (plain English)
 
 No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.

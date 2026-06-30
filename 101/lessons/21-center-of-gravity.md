@@ -7,6 +7,28 @@ using moments, why the vertical component (KG) is the one that dominates safety
 decisions, and how `perform_analysis` in [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c) translates those
 principles into the code that runs on every voyage plan.
 
+## The mental model 🧠
+
+Balance a loaded tray on one fingertip. The spot where it sits dead level — tipping toward neither the heavy teapot nor the empty cup — is the centre of gravity.
+
+A ship's CG is that same balance point for thousands of tonnes. CargoForge-C finds it exactly the way you'd find the tray's: take each item's weight times its position, add them all up, and divide by the total weight — a **weighted average** (each weight × distance term is called a *moment*). `perform_analysis` does this for the lightship plus every placed cargo item, in all three axes at once.
+
+**KG** is just the *vertical* coordinate of that balance point: how high it sits above the keel. And height is what bites. Slide one heavy crate from the hold up onto the deck and the teapot moves toward the rim of the tray — KG climbs, and the whole thing gets twitchy. Because stability is a tug-of-war between KG and the metacentre (Lesson 23), every metre you let KG rise is a metre of safety you spend.
+
+<svg viewBox="0 0 600 216" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:560px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+<title>The centre of gravity is the weight-weighted average position</title>
+<desc>Three cargo blocks of different weights sit at different positions along a beam. The balance point — the centre of gravity — is each weight times its distance, summed, divided by the total weight; it sits nearer the heaviest block.</desc>
+<rect x="70" y="118" width="460" height="8" rx="2" fill="currentColor" opacity="0.5"/>
+<rect x="118" y="92" width="44" height="26" rx="2" fill="#12A594" fill-opacity="0.14" stroke="#12A594" stroke-width="1.1"/><text x="140" y="84" fill="currentColor" font-size="10" text-anchor="middle" opacity="0.7">1 t</text>
+<rect x="266" y="56" width="68" height="62" rx="2" fill="#12A594" fill-opacity="0.14" stroke="#12A594" stroke-width="1.1"/><text x="300" y="48" fill="currentColor" font-size="10" text-anchor="middle" opacity="0.7">3 t</text>
+<rect x="412" y="74" width="56" height="44" rx="2" fill="#12A594" fill-opacity="0.14" stroke="#12A594" stroke-width="1.1"/><text x="440" y="66" fill="currentColor" font-size="10" text-anchor="middle" opacity="0.7">2 t</text>
+<path d="M320,126 L308,150 L332,150 Z" fill="#D05663"/>
+<line x1="320" y1="118" x2="320" y2="92" stroke="#D05663" stroke-width="1" stroke-dasharray="3 2" opacity="0.7"/>
+<text x="320" y="168" fill="#D05663" font-size="11" text-anchor="middle" font-weight="600">CG</text>
+<text x="320" y="184" fill="currentColor" font-size="10" text-anchor="middle" opacity="0.6">balance point — nearer the heaviest</text>
+<text x="300" y="208" fill="currentColor" font-size="12.5" text-anchor="middle" opacity="0.75">CG = Σ(weightᵢ × positionᵢ) ⁄ Σ weightᵢ</text>
+</svg>
+
 ## What this actually means (plain English)
 
 No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.

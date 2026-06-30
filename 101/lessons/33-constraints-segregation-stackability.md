@@ -7,6 +7,12 @@ dangerous goods, and structural limits on what cargo can be stacked below or abo
 refrigerated items. This lesson explains how those rules are encoded in [`src/constraints.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/constraints.c) and
 [`src/imdg.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/imdg.c), and why they are checked at placement time rather than as an afterthought.
 
+## The mental model 🧠
+
+Geometry decides where a box *can* go; constraints decide where it is *allowed* to go — and six rules can veto a spot that otherwise fits perfectly. **Segregation**: incompatible dangerous goods must stay a minimum distance apart — the oxidiser cannot sit beside the flammable, read straight from the IMDG matrix in `imdg.c`. **Stackability**: some cargo cannot take weight on top (fragile, refrigerated) and some cannot serve as a base. **Weight and stability**: even a legal stack is refused if it overloads a structure or pushes the centre of gravity too far.
+
+In code this is a gate the placer must pass *before* it commits a position. For each candidate spot, `constraints.c` checks the segregation matrix against what is already nearby, checks the stack rules against what sits below and above, and checks the running weight. Fail any one and the spot is rejected and the search moves on. Checking at placement time, not as an afterthought, is the whole point: it is why a "valid" stow is a far smaller set than a "fits" stow — and why the program can certify a plan as *safe*, not merely compact.
+
 <svg viewBox="0 0 600 196" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:580px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
 <title>IMDG segregation: incompatible dangerous goods need a minimum separation</title>
 <desc>A flammable Class 3 item and an oxidizing Class 5.1 item must be kept apart. The IMDG segregation table maps the class pair to a segregation level, which sets a minimum separation distance. CargoForge-C rejects any placement that violates it.</desc>

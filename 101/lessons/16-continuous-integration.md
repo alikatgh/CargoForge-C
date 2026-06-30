@@ -2,6 +2,29 @@
 
 Every time a developer pushes code to CargoForge-C, a server on the internet automatically compiles the project, runs every test, and reports whether anything broke — before a single human reviewer reads a line. That automated pipeline is **continuous integration** (CI). This lesson explains what CI is, why it matters, and how CargoForge-C's workflow file encodes the exact gates every push must pass.
 
+## The mental model 🧠
+
+CI is a tireless gatekeeper standing between every push and the `main` branch. The instant you push, a brand-new machine — one that has never seen your laptop's quirks — checks out your code, builds it, runs every test, and then runs them *again* under AddressSanitizer. Only if every gate turns green does the change get to call itself "passing." No human has to remember to run anything.
+
+The "brand-new machine" detail is the whole point. "Works on my machine" stops being an excuse when the build happens on a fresh VM with none of your local environment baked in — it is the reproducibility argument from Lesson 04, now automated and enforced on every commit. And the `make test-asan` gate is the one that earns its keep here: it is the step that would have caught the `parse_cargo_list` use-after-free before it could ever reach `main`.
+
+<svg viewBox="0 0 600 168" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:560px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+<title>CI runs a sequence of gates on every push; all must pass to merge</title>
+<desc>A push triggers a fresh Ubuntu VM that checks out the code, builds it, runs the tests, then re-runs them under AddressSanitizer. Only if every gate passes does the change merge to main; any failing gate blocks the merge.</desc>
+<text x="40" y="40" font-size="10" fill="currentColor" opacity="0.7" font-family="var(--md-code-font,monospace)">git push  →</text>
+<g font-size="9.5" text-anchor="middle">
+<rect x="40" y="52" width="96" height="48" rx="5" fill="currentColor" fill-opacity="0.04" stroke="currentColor" stroke-opacity="0.4"/><text x="88" y="74" fill="currentColor">fresh VM</text><text x="88" y="88" fill="currentColor" opacity="0.55">ubuntu-latest</text>
+<rect x="148" y="52" width="96" height="48" rx="5" fill="currentColor" fill-opacity="0.04" stroke="currentColor" stroke-opacity="0.4"/><text x="196" y="74" fill="currentColor" font-family="var(--md-code-font,monospace)">make</text><text x="196" y="88" fill="currentColor" opacity="0.55">build ✓</text>
+<rect x="256" y="52" width="96" height="48" rx="5" fill="currentColor" fill-opacity="0.04" stroke="currentColor" stroke-opacity="0.4"/><text x="304" y="74" fill="currentColor" font-family="var(--md-code-font,monospace)">make test</text><text x="304" y="88" fill="currentColor" opacity="0.55">unit ✓</text>
+<rect x="364" y="52" width="100" height="48" rx="5" fill="#12A594" fill-opacity="0.12" stroke="#12A594" stroke-width="1.2"/><text x="414" y="72" fill="currentColor" font-family="var(--md-code-font,monospace)">test-asan</text><text x="414" y="88" fill="#12A594" opacity="0.95">catches UAF</text>
+<rect x="476" y="52" width="96" height="48" rx="5" fill="#12A594" fill-opacity="0.12" stroke="#12A594" stroke-width="1.2"/><text x="524" y="74" fill="currentColor">merge ✓</text><text x="524" y="88" fill="currentColor" opacity="0.6">to main</text>
+</g>
+<g stroke-opacity="0.5" stroke="currentColor">
+<line x1="136" y1="76" x2="146" y2="76"/><line x1="244" y1="76" x2="254" y2="76"/><line x1="352" y1="76" x2="362" y2="76"/><line x1="464" y1="76" x2="474" y2="76"/>
+</g>
+<text x="306" y="130" font-size="10" text-anchor="middle" fill="#D05663" opacity="0.9">✗ any failing gate blocks the merge — no human review needed</text>
+</svg>
+
 ## What this actually means (plain English)
 
 No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.

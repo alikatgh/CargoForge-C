@@ -2,6 +2,30 @@
 
 CargoForge-C has fourteen source files, ten headers, eight test binaries, two library outputs, and a WebAssembly build. Compiling all of that by hand — and knowing which pieces to recompile when a single header changes — is exactly the problem that build systems solve. This lesson explains how Make works from first principles, then shows what CMake adds and why the project ships both.
 
+## The mental model 🧠
+
+Make is a cook who reads the menu *backwards*. You name the final dish you want — `cargoforge` — and Make traces every ingredient that dish depends on, checks the kitchen clock, and re-cooks *only* the parts whose ingredients have changed since last time. Edit one file, `analysis.c`, and Make rebuilds exactly `analysis.o` and relinks the binary; the other thirteen sources are never touched. That timestamp-checking is the whole point: a from-scratch build of fourteen files is slow, an incremental rebuild is near-instant.
+
+A **pattern rule** like `build/%.o: src/%.c` is one recipe with a wildcard that covers every source at once — add a new `.c` tomorrow and it is handled with no new code. **CMake** sits one level up: instead of writing Makefiles by hand you describe *what* you want (`add_library(... STATIC ...)`), and CMake generates the right low-level build for whatever machine you are on. Make is the recipe; CMake writes the recipe for you.
+
+<svg viewBox="0 0 600 222" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:560px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+<title>Make rebuilds only what changed: edit one source, recompile one object, relink</title>
+<desc>analysis.c was edited, so Make recompiles analysis.o and relinks cargoforge. parser.c and main.c are unchanged, so their object files are skipped. This incremental rebuild is what makes Make fast.</desc>
+<rect x="20" y="26" width="124" height="42" rx="5" fill="#D05663" fill-opacity="0.08" stroke="#D05663" stroke-width="1.2"/><text x="82" y="44" font-size="11" text-anchor="middle" fill="currentColor" font-family="var(--md-code-font,monospace)">analysis.c</text><text x="82" y="60" font-size="8.5" text-anchor="middle" fill="#D05663" opacity="0.9">edited</text>
+<rect x="20" y="96" width="124" height="42" rx="5" fill="currentColor" fill-opacity="0.03" stroke="currentColor" stroke-opacity="0.3"/><text x="82" y="121" font-size="11" text-anchor="middle" fill="currentColor" opacity="0.5" font-family="var(--md-code-font,monospace)">parser.c</text>
+<rect x="20" y="166" width="124" height="42" rx="5" fill="currentColor" fill-opacity="0.03" stroke="currentColor" stroke-opacity="0.3"/><text x="82" y="191" font-size="11" text-anchor="middle" fill="currentColor" opacity="0.5" font-family="var(--md-code-font,monospace)">main.c</text>
+<rect x="238" y="26" width="120" height="42" rx="5" fill="#12A594" fill-opacity="0.12" stroke="#12A594" stroke-width="1.2"/><text x="298" y="44" font-size="11" text-anchor="middle" fill="currentColor" font-family="var(--md-code-font,monospace)">analysis.o</text><text x="298" y="60" font-size="8.5" text-anchor="middle" fill="#12A594" opacity="0.95">recompiled</text>
+<rect x="238" y="96" width="120" height="42" rx="5" fill="currentColor" fill-opacity="0.02" stroke="currentColor" stroke-opacity="0.25" stroke-dasharray="4 3"/><text x="298" y="115" font-size="11" text-anchor="middle" fill="currentColor" opacity="0.45" font-family="var(--md-code-font,monospace)">parser.o</text><text x="298" y="130" font-size="8" text-anchor="middle" fill="currentColor" opacity="0.4">skipped</text>
+<rect x="238" y="166" width="120" height="42" rx="5" fill="currentColor" fill-opacity="0.02" stroke="currentColor" stroke-opacity="0.25" stroke-dasharray="4 3"/><text x="298" y="185" font-size="11" text-anchor="middle" fill="currentColor" opacity="0.45" font-family="var(--md-code-font,monospace)">main.o</text><text x="298" y="200" font-size="8" text-anchor="middle" fill="currentColor" opacity="0.4">skipped</text>
+<line x1="144" y1="47" x2="236" y2="47" stroke="#D05663" stroke-opacity="0.7"/><path d="M229,43 L236,47 L229,51" fill="none" stroke="#D05663" stroke-opacity="0.8"/>
+<line x1="144" y1="117" x2="236" y2="117" stroke="currentColor" stroke-opacity="0.2" stroke-dasharray="3 3"/>
+<line x1="144" y1="187" x2="236" y2="187" stroke="currentColor" stroke-opacity="0.2" stroke-dasharray="3 3"/>
+<line x1="358" y1="47" x2="448" y2="108" stroke="#12A594" stroke-opacity="0.7"/><path d="M441,104 L448,109 L442,113" fill="none" stroke="#12A594" stroke-opacity="0.8"/>
+<line x1="358" y1="117" x2="448" y2="120" stroke="currentColor" stroke-opacity="0.3"/><path d="M441,116 L448,120 L441,124" fill="none" stroke="currentColor" stroke-opacity="0.4"/>
+<line x1="358" y1="187" x2="448" y2="132" stroke="currentColor" stroke-opacity="0.3"/><path d="M442,127 L448,132 L441,135" fill="none" stroke="currentColor" stroke-opacity="0.4"/>
+<rect x="450" y="92" width="132" height="56" rx="5" fill="#12A594" fill-opacity="0.1" stroke="#12A594" stroke-width="1.2"/><text x="516" y="114" font-size="11.5" text-anchor="middle" fill="currentColor" font-family="var(--md-code-font,monospace)">cargoforge</text><text x="516" y="132" font-size="9" text-anchor="middle" fill="#12A594" opacity="0.9">relinked</text>
+</svg>
+
 ## What this actually means (plain English)
 
 No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.

@@ -2,6 +2,46 @@
 
 CargoForge-C teaches the physics and the code — but it is a teaching tool, not a class-society-approved loading computer. This lesson maps the gap: what commercial systems like NAPA and GHS add on top of what you now understand, where the simplifications in CargoForge-C live, and how a learner or developer crosses from "interesting open source" to "software that shipping companies are allowed to use."
 
+## The mental model 🧠
+
+CargoForge teaches the real physics correctly — but "correct arithmetic" and "allowed on a real ship" are different bars, and this lesson is honest about the gap. A classed loading computer needs **type approval**: a classification society's certificate without which an insurer will not cover the ship and port control can detain it — no matter how right the math is. That certificate is about *trust and process*, not just correctness.
+
+The technical gap is specific, and already marked in the code. CargoForge's **wall-sided GZ formula** (`gz_at_angle`) assumes vertical hull sides and drifts wrong above ~30° where real hulls flare; its **box-hull fallback** uses teaching constants (`C_b = 0.75`, `KB = 0.53·T`) that are systematically off for real forms; its **linear interpolation** draws straight lines where stability booklets use curves. None of these are bugs — they are *documented* simplifications, and the table-interpolation path exists precisely to replace them with measured data. Crossing to "classed" means swapping approximations for model-tested hull data, adding redundancy and audit trails, and earning the certificate. Knowing exactly where the simplifications live is itself the engineer's most important skill.
+
+<svg viewBox="0 0 600 210" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:560px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+<title>From a teaching engine to a class-approved loading computer</title>
+<desc>CargoForge-C has correct, open, well-tested physics but uses documented simplifications. Crossing to a class-society-approved loading computer means replacing approximations with measured hull data and higher-order interpolation, adding redundancy and audit trails, and earning type approval.</desc>
+<rect x="18" y="40" width="150" height="130" rx="6" fill="#12A594" fill-opacity="0.08" stroke="#12A594" stroke-width="1.2"/>
+<text x="93" y="62" font-size="10.5" text-anchor="middle" fill="currentColor">CargoForge-C</text>
+<text x="93" y="76" font-size="8.5" text-anchor="middle" fill="currentColor" opacity="0.6">teaching engine</text>
+<g font-size="8.5" fill="currentColor" opacity="0.7">
+<text x="32" y="100">✓ correct physics</text>
+<text x="32" y="118">✓ open · zero-dep</text>
+<text x="32" y="136">✓ tested · fuzzed</text>
+<text x="32" y="154">~ simplified hull models</text>
+</g>
+<rect x="206" y="40" width="188" height="130" rx="6" fill="currentColor" fill-opacity="0.03" stroke="currentColor" stroke-opacity="0.4" stroke-dasharray="5 3"/>
+<text x="300" y="60" font-size="9.5" text-anchor="middle" fill="currentColor" opacity="0.8">to cross, add:</text>
+<g font-size="8.5" fill="currentColor" opacity="0.7">
+<text x="220" y="82">• model-tested hull tables</text>
+<text x="220" y="100">• higher-order interpolation</text>
+<text x="220" y="118">• redundancy + audit trail</text>
+<text x="220" y="136">• independent verification</text>
+<text x="220" y="156" fill="#12A594" opacity="0.9">• type approval (class society)</text>
+</g>
+<line x1="168" y1="105" x2="204" y2="105" stroke="currentColor" stroke-opacity="0.4"/><path d="M197,101 L204,105 L197,109" fill="none" stroke="currentColor" stroke-opacity="0.5"/>
+<line x1="394" y1="105" x2="430" y2="105" stroke="currentColor" stroke-opacity="0.4"/><path d="M423,101 L430,105 L423,109" fill="none" stroke="currentColor" stroke-opacity="0.5"/>
+<rect x="432" y="40" width="150" height="130" rx="6" fill="#12A594" fill-opacity="0.12" stroke="#12A594" stroke-width="1.2"/>
+<text x="507" y="62" font-size="10.5" text-anchor="middle" fill="currentColor">classed computer</text>
+<text x="507" y="76" font-size="8.5" text-anchor="middle" fill="currentColor" opacity="0.6">NAPA · GHS</text>
+<g font-size="8.5" fill="currentColor" opacity="0.7">
+<text x="446" y="100">✓ type-approved</text>
+<text x="446" y="118">✓ measured hull data</text>
+<text x="446" y="136">✓ allowed on real ships</text>
+<text x="446" y="154">✓ insurer + port accept</text>
+</g>
+</svg>
+
 ## What this actually means (plain English)
 
 No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.

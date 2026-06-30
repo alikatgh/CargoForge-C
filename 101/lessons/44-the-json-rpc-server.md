@@ -2,6 +2,38 @@
 
 The `cargoforge serve` subcommand turns the engine into a network service: any program that can send an HTTP POST can now run a full stowage optimisation, stability analysis, or configuration check — without shell access, without linking against `libcargoforge`, and without caring which language it is written in. This lesson walks through how [`src/server.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/server.c) builds that capability from raw POSIX sockets, why it speaks JSON-RPC 2.0, and what each message looks like on the wire.
 
+## The mental model 🧠
+
+The server turns the engine into a switchboard anyone on the network can call. `cargoforge serve` opens a socket and waits; a client POSTs one JSON object naming a method (`optimize`, `validate`) with its inputs, the server runs the real engine, and POSTs back one JSON object with the result. No shell access, no linking, no shared language — just JSON in, JSON out, which is exactly what **JSON-RPC 2.0** standardises.
+
+The design choice that matters most is *isolation per request*. Every incoming call gets its own fresh `cargoforge_open`, does its work, and is `cargoforge_close`d before the response is sent — so a malformed manifest or a crash in one request cannot corrupt the next. The exported surface is a single function, `cargoforge_serve(port, verbose)`; everything else — sockets, HTTP parsing, dispatch — stays hidden in `server.c`. (`SO_REUSEADDR` is the small mercy that lets you restart it during development without waiting two minutes for the old socket to drain.)
+
+<svg viewBox="0 0 600 200" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:560px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+<title>The JSON-RPC server: one JSON object in, one JSON object out</title>
+<desc>A client POSTs a JSON-RPC request naming a method like optimize. The server runs the real engine in a fresh instance opened and closed for that one request, then returns a JSON result. Per-request isolation means a bad request cannot corrupt the next.</desc>
+<rect x="18" y="48" width="150" height="104" rx="6" fill="currentColor" fill-opacity="0.04" stroke="currentColor" stroke-opacity="0.45"/>
+<text x="93" y="68" font-size="10" text-anchor="middle" fill="currentColor">client</text>
+<text x="30" y="90" font-size="8.5" fill="currentColor" opacity="0.65" font-family="var(--md-code-font,monospace)">{ "method":</text>
+<text x="30" y="104" font-size="8.5" fill="currentColor" opacity="0.65" font-family="var(--md-code-font,monospace)">  "optimize",</text>
+<text x="30" y="118" font-size="8.5" fill="currentColor" opacity="0.65" font-family="var(--md-code-font,monospace)">  "params": … }</text>
+<text x="93" y="140" font-size="8" text-anchor="middle" fill="currentColor" opacity="0.5">any language</text>
+<line x1="168" y1="78" x2="226" y2="78" stroke="#12A594" stroke-opacity="0.7"/><path d="M219,74 L226,78 L219,82" fill="none" stroke="#12A594"/>
+<text x="197" y="71" font-size="8.5" text-anchor="middle" fill="#12A594" opacity="0.9">POST</text>
+<rect x="228" y="40" width="186" height="120" rx="6" fill="#12A594" fill-opacity="0.1" stroke="#12A594" stroke-width="1.2"/>
+<text x="321" y="62" font-size="10.5" text-anchor="middle" fill="currentColor" font-family="var(--md-code-font,monospace)">cargoforge serve</text>
+<text x="321" y="84" font-size="9" text-anchor="middle" fill="currentColor" opacity="0.75">per request:</text>
+<text x="321" y="100" font-size="9" text-anchor="middle" fill="#12A594" opacity="0.9" font-family="var(--md-code-font,monospace)">open → analyze → close</text>
+<text x="321" y="122" font-size="8.5" text-anchor="middle" fill="currentColor" opacity="0.6">fresh engine each call —</text>
+<text x="321" y="134" font-size="8.5" text-anchor="middle" fill="currentColor" opacity="0.6">one bad request can't taint the next</text>
+<line x1="414" y1="100" x2="448" y2="100" stroke="#12A594" stroke-opacity="0.7"/><path d="M441,96 L448,100 L441,104" fill="none" stroke="#12A594"/>
+<rect x="450" y="50" width="132" height="100" rx="6" fill="currentColor" fill-opacity="0.04" stroke="currentColor" stroke-opacity="0.45"/>
+<text x="516" y="70" font-size="10" text-anchor="middle" fill="currentColor">response</text>
+<text x="460" y="92" font-size="8.5" fill="currentColor" opacity="0.65" font-family="var(--md-code-font,monospace)">{ "result":</text>
+<text x="460" y="106" font-size="8.5" fill="currentColor" opacity="0.65" font-family="var(--md-code-font,monospace)">  { "gm": 1.39,</text>
+<text x="460" y="120" font-size="8.5" fill="currentColor" opacity="0.65" font-family="var(--md-code-font,monospace)">    … } }</text>
+<text x="300" y="186" font-size="9.5" text-anchor="middle" fill="currentColor" opacity="0.7">JSON-RPC 2.0 over HTTP — no shell, no linking, any language</text>
+</svg>
+
 ## What this actually means (plain English)
 
 No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.

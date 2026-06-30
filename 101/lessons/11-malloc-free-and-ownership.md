@@ -6,6 +6,39 @@ runtime with `malloc` and `calloc`, how it releases that memory with `free`, and
 how `ship_cleanup` in [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c) answers the central question every C
 program must answer: *who frees this, and when?*
 
+## The mental model 🧠
+
+Every `malloc` is a **loan**, and a loan has exactly one borrower who is on the hook to repay it.
+
+The heap is a warehouse the operating system lends out by the byte. `malloc(n)` borrows `n` bytes and hands you a pointer — the *only* receipt that the loan exists. `free(p)` repays it. The borrowing is the easy part; the hard part is a whole program agreeing on **who repays each loan, and when**. That agreement is what "ownership" means, and C does not enforce it for you — you keep the discipline in your head.
+
+In CargoForge-C that discipline is explicit. `parse_cargo_list` takes out the loan — `ship->cargo = malloc(...)` — and the rule is that the `Ship` now *owns* that block, so there is exactly one place it is ever repaid: `ship_cleanup`. Every memory bug in this codebase is a violation of that one rule: two owners both repay (double-free), nobody repays (leak), or someone repays and keeps spending the receipt anyway (the use-after-free from Lesson 13).
+
+<svg viewBox="0 0 640 218" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:620px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+<title>Memory ownership: one malloc is balanced by exactly one free</title>
+<desc>The happy path: parse_cargo_list calls malloc to borrow the cargo block, the Ship owns it, and ship_cleanup is the single place it is freed. Below, the two failure modes: a leak (no free) and a double-free (two frees of the same block).</desc>
+<defs><marker id="own-t" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 1 L9 5 L0 9 Z" fill="#12A594"/></marker></defs>
+<rect x="20" y="40" width="112" height="46" rx="6" fill="none" stroke="#12A594" stroke-width="1.4"/>
+<text x="76" y="60" fill="#12A594" font-size="12" text-anchor="middle" font-family="var(--md-code-font,monospace)">malloc()</text>
+<text x="76" y="76" fill="currentColor" font-size="10" text-anchor="middle" opacity="0.6">borrow</text>
+<rect x="178" y="40" width="150" height="46" rx="6" fill="#12A594" fill-opacity="0.1" stroke="#12A594" stroke-width="1.4"/>
+<text x="253" y="60" fill="currentColor" font-size="11.5" text-anchor="middle" font-family="var(--md-code-font,monospace)">ship-&gt;cargo</text>
+<text x="253" y="76" fill="currentColor" font-size="10" text-anchor="middle" opacity="0.7">the Ship owns it</text>
+<rect x="374" y="40" width="120" height="46" rx="6" fill="none" stroke="#12A594" stroke-width="1.4"/>
+<text x="434" y="60" fill="#12A594" font-size="11.5" text-anchor="middle" font-family="var(--md-code-font,monospace)">ship_cleanup</text>
+<text x="434" y="76" fill="currentColor" font-size="10" text-anchor="middle" opacity="0.6">repay (free)</text>
+<rect x="540" y="40" width="84" height="46" rx="6" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.6"/>
+<text x="582" y="67" fill="currentColor" font-size="11.5" text-anchor="middle" opacity="0.75">freed</text>
+<line x1="132" y1="63" x2="176" y2="63" stroke="#12A594" stroke-width="1.4" marker-end="url(#own-t)"/>
+<line x1="328" y1="63" x2="372" y2="63" stroke="#12A594" stroke-width="1.4" marker-end="url(#own-t)"/>
+<line x1="494" y1="63" x2="538" y2="63" stroke="#12A594" stroke-width="1.4" marker-end="url(#own-t)"/>
+<text x="320" y="110" fill="currentColor" font-size="11" text-anchor="middle" opacity="0.65">Exactly one malloc ↔ exactly one free. The Ship is the single owner.</text>
+<line x1="20" y1="132" x2="624" y2="132" stroke="currentColor" stroke-width="1" opacity="0.15"/>
+<text x="20" y="160" fill="#D05663" font-size="11.5" font-weight="600">When the rule breaks:</text>
+<circle cx="30" cy="180" r="2.6" fill="#D05663"/><text x="44" y="184" fill="currentColor" font-size="11" opacity="0.8"><tspan fill="#D05663" font-weight="600">Leak</tspan> — the loan is never repaid (no free); the block is lost until the process exits.</text>
+<circle cx="30" cy="202" r="2.6" fill="#D05663"/><text x="44" y="206" fill="currentColor" font-size="11" opacity="0.8"><tspan fill="#D05663" font-weight="600">Double-free</tspan> — two owners both repay the same block; the allocator's bookkeeping corrupts.</text>
+</svg>
+
 ## What this actually means (plain English)
 
 No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.

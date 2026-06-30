@@ -2,6 +2,31 @@
 
 Unit tests tell you what your program *should* do. Sanitizers tell you what it *is* doing with memory at runtime. AddressSanitizer (ASan) and Undefined Behaviour Sanitizer (UBSan) are compiler-level tools that instrument every memory access and arithmetic operation and report violations the moment they occur — not after the program silently corrupts data downstream. CargoForge-C uses both as a mandatory gate in its CI pipeline, and they caught the real heap-use-after-free bug that lived in `parse_cargo_list`.
 
+## The mental model 🧠
+
+A sanitizer is a tripwire threaded through your program that fires the instant it touches memory it shouldn't. Normally a use-after-free or an out-of-bounds read is *silent* — the program limps on with corrupt data and maybe crashes much later, far from the cause. Compile with `-fsanitize=address` and the compiler keeps a shadow ledger of every byte (live, freed, or never allocated) and checks it on every access; the moment the code reads freed memory it stops *immediately* and prints the exact file, line, and the allocation involved.
+
+That immediacy is the whole value. The `parse_cargo_list` use-after-free was invisible in normal runs, but ASan turned it into a loud abort pointing straight at the bad read — which is why CI runs the suite a second time under it (`make test-asan`, a full clean rebuild, since you cannot mix instrumented and plain object files). **UBSan** is its sibling for *undefined behaviour* — signed overflow, bad shifts, misaligned reads — the silent rule-breaking C otherwise lets slide. Sanitizers cost speed, so they ride in testing, paired with the fuzzer, never in production.
+
+<svg viewBox="0 0 600 232" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:560px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+<title>A sanitizer turns a silent memory bug into an immediate, located crash</title>
+<desc>Reading freed memory normally lets the program keep running on corrupt data and crash later, far from the cause. Built with AddressSanitizer, the same access is checked against shadow memory and stops immediately with the exact file, line, and exit code.</desc>
+<rect x="206" y="16" width="188" height="36" rx="5" fill="#D05663" fill-opacity="0.08" stroke="#D05663" stroke-opacity="0.6"/>
+<text x="300" y="33" font-size="10.5" text-anchor="middle" fill="currentColor">read freed memory</text>
+<text x="300" y="46" font-size="8.5" text-anchor="middle" fill="#D05663" opacity="0.9">(use-after-free)</text>
+<line x1="250" y1="52" x2="160" y2="84" stroke="currentColor" stroke-opacity="0.4"/><path d="M163,77 L158,85 L167,84" fill="none" stroke="currentColor" stroke-opacity="0.5"/>
+<line x1="350" y1="52" x2="442" y2="84" stroke="#12A594" stroke-opacity="0.6"/><path d="M435,82 L443,85 L438,77" fill="none" stroke="#12A594" stroke-opacity="0.7"/>
+<text x="150" y="76" font-size="9.5" text-anchor="middle" fill="currentColor" opacity="0.6">no sanitizer</text>
+<rect x="44" y="86" width="216" height="34" rx="5" fill="currentColor" fill-opacity="0.03" stroke="currentColor" stroke-opacity="0.35"/><text x="152" y="107" font-size="10" text-anchor="middle" fill="currentColor" opacity="0.75">keeps running on corrupt data</text>
+<line x1="152" y1="120" x2="152" y2="140" stroke="currentColor" stroke-opacity="0.35"/><path d="M148,133 L152,141 L156,133" fill="none" stroke="currentColor" stroke-opacity="0.4"/>
+<rect x="44" y="142" width="216" height="40" rx="5" fill="#D05663" fill-opacity="0.06" stroke="#D05663" stroke-opacity="0.45"/><text x="152" y="160" font-size="10" text-anchor="middle" fill="currentColor">crashes later — or not at all</text><text x="152" y="174" font-size="8.5" text-anchor="middle" fill="#D05663" opacity="0.85">far from the real cause</text>
+<text x="450" y="76" font-size="9.5" text-anchor="middle" fill="#12A594" opacity="0.85" font-family="var(--md-code-font,monospace)">-fsanitize=address</text>
+<rect x="340" y="86" width="220" height="34" rx="5" fill="#12A594" fill-opacity="0.08" stroke="#12A594" stroke-opacity="0.5"/><text x="450" y="107" font-size="10" text-anchor="middle" fill="currentColor">shadow memory checks each access</text>
+<line x1="450" y1="120" x2="450" y2="140" stroke="#12A594" stroke-opacity="0.5"/><path d="M446,133 L450,141 L454,133" fill="none" stroke="#12A594" stroke-opacity="0.6"/>
+<rect x="340" y="142" width="220" height="40" rx="5" fill="#12A594" fill-opacity="0.12" stroke="#12A594" stroke-width="1.2"/><text x="450" y="160" font-size="10" text-anchor="middle" fill="currentColor">STOP at the bad read</text><text x="450" y="174" font-size="8.5" text-anchor="middle" fill="#12A594" opacity="0.95" font-family="var(--md-code-font,monospace)">file:line · exit 134</text>
+<text x="300" y="212" font-size="10" text-anchor="middle" fill="currentColor" opacity="0.7">CI runs the suite twice — once normal, once under ASan (make test-asan)</text>
+</svg>
+
 ## What this actually means (plain English)
 
 No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
