@@ -7,6 +7,33 @@ same compiled artifact can be embedded inside iOS and Android applications.
 Understanding this matters because it shows that "write once, compile
 everywhere" is not a slogan in C; it is a mechanical property of the language.
 
+## The mental model 🧠
+
+The same C source that builds the command-line tool can be compiled to run *inside a web browser* — and from there, inside a phone. That is not a trick; it is a property of C. The language compiles to whatever target the toolchain points at: native code for your laptop, **WebAssembly** for the browser (via `emcc`), a static library for iOS or Android. One codebase, many machines — "write once, compile everywhere" is mechanical here, not marketing.
+
+Running the engine as WASM has a real payoff beyond novelty: the whole stability calculation happens *on the device*, in the browser's sandbox, with no server round-trip. A port planner's manifest never leaves their laptop — it is private by construction and works offline. And because CargoForge has **zero external dependencies** (only the C standard library and `libm`, both of which the WASM toolchain supplies), there is nothing to port and nothing to break; the same engine you tested under ASan is the one running in the tab.
+
+<svg viewBox="0 0 600 200" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:560px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+<title>One C99 source compiles to native, WebAssembly, and mobile targets</title>
+<desc>Because the engine is pure C99 with zero external dependencies, the same source compiles to a native binary for a laptop, to WebAssembly that runs in any browser offline and private, and to a static library embeddable in iOS and Android apps.</desc>
+<rect x="18" y="74" width="160" height="56" rx="6" fill="#12A594" fill-opacity="0.12" stroke="#12A594" stroke-width="1.2"/>
+<text x="98" y="96" font-size="10.5" text-anchor="middle" fill="currentColor">CargoForge engine</text>
+<text x="98" y="112" font-size="8.5" text-anchor="middle" fill="currentColor" opacity="0.65">pure C99 · zero deps</text>
+<g stroke="currentColor" stroke-opacity="0.4">
+<line x1="178" y1="92" x2="368" y2="44"/><path d="M361,42 L369,44 L364,50" fill="none" stroke="currentColor" stroke-opacity="0.5"/>
+<line x1="178" y1="102" x2="368" y2="102"/><path d="M361,98 L369,102 L361,106" fill="none" stroke="currentColor" stroke-opacity="0.5"/>
+<line x1="178" y1="112" x2="368" y2="160"/><path d="M361,154 L369,160 L361,164" fill="none" stroke="currentColor" stroke-opacity="0.5"/>
+</g>
+<text x="250" y="78" font-size="8.5" text-anchor="middle" fill="currentColor" opacity="0.55" font-family="var(--md-code-font,monospace)">cc</text>
+<text x="250" y="96" font-size="8.5" text-anchor="middle" fill="currentColor" opacity="0.55" font-family="var(--md-code-font,monospace)">emcc</text>
+<text x="252" y="150" font-size="8.5" text-anchor="middle" fill="currentColor" opacity="0.55" font-family="var(--md-code-font,monospace)">ndk / xcode</text>
+<g font-size="9.5">
+<rect x="370" y="26" width="212" height="38" rx="5" fill="currentColor" fill-opacity="0.05" stroke="currentColor" stroke-opacity="0.4"/><text x="384" y="44" fill="currentColor">native binary</text><text x="384" y="57" font-size="8" fill="currentColor" opacity="0.55">your laptop / server</text>
+<rect x="370" y="82" width="212" height="38" rx="5" fill="#12A594" fill-opacity="0.1" stroke="#12A594" stroke-opacity="0.55"/><text x="384" y="100" fill="currentColor">.wasm — in the browser</text><text x="384" y="113" font-size="8" fill="#12A594" opacity="0.85">offline · private · no server</text>
+<rect x="370" y="138" width="212" height="38" rx="5" fill="currentColor" fill-opacity="0.05" stroke="currentColor" stroke-opacity="0.4"/><text x="384" y="156" fill="currentColor">mobile library</text><text x="384" y="169" font-size="8" fill="currentColor" opacity="0.55">embedded in iOS / Android</text>
+</g>
+</svg>
+
 ## What this actually means (plain English)
 
 No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.

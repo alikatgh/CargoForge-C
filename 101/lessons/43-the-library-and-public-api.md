@@ -2,6 +2,36 @@
 
 CargoForge-C is not only a command-line tool — it is also a reusable C library. `libcargoforge` packages the entire stability engine behind a clean, stable interface that any C (or C-compatible) program can call. This lesson explains how that library is built, what its API surface looks like, and how to drive it from your own code.
 
+## The mental model 🧠
+
+A library is the engine sold without the car around it. `make lib` packages the calculation core — `analysis.c`, `placement_3d.c`, `hydrostatics.c` — into `libcargoforge` and deliberately leaves `main.c` and `cli.c` behind, so any other program can call the physics directly instead of shelling out to a binary. The command-line tool becomes just *one* customer of the same engine.
+
+A good public API is mostly about what it *hides*. Callers get an **opaque handle** — a `CargoForge *` they can hold but not open, because the struct is defined only inside `libcargoforge.c` — so the library can rearrange its internals without breaking anyone. They get **error codes** instead of exceptions (`CF_OK`, `CF_ERR_NO_SHIP`, `CF_ERR_STATE`) that even enforce call order, and a strict `open`/`close` lifecycle: `open` zeroes everything with `calloc`, `close` frees every sub-allocation. The contract is small, stable, and rigid on purpose — that is what makes it safe for strangers to build on.
+
+<svg viewBox="0 0 600 220" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:560px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+<title>libcargoforge: one engine behind a stable API, many consumers</title>
+<desc>The calculation core is packaged as a library, leaving out main.c and cli.c. It exposes a stable public API — an opaque CargoForge handle and CF_ error codes — so the CLI, the server, the WebAssembly build, and any third-party program can all call the same engine.</desc>
+<rect x="18" y="76" width="150" height="68" rx="6" fill="currentColor" fill-opacity="0.04" stroke="currentColor" stroke-opacity="0.45"/>
+<text x="93" y="98" font-size="10" text-anchor="middle" fill="currentColor">engine core</text>
+<text x="93" y="114" font-size="8" text-anchor="middle" fill="currentColor" opacity="0.6" font-family="var(--md-code-font,monospace)">analysis · placement</text>
+<text x="93" y="126" font-size="8" text-anchor="middle" fill="currentColor" opacity="0.6" font-family="var(--md-code-font,monospace)">hydrostatics …</text>
+<text x="93" y="139" font-size="7.5" text-anchor="middle" fill="#D05663" opacity="0.7">(no main.c / cli.c)</text>
+<line x1="168" y1="110" x2="206" y2="110" stroke="currentColor" stroke-opacity="0.5"/><path d="M199,106 L206,110 L199,114" fill="none" stroke="currentColor" stroke-opacity="0.6"/>
+<rect x="208" y="74" width="168" height="72" rx="6" fill="#12A594" fill-opacity="0.1" stroke="#12A594" stroke-width="1.2"/>
+<text x="292" y="96" font-size="10.5" text-anchor="middle" fill="currentColor" font-family="var(--md-code-font,monospace)">libcargoforge</text>
+<text x="292" y="112" font-size="8.5" text-anchor="middle" fill="currentColor" opacity="0.65">.a / .so / .dylib</text>
+<text x="292" y="128" font-size="8" text-anchor="middle" fill="#12A594" opacity="0.85">opaque CargoForge* · CF_ codes</text>
+<g font-size="9.5" text-anchor="middle">
+<rect x="430" y="22" width="150" height="32" rx="5" fill="currentColor" fill-opacity="0.05" stroke="currentColor" stroke-opacity="0.4"/><text x="505" y="42" fill="currentColor">CLI (cargoforge)</text>
+<rect x="430" y="64" width="150" height="32" rx="5" fill="currentColor" fill-opacity="0.05" stroke="currentColor" stroke-opacity="0.4"/><text x="505" y="84" fill="currentColor">server (serve)</text>
+<rect x="430" y="106" width="150" height="32" rx="5" fill="currentColor" fill-opacity="0.05" stroke="currentColor" stroke-opacity="0.4"/><text x="505" y="126" fill="currentColor">WebAssembly</text>
+<rect x="430" y="148" width="150" height="32" rx="5" fill="currentColor" fill-opacity="0.05" stroke="currentColor" stroke-opacity="0.4"/><text x="505" y="168" fill="currentColor">third-party app</text>
+</g>
+<g stroke="currentColor" stroke-opacity="0.35">
+<line x1="376" y1="104" x2="428" y2="38"/><line x1="376" y1="108" x2="428" y2="80"/><line x1="376" y1="114" x2="428" y2="122"/><line x1="376" y1="118" x2="428" y2="164"/>
+</g>
+</svg>
+
 ## What this actually means (plain English)
 
 No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.

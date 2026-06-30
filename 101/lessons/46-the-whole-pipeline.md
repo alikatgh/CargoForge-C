@@ -2,6 +2,12 @@
 
 Every earlier lesson has focused on one layer: parsing, physics, placement, or analysis. This lesson joins them by tracing a single real invocation — `cargoforge optimize ship.cfg cargo.txt` — through every function that executes, from the first byte read off disk to the last stability number printed on screen. Follow this trace and the overall architecture becomes concrete.
 
+## The mental model 🧠
+
+This is the lesson where the parts become a machine. Every earlier chapter held one piece up to the light — parsing, flotation, placement, analysis, output — and it is easy to know each in isolation yet still not see how a single typed command becomes a stability verdict. Tracing one real run, `cargoforge optimize ship.cfg cargo.txt`, end to end is what fuses them.
+
+The thread that ties it together is one shared object: the `Ship` struct. The parser fills it from disk, the placer writes a 3D position into each of its cargo items, the analyser reads those positions to compute GM and trim, and the output stage formats the result — but it is the *same* `Ship` flowing through every stage, never copied, never rebuilt. Follow that one struct from the first byte read to the last line printed and the whole architecture stops being a list of files and becomes a pipeline you can hold in your head.
+
 <svg viewBox="0 0 660 180" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:640px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
 <title>The CargoForge-C pipeline: parse, place, analyze, report</title>
 <desc>main and the CLI dispatch one run. The parser fills a Ship struct from the input files; placement assigns each cargo a 3D position; analysis computes stability; the output stage prints the report. The same Ship struct flows through every stage.</desc>

@@ -2,6 +2,34 @@
 
 Every calculation this course has covered — displacement, GM, bin-packing, IMDG checks — reaches the user through a single entry point: the command-line interface in [`src/cli.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/cli.c). This lesson explains how the CLI is structured, how `getopt_long` turns raw `argv` into structured decisions, and why CargoForge-C offers five distinct output formats for the same underlying data.
 
+## The mental model 🧠
+
+There is one engine and many doors out of it. Every number this course built — GM, the stow, the IMDG verdict — is computed once, and then `cli.c` decides only how to *present* it: a human-readable console table, machine-readable JSON, spreadsheet CSV, and more — several formats over the same `AnalysisResult`. Computation and presentation are kept strictly apart, which is why adding a format never touches the physics.
+
+The CLI itself is shaped like `git`. The first word after the program name — `optimize`, `validate`, `info` — is a *subcommand* routed to its own `cmd_*` function, and `getopt_long` turns the flags that follow (`--format=json`) into plain variables. Settings cascade in layers — global rc file, then project rc file, then the command-line flag, last wins. And the JSON output is honest about absence: an overweight ship emits `"overweight": true` with every stability field set to `null`, so a downstream program never mistakes a missing value for a zero.
+
+<svg viewBox="0 0 600 220" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:560px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+<title>One AnalysisResult, several output formats</title>
+<desc>The engine computes the result once; the CLI's --format flag chooses how to present the same data — a human-readable console table, JSON, CSV, Markdown, or HTML. Computation and presentation are kept separate.</desc>
+<rect x="20" y="92" width="150" height="48" rx="6" fill="#12A594" fill-opacity="0.12" stroke="#12A594" stroke-width="1.2"/>
+<text x="95" y="113" font-size="11" text-anchor="middle" fill="currentColor" font-family="var(--md-code-font,monospace)">AnalysisResult</text>
+<text x="95" y="129" font-size="8.5" text-anchor="middle" fill="currentColor" opacity="0.6">computed once</text>
+<line x1="170" y1="116" x2="214" y2="116" stroke="currentColor" stroke-opacity="0.5"/><path d="M207,112 L214,116 L207,120" fill="none" stroke="currentColor" stroke-opacity="0.6"/>
+<rect x="216" y="96" width="92" height="40" rx="5" fill="currentColor" fill-opacity="0.05" stroke="currentColor" stroke-opacity="0.45"/>
+<text x="262" y="113" font-size="9.5" text-anchor="middle" fill="currentColor">cli.c</text>
+<text x="262" y="127" font-size="8.5" text-anchor="middle" fill="currentColor" opacity="0.6" font-family="var(--md-code-font,monospace)">--format</text>
+<g font-size="9.5">
+<rect x="392" y="18" width="190" height="28" rx="4" fill="#12A594" fill-opacity="0.08" stroke="#12A594" stroke-opacity="0.5"/><text x="404" y="36" fill="currentColor">console — human table</text>
+<rect x="392" y="54" width="190" height="28" rx="4" fill="#12A594" fill-opacity="0.08" stroke="#12A594" stroke-opacity="0.5"/><text x="404" y="72" fill="currentColor">json — null if overweight</text>
+<rect x="392" y="90" width="190" height="28" rx="4" fill="#12A594" fill-opacity="0.08" stroke="#12A594" stroke-opacity="0.5"/><text x="404" y="108" fill="currentColor">csv — spreadsheet rows</text>
+<rect x="392" y="126" width="190" height="28" rx="4" fill="#12A594" fill-opacity="0.08" stroke="#12A594" stroke-opacity="0.5"/><text x="404" y="144" fill="currentColor">markdown</text>
+<rect x="392" y="162" width="190" height="28" rx="4" fill="#12A594" fill-opacity="0.08" stroke="#12A594" stroke-opacity="0.5"/><text x="404" y="180" fill="currentColor">html</text>
+</g>
+<g stroke="currentColor" stroke-opacity="0.35">
+<line x1="308" y1="112" x2="390" y2="32"/><line x1="308" y1="114" x2="390" y2="68"/><line x1="308" y1="116" x2="390" y2="104"/><line x1="308" y1="118" x2="390" y2="140"/><line x1="308" y1="120" x2="390" y2="176"/>
+</g>
+</svg>
+
 ## What this actually means (plain English)
 
 No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
