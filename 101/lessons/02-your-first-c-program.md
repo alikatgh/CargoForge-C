@@ -6,6 +6,43 @@ the structure of every program you will ever read. CargoForge-C is a real-world
 example: its [`src/main.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/main.c) is deliberately small so you can see the skeleton without
 distraction.
 
+## The mental model 🧠
+
+A C program is a building with exactly one front door. The operating system is the only visitor, and it always comes in through `main` — never through any other function directly. On the way in it hands `main` two things: a count of the words you typed (`argc`) and the list of those words (`argv`). `main` does its job, and on the way out hands back a single number — `0` for "all good," anything else for "something went wrong."
+
+CargoForge's [`src/main.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/main.c) is deliberately a *receptionist*, not a worker. It reads the first word after the program name — `optimize`, `validate`, or `serve` — and walks you to the right department. The heavy lifting lives in other files; `main` just routes. That is why it stays small enough to read in one sitting.
+
+Hold this picture: **one door in, one number out.** Every C program you ever open, from a three-line "hello world" to an operating-system kernel, has this exact skeleton underneath.
+
+<svg viewBox="0 0 600 220" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:560px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+<title>A C program has exactly one entry point: main()</title>
+<desc>The operating system calls main with argc and argv. CargoForge's main reads the first argument and dispatches to one subcommand — optimize, validate, or serve — then returns a single exit code to the OS.</desc>
+<rect x="150" y="14" width="300" height="28" rx="4" fill="currentColor" fill-opacity="0.05" stroke="currentColor" stroke-opacity="0.25"/>
+<text x="166" y="32" font-size="12.5" font-family="var(--md-code-font,monospace)" fill="currentColor" opacity="0.85">$ cargoforge <tspan fill="#12A594">optimize</tspan> ship.cfg</text>
+<text x="300" y="58" font-size="9.5" text-anchor="middle" fill="currentColor" opacity="0.55">argc = 3   argv = { "cargoforge", "optimize", "ship.cfg" }</text>
+<rect x="24" y="96" width="74" height="40" rx="5" fill="currentColor" fill-opacity="0.06" stroke="currentColor" stroke-opacity="0.4"/>
+<text x="61" y="121" font-size="12" text-anchor="middle" fill="currentColor">OS</text>
+<line x1="98" y1="116" x2="168" y2="116" stroke="currentColor" stroke-opacity="0.5"/>
+<path d="M161,112 L168,116 L161,120" fill="none" stroke="currentColor" stroke-opacity="0.6"/>
+<text x="133" y="108" font-size="9" text-anchor="middle" fill="currentColor" opacity="0.55">calls</text>
+<rect x="168" y="92" width="120" height="48" rx="5" fill="#12A594" fill-opacity="0.1" stroke="#12A594" stroke-width="1.2"/>
+<text x="228" y="113" font-size="12.5" text-anchor="middle" fill="currentColor" font-family="var(--md-code-font,monospace)">main(argc,</text>
+<text x="228" y="129" font-size="12.5" text-anchor="middle" fill="currentColor" font-family="var(--md-code-font,monospace)">argv)</text>
+<line x1="288" y1="116" x2="378" y2="86" stroke="#12A594" stroke-opacity="0.8"/>
+<path d="M371,85 L378,86 L374,92" fill="none" stroke="#12A594"/>
+<line x1="288" y1="116" x2="378" y2="116" stroke="currentColor" stroke-opacity="0.25" stroke-dasharray="3 3"/>
+<line x1="288" y1="116" x2="378" y2="146" stroke="currentColor" stroke-opacity="0.25" stroke-dasharray="3 3"/>
+<rect x="380" y="70" width="104" height="30" rx="4" fill="#12A594" fill-opacity="0.12" stroke="#12A594" stroke-width="1.1"/>
+<text x="432" y="89" font-size="11.5" text-anchor="middle" fill="currentColor" font-family="var(--md-code-font,monospace)">optimize</text>
+<rect x="380" y="104" width="104" height="26" rx="4" fill="currentColor" fill-opacity="0.04" stroke="currentColor" stroke-opacity="0.3"/>
+<text x="432" y="121" font-size="11" text-anchor="middle" fill="currentColor" opacity="0.55" font-family="var(--md-code-font,monospace)">validate</text>
+<rect x="380" y="134" width="104" height="26" rx="4" fill="currentColor" fill-opacity="0.04" stroke="currentColor" stroke-opacity="0.3"/>
+<text x="432" y="151" font-size="11" text-anchor="middle" fill="currentColor" opacity="0.55" font-family="var(--md-code-font,monospace)">serve</text>
+<path d="M228,140 L228,188 L61,188 L61,138" fill="none" stroke="#D05663" stroke-opacity="0.7" stroke-dasharray="4 3"/>
+<path d="M57,145 L61,138 L65,145" fill="none" stroke="#D05663" stroke-opacity="0.8"/>
+<text x="150" y="206" font-size="10.5" text-anchor="middle" fill="#D05663" opacity="0.9">return 0  →  exit code (0 = success)</text>
+</svg>
+
 ## What this actually means (plain English)
 
 No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.

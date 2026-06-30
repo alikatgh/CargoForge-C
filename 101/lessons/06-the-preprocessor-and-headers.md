@@ -2,6 +2,35 @@
 
 Before the C compiler sees a single line of your code, a separate program called the **preprocessor** runs first. It handles `#include`, `#define`, and `#ifndef` — the directives that begin with `#`. Understanding the preprocessor is what unlocks the `.h`/`.c` split that makes CargoForge-C's twelve source files work together as one coherent program.
 
+## The mental model 🧠
+
+The **preprocessor** is a copy-paste robot that runs before the real compiler ever looks at your code. `#include "cargoforge.h"` means, literally, *paste the entire contents of that file right here.* `#define MAX_HYDRO_ENTRIES 200` means *find every one of those words and swap in `200`.* The compiler only ever sees the finished, pasted-together result.
+
+Headers are the **shared blueprint**. `cargoforge.h` says what a `Ship` *is* and what `perform_analysis` *looks like*; every `.c` file pastes that blueprint in so they all agree, then each `.c` is the actual factory that builds its part. The prototype on the blueprint is a *declaration* (just the shape); the function body with its `{ }` in the factory is the *definition* (the real thing) — and the linker wires the two together.
+
+The **include guard** (`#ifndef CARGOFORGE_H …`) is the robot's note to itself: *if you've already pasted me once, skip it.* Without it, two includes of the same header would define `Ship` twice and the compiler would choke on the redefinition. One blueprint, pasted everywhere, processed once each.
+
+<svg viewBox="0 0 600 240" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:560px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+<title>The preprocessor pastes cargoforge.h into every .c file before compiling</title>
+<desc>cargoforge.h is the shared blueprint. The preprocessor copies its full contents into parser.c, analysis.c, and main.c, so each translation unit agrees on what a Ship is. The compiler then builds each and the linker joins them into one cargoforge binary.</desc>
+<rect x="14" y="92" width="120" height="56" rx="5" fill="#12A594" fill-opacity="0.1" stroke="#12A594" stroke-width="1.2"/>
+<text x="74" y="116" font-size="11" text-anchor="middle" fill="currentColor" font-family="var(--md-code-font,monospace)">cargoforge.h</text>
+<text x="74" y="132" font-size="9" text-anchor="middle" fill="currentColor" opacity="0.55">shared blueprint</text>
+<rect x="226" y="34" width="128" height="40" rx="4" fill="currentColor" fill-opacity="0.05" stroke="currentColor" stroke-opacity="0.4"/><text x="290" y="58" font-size="11" text-anchor="middle" fill="currentColor" font-family="var(--md-code-font,monospace)">parser.c</text>
+<rect x="226" y="100" width="128" height="40" rx="4" fill="currentColor" fill-opacity="0.05" stroke="currentColor" stroke-opacity="0.4"/><text x="290" y="124" font-size="11" text-anchor="middle" fill="currentColor" font-family="var(--md-code-font,monospace)">analysis.c</text>
+<rect x="226" y="166" width="128" height="40" rx="4" fill="currentColor" fill-opacity="0.05" stroke="currentColor" stroke-opacity="0.4"/><text x="290" y="190" font-size="11" text-anchor="middle" fill="currentColor" font-family="var(--md-code-font,monospace)">main.c</text>
+<line x1="134" y1="112" x2="224" y2="54" stroke="#12A594" stroke-opacity="0.6"/><path d="M217,53 L224,54 L220,60" fill="none" stroke="#12A594" stroke-opacity="0.7"/>
+<line x1="134" y1="120" x2="224" y2="120" stroke="#12A594" stroke-opacity="0.6"/><path d="M217,116 L224,120 L217,124" fill="none" stroke="#12A594" stroke-opacity="0.7"/>
+<line x1="134" y1="128" x2="224" y2="186" stroke="#12A594" stroke-opacity="0.6"/><path d="M220,180 L224,186 L217,186" fill="none" stroke="#12A594" stroke-opacity="0.7"/>
+<text x="178" y="100" font-size="8.5" text-anchor="middle" fill="#12A594" opacity="0.85">#include = paste</text>
+<line x1="354" y1="54" x2="446" y2="112" stroke="currentColor" stroke-opacity="0.4"/><path d="M439,109 L446,112 L440,117" fill="none" stroke="currentColor" stroke-opacity="0.5"/>
+<line x1="354" y1="120" x2="446" y2="120" stroke="currentColor" stroke-opacity="0.4"/><path d="M439,116 L446,120 L439,124" fill="none" stroke="currentColor" stroke-opacity="0.5"/>
+<line x1="354" y1="186" x2="446" y2="128" stroke="currentColor" stroke-opacity="0.4"/><path d="M440,123 L446,128 L439,131" fill="none" stroke="currentColor" stroke-opacity="0.5"/>
+<rect x="448" y="92" width="138" height="56" rx="5" fill="#12A594" fill-opacity="0.12" stroke="#12A594" stroke-width="1.2"/>
+<text x="517" y="114" font-size="11.5" text-anchor="middle" fill="currentColor">compile + link</text>
+<text x="517" y="132" font-size="10.5" text-anchor="middle" fill="#12A594" font-family="var(--md-code-font,monospace)">→ cargoforge</text>
+</svg>
+
 ## What this actually means (plain English)
 
 No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
