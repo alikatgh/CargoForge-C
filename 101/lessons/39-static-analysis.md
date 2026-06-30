@@ -2,6 +2,35 @@
 
 Static analysis means examining source code for bugs *before* compiling or running it. For CargoForge-C this matters because the program handles heap-allocated cargo arrays, raw pointer arithmetic over parsed manifests, and numeric parsing on untrusted input — exactly the class of code where subtle errors survive every unit test yet crash under an adversarial manifest.
 
+## The mental model 🧠
+
+Static analysis is proofreading the code without ever running it. Where a sanitizer must *execute* a bad path to catch it, a static analyser *reads* the code and reasons about every path at once — "if this branch is taken, `p` is NULL here, and the next line dereferences it." It finds bugs your tests never triggered, because it does not need an input that triggers them; it needs only that the dangerous path *exists*.
+
+The reach matters. Plain compiler warnings (`-Wall -Wextra`) look *inside* one function at a time, so they missed the `parse_cargo_list` use-after-free — that bug spanned two functions (freed in one, read in `ship_cleanup`). An *interprocedural* tool like `scan-build` follows calls across the whole program and can trace exactly that path. The trade-off is the mirror of sanitizers: static analysis sees *all* paths but not real values, so it raises false positives; sanitizers see *real* runs with none, but only the paths your tests drove. And neither can tell you your physics is wrong — a bad `gz_at_angle` passes every linter. Read the code *and* run the code.
+
+<svg viewBox="0 0 600 210" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:560px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+<title>Static analysis reads every path through the code without running it</title>
+<desc>A static analyser examines the source for all possible execution paths and flags dangerous ones — a possible NULL dereference, a leak on an error path — without ever executing the program. It complements runtime sanitizers, which catch only the paths the tests actually drive.</desc>
+<text x="184" y="26" font-size="10" text-anchor="middle" fill="currentColor" opacity="0.7">source code — examined, not executed</text>
+<rect x="24" y="34" width="320" height="116" rx="5" fill="currentColor" fill-opacity="0.03" stroke="currentColor" stroke-opacity="0.35"/>
+<g font-family="var(--md-code-font,monospace)" font-size="10.5" fill="currentColor" opacity="0.8">
+<text x="38" y="56">Space *p = find_space(bin);</text>
+<text x="38" y="78">if (cond)</text>
+<text x="38" y="100">    p = NULL;</text>
+<rect x="30" y="108" width="308" height="20" fill="#D05663" fill-opacity="0.1"/>
+<text x="38" y="123" fill="currentColor">p-&gt;x = 0;</text>
+</g>
+<text x="250" y="123" font-size="9" fill="#D05663" opacity="0.9">⚠ may be NULL</text>
+<text x="38" y="144" font-size="8.5" fill="currentColor" opacity="0.5" font-family="var(--md-code-font,monospace)">// no input needed — the path just has to exist</text>
+<line x1="344" y1="92" x2="392" y2="92" stroke="#12A594" stroke-opacity="0.6"/><path d="M385,88 L392,92 L385,96" fill="none" stroke="#12A594"/>
+<rect x="394" y="44" width="182" height="96" rx="5" fill="#12A594" fill-opacity="0.06" stroke="#12A594" stroke-opacity="0.45"/>
+<text x="406" y="64" font-size="9.5" fill="currentColor" opacity="0.8">flagged before runtime:</text>
+<text x="406" y="84" font-size="9" fill="currentColor" opacity="0.75">⚠ possible NULL deref</text>
+<text x="406" y="102" font-size="9" fill="currentColor" opacity="0.75">⚠ leak on error path</text>
+<text x="406" y="120" font-size="9" fill="currentColor" opacity="0.75">⚠ unused result</text>
+<text x="300" y="190" font-size="9.5" text-anchor="middle" fill="currentColor" opacity="0.7">static: all paths (may false-positive) · sanitizers: real runs (no false-positive)</text>
+</svg>
+
 ## What this actually means (plain English)
 
 No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.

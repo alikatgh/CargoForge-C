@@ -2,6 +2,38 @@
 
 Writing tests is one thing; knowing whether your tests exercise the code that actually matters is another. This lesson covers two complementary tools CargoForge-C uses to answer that question: `gcov` for line coverage and a purpose-built benchmark harness ([`validation/validate_benchmark.c`](https://github.com/alikatgh/CargoForge-C/blob/main/validation/validate_benchmark.c)) that validates the calculation engine against known good values for three vessel types, meeting the requirements of DNV-SE-0475 type approval.
 
+## The mental model 🧠
+
+Coverage answers "which lines did my tests actually run?" A green suite can lie: if no test drives the overweight error path, that path can be broken while every test still passes. `gcov` instruments the build (compiled at `-O0` so lines don't vanish into optimisation) to count how often each line runs, turning "tests pass" into "tests pass *and here is exactly what they touched*" — the untouched lines, marked `#####`, are your blind spots.
+
+But coverage catches *silence*, not *lies*: a line can run and still compute the wrong GM. That is what the **validation harness** is for. `validate_benchmark.c` runs the real engine on three real vessels — a general cargo ship, a container ship, a bulk carrier — and checks hydrostatics, GZ, and IMO numbers against published stability-booklet values, to the tolerances DNV-SE-0475 type approval demands (absolute for tiny GZ areas, relative for huge displacements). Coverage shows *what you tested*; validation shows *whether the physics is right*.
+
+<svg viewBox="0 0 600 200" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:560px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+<title>Coverage shows which lines the tests ran; validation checks the physics is right</title>
+<desc>Coverage via gcov counts how often each line runs, exposing untested lines such as an error path even when every test passes. The validation harness runs the real engine on three reference vessels and checks the physics numbers against stability-booklet values within DNV-SE-0475 tolerances.</desc>
+<text x="150" y="24" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.8">coverage — which lines ran?</text>
+<rect x="24" y="32" width="252" height="120" rx="5" fill="currentColor" fill-opacity="0.03" stroke="currentColor" stroke-opacity="0.35"/>
+<g font-family="var(--md-code-font,monospace)" font-size="9.5">
+<circle cx="40" cy="50" r="3.5" fill="#12A594"/><text x="54" y="53" fill="currentColor" opacity="0.75">parse_cargo_list()</text>
+<circle cx="40" cy="70" r="3.5" fill="#12A594"/><text x="54" y="73" fill="currentColor" opacity="0.75">place_cargo_3d()</text>
+<circle cx="40" cy="90" r="3.5" fill="#12A594"/><text x="54" y="93" fill="currentColor" opacity="0.75">perform_analysis()</text>
+<circle cx="40" cy="110" r="3.5" fill="#D05663"/><text x="54" y="113" fill="currentColor" opacity="0.6">error path (overweight)</text>
+<circle cx="40" cy="130" r="3.5" fill="#12A594"/><text x="54" y="133" fill="currentColor" opacity="0.75">print_loading_plan()</text>
+</g>
+<text x="262" y="113" font-size="8" text-anchor="end" fill="#D05663" opacity="0.85">never run</text>
+<text x="150" y="170" font-size="9" text-anchor="middle" fill="currentColor" opacity="0.65">87% of lines — the red line is a blind spot</text>
+<text x="450" y="24" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.8">validation — is the physics right?</text>
+<rect x="324" y="32" width="252" height="120" rx="5" fill="currentColor" fill-opacity="0.03" stroke="currentColor" stroke-opacity="0.35"/>
+<g font-family="var(--md-code-font,monospace)" font-size="9.5">
+<text x="338" y="52" fill="currentColor" opacity="0.5">field     ref     got</text>
+<text x="338" y="74" fill="currentColor" opacity="0.8">GM        1.39    1.39</text><text x="562" y="74" fill="#12A594" text-anchor="end">✓</text>
+<text x="338" y="96" fill="currentColor" opacity="0.8">displ     42550   42490</text><text x="562" y="96" fill="#12A594" text-anchor="end">✓</text>
+<text x="338" y="118" fill="currentColor" opacity="0.8">GZ@30     0.21    0.21</text><text x="562" y="118" fill="#12A594" text-anchor="end">✓</text>
+</g>
+<text x="450" y="142" font-size="8" text-anchor="middle" fill="currentColor" opacity="0.55">3 reference vessels · stability-booklet values · DNV-SE-0475</text>
+<text x="300" y="190" font-size="9.5" text-anchor="middle" fill="currentColor" opacity="0.7">coverage shows what you tested · validation shows whether it's right</text>
+</svg>
+
 ## What this actually means (plain English)
 
 No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
