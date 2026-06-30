@@ -6,6 +6,35 @@ as the ship rolls, effectively raising the centre of gravity and reducing stabil
 CargoForge-C models this effect through the **free-surface correction**, computed in
 [`src/tanks.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/tanks.c) and folded into every stability analysis that includes a tank file.
 
+## The mental model 🧠
+
+A slack tank is a small loose sea riding inside the ship. Fill it to the brim or drain it dry and the liquid is locked in place — honest cargo. Leave it part-full and the liquid has a free surface that runs downhill every time the ship rolls, shoving weight to the low side and acting exactly as if the centre of gravity had been lifted. CargoForge charges that as a **virtual rise in KG**, subtracted from GM before any check runs.
+
+The surprise is what the penalty depends on. The free-surface moment is `ρ · l · b³ / 12` — the breadth is *cubed*, so a tank's *width* matters enormously and its *fill level* barely at all: a wide shallow puddle is far more dangerous than a deep narrow one of the same volume. That cube is also the cure — split a wide tank with one lengthwise baffle into two half-width tanks and the penalty drops by roughly *four* (because (b/2)³ × 2 = b³/4). It is why real ships are full of baffles.
+
+<svg viewBox="0 0 600 220" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:560px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+<title>Free surface in a slack tank, and how a baffle cuts the penalty</title>
+<desc>A partly filled tank lets liquid slosh to the low side, which acts like raising the ship's centre of gravity. The free-surface moment grows with the cube of the surface breadth, so a single lengthwise baffle that halves the breadth cuts the penalty to about a quarter.</desc>
+<text x="145" y="28" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.75">slack tank — wide surface</text>
+<rect x="40" y="44" width="210" height="100" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.6" stroke-width="1.2"/>
+<path d="M42,142 L248,142 L248,104 L42,90 Z" fill="#12A594" fill-opacity="0.18" stroke="#12A594" stroke-opacity="0.5"/>
+<line x1="42" y1="160" x2="248" y2="160" stroke="currentColor" stroke-opacity="0.5"/><path d="M49,156 L41,160 L49,164" fill="none" stroke="currentColor" stroke-opacity="0.5"/><path d="M241,156 L249,160 L241,164" fill="none" stroke="currentColor" stroke-opacity="0.5"/>
+<text x="145" y="174" font-size="9.5" text-anchor="middle" fill="currentColor" opacity="0.7">b  (full breadth)</text>
+<line x1="266" y1="138" x2="266" y2="86" stroke="#D05663" stroke-width="1.6"/><path d="M261,93 L266,82 L271,93" fill="#D05663"/>
+<text x="276" y="106" font-size="9" fill="#D05663">G rise</text>
+<text x="276" y="118" font-size="9" fill="#D05663">(large)</text>
+<text x="445" y="28" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.75">same tank, one baffle</text>
+<rect x="338" y="44" width="210" height="100" rx="3" fill="none" stroke="currentColor" stroke-opacity="0.6" stroke-width="1.2"/>
+<line x1="443" y1="44" x2="443" y2="144" stroke="currentColor" stroke-opacity="0.6" stroke-width="1.2"/>
+<path d="M340,142 L441,142 L441,116 L340,110 Z" fill="#12A594" fill-opacity="0.18" stroke="#12A594" stroke-opacity="0.5"/>
+<path d="M445,142 L546,142 L546,116 L445,110 Z" fill="#12A594" fill-opacity="0.18" stroke="#12A594" stroke-opacity="0.5"/>
+<text x="392" y="174" font-size="9.5" text-anchor="middle" fill="currentColor" opacity="0.7">b/2</text>
+<text x="496" y="174" font-size="9.5" text-anchor="middle" fill="currentColor" opacity="0.7">b/2</text>
+<line x1="560" y1="130" x2="560" y2="104" stroke="#12A594" stroke-width="1.6"/><path d="M555,111 L560,100 L565,111" fill="#12A594"/>
+<text x="556" y="124" font-size="9" text-anchor="end" fill="#12A594">G rise (¼)</text>
+<text x="300" y="202" font-size="10" text-anchor="middle" fill="currentColor" opacity="0.75" font-family="var(--md-code-font,monospace)">FSM = ρ · l · b³ / 12   —   breadth cubed: halve b → penalty ~¼</text>
+</svg>
+
 ## What this actually means (plain English)
 
 No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.

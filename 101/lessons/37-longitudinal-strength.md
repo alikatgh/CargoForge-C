@@ -2,6 +2,12 @@
 
 A ship is not rigid. Under a heavy concentrated cargo load the hull can hog — arch upward amidships like a banana — or sag when the ends carry more weight than the middle. Both modes stress the hull steel, and class-society rules define how far each can go before the structure is in danger. CargoForge-C computes the **still-water shear force (SWSF)** and **still-water bending moment (SWBM)** at every hull station and compares the results against the permissible limits stored in the ship config. This lesson traces that calculation from the first array to the final compliance flag.
 
+## The mental model 🧠
+
+A loaded hull is a very long beam, and like any beam it can be bent by an uneven load. Weight pushes *down* wherever cargo sits; buoyancy pushes *up* spread along the submerged length; wherever those two do not match station-for-station, the leftover force tries to bend the steel. Pile weight amidships and the ends float up — the hull *sags*; load the ends heavy and the middle rides up — it *hogs*. Both are the hull flexing like a banana.
+
+CargoForge measures it the way structural engineers do: take the net load (weight minus buoyancy) along the length, add it up running fore-to-aft to get the **shear force**, then add *that* up to get the **bending moment** — the integral of an integral. The peak bending moment is compared against the class-society limit in the ship config, and a stow that crams everything into one hold can pass every stability check and still *fail here* — because a ship that floats perfectly upright can still break its back. Spread the load and you protect the steel.
+
 <svg viewBox="0 0 580 250" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:560px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
 <title>Longitudinal strength: net load along the hull integrates to a bending moment, checked against limits</title>
 <desc>Top: along the hull, the stepped weight distribution and the smooth buoyancy distribution differ — their difference is the net load. Bottom: integrating the net load twice gives the still-water bending moment, a hump along the length, which is compared against the permissible class limit.</desc>
