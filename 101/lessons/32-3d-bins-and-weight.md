@@ -6,6 +6,12 @@ criteria, every cargo item needs a position in 3D space. `place_cargo_3d` in
 **bins**, then assigns each piece of cargo to a position inside one of them while
 tracking how much weight each bin is already carrying.
 
+## The mental model 🧠
+
+A hold is not a flat floor — it is a *room*, and a box set down in it claims a three-dimensional chunk of space and leaves oddly-shaped gaps around itself. CargoForge tracks those gaps as a list of free spaces, so the next box can be slotted into a leftover pocket instead of only ever stacking on top. That bookkeeping is what lets it use the *volume* of a hold, not just its floor.
+
+Weight is what makes this harder than pure geometry. A spot can be empty and still forbidden — because the bin beneath it is already at its weight cap, or because piling more there would lift the centre of gravity too high. So "does it fit?" is really three questions at once: is there *room*, can the structure *bear* it, and does it keep the ship *stable*? Only a yes to all three places the box, which is why `place_cargo_3d` carries a running weight for every bin, not just a map of empty space.
+
 <svg viewBox="0 0 600 210" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:580px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
 <title>The ship is divided into bins, each with a weight cap, and cargo is dropped into a position that fits</title>
 <desc>A side view of the ship split into three bins: the deck across the top, and two below-deck holds fore and aft. Each bin holds cargo boxes and tracks its used weight against a maximum. place_cargo_3d assigns every item a 3D position inside the first bin where it fits without exceeding the cap.</desc>
