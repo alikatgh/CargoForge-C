@@ -6,9 +6,15 @@ a value and a location, pointer syntax stops looking like line noise and starts 
 CargoForge-C passes ship data through pointers constantly; reading this module explains why,
 and what `->` does when you see it in `analysis.c`.
 
+## The mental model 🧠
+
+Every variable lives at a numbered house on a street — that number is its **address**. A pointer is just a slip of paper with a house number written on it. `&ship` reads off ship's house number; `*p` means "go to the house this slip points to and look inside"; and `p->length` is the shortcut for "go there and read the `length` room."
+
+This is why CargoForge passes `Ship *ship` everywhere instead of the whole `Ship` struct — the same reason you text someone an address instead of mailing them the house. Copying a slip of paper is instant; copying a mansion every time you call a function is not. And because every function holds a slip pointing at the *same* house, an edit one function makes is seen by all the others — there is only ever one ship, not a pile of stale photocopies.
+
 <svg viewBox="0 0 620 210" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:600px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
 <title>A pointer stores the address of another variable</title>
-<desc>The variable ship lives at some address. The pointer p stores that address as its value, so p points to ship. &ship gets the address; *p follows it back to the Ship; p->length reads a field through it.</desc>
+<desc>The variable ship lives at some address. The pointer p stores that address as its value, so p points to ship. &amp;ship gets the address; *p follows it back to the Ship; p->length reads a field through it.</desc>
 <defs><marker id="pt-ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 1 L9 5 L0 9 Z" fill="#12A594"/></marker></defs>
 <text x="70" y="56" fill="currentColor" font-size="12" font-family="var(--md-code-font,monospace)">Ship *p</text>
 <rect x="60" y="64" width="170" height="58" rx="6" fill="#12A594" fill-opacity="0.08" stroke="#12A594" stroke-width="1.2"/>
