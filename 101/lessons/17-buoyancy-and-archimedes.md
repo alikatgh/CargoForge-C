@@ -2,6 +2,12 @@
 
 Steel is about eight times denser than water, yet a ship made of steel floats. Understanding why is not a physics curiosity — it is the prerequisite for every stability number CargoForge-C computes. `perform_analysis` in [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c) derives draft, KB, BM, and ultimately GM from a single foundational calculation: how much water does the ship displace, and what does that tell us?
 
+## The mental model 🧠
+
+A floating ship is locked in a quiet tug-of-war that always ends in a draw. Gravity pulls the whole ship *down* with a force equal to its weight; the water pushes *up* with a force equal to the weight of the water the hull shoves out of the way. The ship settles to exactly the depth where those two forces match — no deeper, no shallower — and there it floats.
+
+That is why a steel ship floats even though steel sinks: it is not the material that matters but the *shape*. A solid steel cube displaces only its own small volume of water and loses the tug-of-war; spread that same steel into a hull and it shoves aside many tonnes of water before it is even half submerged. Every number `perform_analysis` computes — draft, KB, BM, GM — grows from this one balance: **weight down equals displaced-water-weight up.** Load more cargo and the ship simply settles deeper until the books balance again.
+
 <svg viewBox="0 0 600 232" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:560px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
 <title>Why a steel ship floats: buoyancy equals the weight of the displaced water</title>
 <desc>The ship's submerged hull pushes aside a volume of water V. The upward buoyant force equals the weight of that displaced water. The ship floats at the draft where buoyancy up balances the ship's weight down.</desc>

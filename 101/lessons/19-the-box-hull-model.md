@@ -2,6 +2,28 @@
 
 When CargoForge-C does not have a ship's measured hydrostatic table, it still needs to answer questions like "how deep will the ship sit in the water?" and "how stable is it?". It answers them by pretending the hull is a rectangular box — a deliberately simplified shape whose geometry can be solved with a few multiplications. This lesson explains how that model works, where each formula comes from, and why the program uses it only as a fallback when real table data is absent.
 
+## The mental model 🧠
+
+When CargoForge has no measured hull data, it tells a *useful lie*: pretend the ship is a rectangular swimming pool. A box's volume is just length × breadth × draft — a couple of multiplications — so draft, KB, and BM all fall out of plain geometry instead of a measured table. The lie is calibrated, not naïve: a real hull tapers at the bow and stern, so the code multiplies by a **block coefficient** of 0.75, which says "a real hull is only about 75% as full as its bounding box."
+
+From that one rectangle it estimates the centre of buoyancy at `KB = 0.53 × draft` (just over halfway down the submerged depth) and the metacentric radius as `BM = I / V`, where the waterplane's inertia `I = L × B³ / 12`. Watch the breadth: it is *cubed*, so a wider ship resists heeling far more than a longer one — doubling the beam roughly quadruples BM. This model is only a fallback (`perform_analysis` uses it when `ship->hydro` is NULL), and the report always names which path it took, so no one mistakes a fleet-average rectangle for measured data.
+
+<svg viewBox="0 0 600 220" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:560px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+<title>The box-hull model: approximate the tapered hull as a rectangular box</title>
+<desc>With no measured hydrostatic table, CargoForge treats the submerged hull as a rectangular box of length, breadth, and draft, then multiplies by a block coefficient of 0.75 because a real hull tapers at the bow and stern and fills only about three-quarters of that box.</desc>
+<text x="300" y="26" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.75">block coefficient C_b = 0.75 — the hull fills ~75% of the box</text>
+<rect x="90" y="64" width="420" height="116" fill="none" stroke="#12A594" stroke-width="1.2" stroke-dasharray="5 3"/>
+<text x="300" y="56" font-size="10" text-anchor="middle" fill="#12A594" opacity="0.85">bounding box  =  L × B × T</text>
+<path d="M90,64 L510,64 L510,150 C500,168 472,178 440,178 L160,178 C128,178 100,168 90,150 Z" fill="currentColor" fill-opacity="0.07" stroke="currentColor" stroke-opacity="0.6" stroke-width="1.2"/>
+<text x="300" y="124" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.7">real submerged hull</text>
+<text x="118" y="173" font-size="13" fill="#D05663" opacity="0.5">▽</text>
+<text x="476" y="173" font-size="13" fill="#D05663" opacity="0.5">▽</text>
+<line x1="68" y1="64" x2="68" y2="180" stroke="currentColor" stroke-opacity="0.6"/><path d="M64,71 L68,63 L72,71" fill="none" stroke="currentColor" stroke-opacity="0.6"/><path d="M64,173 L68,181 L72,173" fill="none" stroke="currentColor" stroke-opacity="0.6"/>
+<text x="46" y="126" font-size="10.5" fill="currentColor" opacity="0.8">T</text>
+<line x1="90" y1="196" x2="510" y2="196" stroke="currentColor" stroke-opacity="0.6"/><path d="M97,192 L89,196 L97,200" fill="none" stroke="currentColor" stroke-opacity="0.6"/><path d="M503,192 L511,196 L503,200" fill="none" stroke="currentColor" stroke-opacity="0.6"/>
+<text x="300" y="212" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.8">L  (× B into the page)</text>
+</svg>
+
 ## What this actually means (plain English)
 
 No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
