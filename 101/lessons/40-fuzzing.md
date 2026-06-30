@@ -6,6 +6,43 @@ input nobody thought to write a test for? CargoForge-C ships a purpose-built fuz
 adversarial inputs. When combined with memory sanitizers, fuzzing becomes one of the most
 effective ways to find real bugs — and it found a real one in this codebase.
 
+## The mental model 🧠
+
+Unit tests check the inputs you thought of. A fuzzer attacks the ones you didn't.
+
+Picture a tireless intern whose entire job is to feed CargoForge-C garbage — a cargo weight of `abc`, a config line with three `=` signs, four hundred random bytes, an empty file — thousands of times a second, while AddressSanitizer stands at its shoulder watching for the first illegal touch of memory. That intern is `scripts/fuzz.sh`: it generates random, malformed configs and manifests, runs the sanitized binary on each, and stops the instant anything crashes or trips the sanitizer.
+
+The contract it enforces is *not* "accept everything" — most of that garbage **should** be rejected. It is narrower and stricter: **never crash on bad input.** A clean error exit is a pass; a segfault or a sanitizer report is a fail. This is exactly how the heap-use-after-free in `parse_cargo_list` (Lesson 13) surfaced — no human wrote that test; the fuzzer simply wandered onto the error path that every happy-path test had missed.
+
+<svg viewBox="0 0 620 226" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:600px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+<title>The fuzzing loop: feed random bad input to the sanitized binary, watch for a crash</title>
+<desc>A generator produces random malformed configs and manifests, the sanitized binary runs each one. A clean rejection is a pass and the loop repeats; a crash or sanitizer error is a fail and the failing input is saved.</desc>
+<defs><marker id="fz" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 1 L9 5 L0 9 Z" fill="currentColor" opacity="0.7"/></marker>
+<marker id="fz-t" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 1 L9 5 L0 9 Z" fill="#12A594"/></marker>
+<marker id="fz-r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 1 L9 5 L0 9 Z" fill="#D05663"/></marker></defs>
+<rect x="28" y="92" width="150" height="50" rx="6" fill="none" stroke="currentColor" stroke-width="1.3" opacity="0.75"/>
+<text x="103" y="112" fill="currentColor" font-size="11.5" text-anchor="middle">random malformed</text>
+<text x="103" y="128" fill="currentColor" font-size="11.5" text-anchor="middle">config + manifest</text>
+<rect x="222" y="92" width="156" height="50" rx="6" fill="#12A594" fill-opacity="0.08" stroke="#12A594" stroke-width="1.4"/>
+<text x="300" y="112" fill="#12A594" font-size="11.5" text-anchor="middle" font-family="var(--md-code-font,monospace)">cargoforge-san</text>
+<text x="300" y="128" fill="currentColor" font-size="10" text-anchor="middle" opacity="0.7">ASan + UBSan</text>
+<line x1="178" y1="117" x2="220" y2="117" stroke="currentColor" stroke-width="1.4" marker-end="url(#fz)"/>
+<!-- pass branch -->
+<line x1="378" y1="106" x2="430" y2="78" stroke="#12A594" stroke-width="1.4" marker-end="url(#fz-t)"/>
+<rect x="432" y="58" width="158" height="38" rx="6" fill="none" stroke="#12A594" stroke-width="1.2"/>
+<text x="511" y="81" fill="#12A594" font-size="11" text-anchor="middle">rejected cleanly ✓</text>
+<!-- loop back over the top -->
+<path d="M511,58 C511,26 511,22 470,22 L120,22 C103,22 103,30 103,90" fill="none" stroke="currentColor" stroke-width="1.1" stroke-dasharray="4 3" opacity="0.45" marker-end="url(#fz)"/>
+<text x="300" y="17" fill="currentColor" font-size="10" text-anchor="middle" opacity="0.55">repeat — thousands of times a second</text>
+<!-- fail branch -->
+<line x1="378" y1="128" x2="430" y2="156" stroke="#D05663" stroke-width="1.4" marker-end="url(#fz-r)"/>
+<rect x="432" y="138" width="158" height="38" rx="6" fill="#D05663" fill-opacity="0.07" stroke="#D05663" stroke-width="1.2"/>
+<text x="511" y="161" fill="#D05663" font-size="11" text-anchor="middle">crash / sanitizer ✗</text>
+<text x="511" y="196" fill="currentColor" font-size="10" text-anchor="middle" opacity="0.7">→ save the failing input</text>
+<text x="103" y="170" fill="currentColor" font-size="10.5" text-anchor="middle" opacity="0.6">contract: never crash</text>
+<text x="103" y="184" fill="currentColor" font-size="10.5" text-anchor="middle" opacity="0.6">on bad input</text>
+</svg>
+
 ## What this actually means (plain English)
 
 No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
