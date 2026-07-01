@@ -27,6 +27,8 @@ That immediacy is the whole value. The `parse_cargo_list` use-after-free was inv
 <text x="300" y="212" font-size="10" text-anchor="middle" fill="currentColor" opacity="0.7">CI runs the suite twice — once normal, once under ASan (make test-asan)</text>
 </svg>
 
+<div class="lesson-widget" data-widget="asan-toggle-demo"></div>
+
 ## What this actually means (plain English)
 
 No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.

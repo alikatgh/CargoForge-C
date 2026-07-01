@@ -39,6 +39,8 @@ In CargoForge-C that discipline is explicit. `parse_cargo_list` takes out the lo
 <circle cx="30" cy="202" r="2.6" fill="#D05663"/><text x="44" y="206" fill="currentColor" font-size="11" opacity="0.8"><tspan fill="#D05663" font-weight="600">Double-free</tspan> — two owners both repay the same block; the allocator's bookkeeping corrupts.</text>
 </svg>
 
+<div class="lesson-widget" data-widget="malloc-lifecycle-stepper"></div>
+
 ## What this actually means (plain English)
 
 No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.

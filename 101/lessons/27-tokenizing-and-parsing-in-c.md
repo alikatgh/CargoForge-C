@@ -38,6 +38,8 @@ Every cut is a place a bug can hide, which is why the choices are conservative. 
 <text x="300" y="194" font-size="10" text-anchor="middle" fill="currentColor" opacity="0.7">tokenize first, validate each piece, then build the Cargo struct</text>
 </svg>
 
+<div class="lesson-widget" data-widget="tokenizer-playground"></div>
+
 ## What this actually means (plain English)
 
 No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.

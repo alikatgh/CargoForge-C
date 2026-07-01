@@ -44,6 +44,10 @@ extra_javascript:
   - assets/widgets/gm-stability-explorer.js
   - assets/widgets/free-surface-explorer.js
   - assets/widgets/hydro-interpolation-explorer.js
+  - assets/widgets/ffd-stepper.js
+  - assets/widgets/malloc-lifecycle-stepper.js
+  - assets/widgets/tokenizer-playground.js
+  - assets/widgets/asan-toggle-demo.js
 
 markdown_extensions:
   - admonition

@@ -34,6 +34,8 @@ No fast rule is provably optimal, but FFD lands famously close while staying *pr
 <text x="512" y="200" font-size="9.5" text-anchor="middle" fill="currentColor" opacity="0.5">hold 3 · —</text>
 </svg>
 
+<div class="lesson-widget" data-widget="ffd-stepper"></div>
+
 ## What this actually means (plain English)
 
 No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
