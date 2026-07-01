@@ -155,7 +155,7 @@ The corresponding **definitions** — the functions with their `{ }` bodies — 
 
 ### Type declarations in headers
 
-`typedef struct { ... } Cargo;` in `cargoforge.h` is also a declaration (of a type). It tells every translation unit what fields a `Cargo` struct contains. There is no memory allocated by a `typedef` — it only describes a shape. Memory is allocated when you write `Cargo c;` or `malloc(sizeof(Cargo))` in a `.c` file.
+`typedef struct { ... } Cargo;` in `cargoforge.h` is also a declaration (of a type). It tells every translation unit what fields a `Cargo` struct contains. There is no memory allocated by a `typedef` — it only describes a shape. Memory is allocated when you write `Cargo c;` or `malloc(sizeof(Cargo))` in a `.c` file — `sizeof` is a C operator that asks the compiler "how many bytes does one of these take up?", so `malloc` knows exactly how much memory to reserve.
 
 ### Forward declarations: just the name, nothing more
 

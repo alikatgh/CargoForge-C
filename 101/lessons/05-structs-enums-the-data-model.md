@@ -64,6 +64,12 @@ In C a **struct** is a named block of memory that groups related variables toget
 
 From [`include/cargoforge.h`](https://github.com/alikatgh/CargoForge-C/blob/main/include/cargoforge.h#L39) (line 39):
 
+`typedef` here means "give this struct a shorter name to use everywhere else" —
+without it, every mention of this type in the code would have to write out
+`struct { ... }` again, or a longer tagged form; `typedef struct { ... } Cargo;`
+lets the rest of the codebase just write `Cargo` (as you already saw used
+throughout the "what this actually means" bullets above).
+
 ```c
 typedef struct {
     char  id[32];
@@ -199,7 +205,7 @@ typedef struct {
 |---|---|---|
 | `draft` | m | Mean draught at displacement. Compare against the ship's marks. |
 | `kb` | m | Centre of buoyancy height above keel — higher as draught increases. |
-| `bm` | m | Metacentric radius: $BM = I_T / \nabla$ where $I_T$ is the second moment of the waterplane area and $\nabla$ is the displaced volume. |
+| `bm` | m | Metacentric radius: $BM = I_T / \nabla$ where $I_T$ is the second moment of the waterplane area and $\nabla$ (the symbol naval architects traditionally use for it) is the displaced volume. |
 | `kg` | m | Loaded vertical CG above keel: $KG = \frac{\sum m_i \cdot z_i}{\sum m_i}$. |
 | `gm` | m | $GM = KB + BM - KG$. Positive = stable; the higher, the stiffer. |
 | `free_surface_correction` | m | Virtual rise in KG caused by liquid sloshing in partially-filled tanks. |

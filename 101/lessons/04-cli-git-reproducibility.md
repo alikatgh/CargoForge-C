@@ -62,7 +62,7 @@ The most basic interaction looks like this:
 
 Breaking this down:
 
-- `./cargoforge` — the `./` prefix means "look in the current directory for a file named `cargoforge` and run it". Without `./`, the shell would search the system-wide `PATH` instead.
+- `./cargoforge` — the `./` prefix means "look in the current directory for a file named `cargoforge` and run it". Without `./`, the shell would search the system-wide `PATH` instead — a list of folders the shell always checks when you type a bare command name, which is how typing `make` or `git` works from anywhere without spelling out where those programs live.
 - `optimize` — a **subcommand**. CargoForge-C uses the same pattern as tools like `git` or `docker`: the first argument selects what the program does. Other subcommands are `validate`, `info`, `serve`, `version`, and `help`.
 - [`examples/sample_ship.cfg`](https://github.com/alikatgh/CargoForge-C/blob/main/examples/sample_ship.cfg) and [`examples/sample_cargo.txt`](https://github.com/alikatgh/CargoForge-C/blob/main/examples/sample_cargo.txt) — arguments to the subcommand: the ship configuration file and the cargo manifest.
 
@@ -181,7 +181,7 @@ macOS uses `.dylib` for shared libraries; Linux uses `.so`. The [`Makefile`](htt
 
 ## git basics
 
-`git` is a version control system. It records every change to your code as a **commit** — a snapshot with a unique ID (a 40-character hash), a message, an author, and a timestamp. A collection of commits forms a **repository**.
+`git` is a version control system — a tool that keeps a complete, searchable history of every change ever made to a project, so nothing is ever truly lost and you can always see who changed what and when. It records every change to your code as a **commit** — a snapshot with a unique ID (a 40-character hash), a message, an author, and a timestamp. A collection of commits forms a **repository**.
 
 The most important commands:
 

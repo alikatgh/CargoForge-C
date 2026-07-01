@@ -49,7 +49,10 @@ No jargon — here's what the ideas in this lesson *actually* mean, and why they
 
 ## Primitive types
 
-C has a small set of numeric types that map directly to CPU registers.
+C has a small set of numeric types that map directly to CPU registers — the
+tiny, extremely fast storage slots built into the processor chip itself,
+where actual arithmetic happens (as opposed to the much larger but slower
+main memory a variable normally lives in).
 
 | Type | Typical size | Range / precision | Use in CargoForge-C |
 |------|-------------|-------------------|---------------------|
@@ -148,7 +151,7 @@ for (int i = 0; i < steps; i++) {
 }
 ```
 
-This loop implements the **trapezoidal rule**: the area under a curve is approximated by summing 100 thin trapezoids, each of width `da` radians. The `if` guards clamp negative GZ values to zero — a ship cannot have a negative restoring moment that contributes to stability area.
+This loop implements the **trapezoidal rule**: the area under a curve is approximated by summing 100 thin trapezoids, each of width `da` radians. The `if` guards clamp negative GZ values to zero — a ship cannot have a negative restoring moment that contributes to stability area. The `(float)` in front of `M_PI` is a **cast**: an explicit instruction to treat that value as a `float` rather than its natural (double-precision) type, keeping the whole expression in single precision on purpose.
 
 !!! tip "Loop variable scope"
     Declaring `int i` inside the `for` initialiser (`for (int i = 0; ...)`) is valid C99 and restricts `i` to the loop body. This is the preferred style in CargoForge-C — it prevents accidentally reusing a stale loop counter.

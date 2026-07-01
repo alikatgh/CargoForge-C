@@ -47,6 +47,8 @@ Hold this picture: **one door in, one number out.** Every C program you ever ope
 
 No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
 
+- **Function** = "a named, reusable block of code that does one job" — you can hand it inputs (its *parameters*), and it can hand back a result (its *return value*). `main` is one function; CargoForge-C is built almost entirely out of small functions like `parse_ship_config` and `perform_analysis` calling each other.
+- **Array / pointer / struct** (all used below, all covered properly much later) = for now: an *array* is a numbered row of same-type values sitting back-to-back in memory (Lesson 12); a *pointer* is a variable that stores another variable's address rather than a value itself (Lesson 9); a *struct* is a labelled bundle of related fields treated as one unit (Lesson 5). This lesson uses all three in passing — a quick "you'll get the full picture soon" is enough for now.
 - **`main`** = "the one front door every C program must have" — the OS calls it when you run the program; in CargoForge-C it is a 21-line skeleton that immediately hands control to `parse_cli_args` and `dispatch_subcommand` rather than doing any real work itself.
 - **`argc` / `argv`** = "the words you typed on the command line, counted and collected" — when you run `cargoforge optimize sample_ship.cfg sample_cargo.txt`, the OS sets `argc = 4` and `argv[2]` / `argv[3]` to the two file paths that every downstream handler depends on.
 - **`CLIContext`** = "a single struct that carries everything `main` learned from the command line" — `init_cli_context` fills it with safe defaults, `parse_cli_args` populates it, and `dispatch_subcommand` reads it to route to `cmd_optimize` (which in turn calls `parse_ship_config`, `parse_cargo_list`, `place_cargo_3d`, and `perform_analysis`).
@@ -127,15 +129,21 @@ the OS sets `argc = 4`:
 
 ### `argv` — argument vector
 
-`argv` is an array of strings (character pointers), one per word. The type
-`char *argv[]` means "an array of pointers to characters." You will read this as
-"argv is an array of strings."
+`argv` is an array of strings (character pointers), one per word — an *array* is
+just a numbered row of values back-to-back in memory (Lesson 12 covers this
+properly), and a *pointer* stores an address rather than a value directly
+(Lesson 9). The type `char *argv[]` means "an array of pointers to characters."
+You will read this as "argv is an array of strings" — you do not need the full
+mechanics of either concept yet to follow this lesson.
 
 `argv[0]` is always the program name. `argv[argc]` is always a `NULL` pointer —
 a sentinel that marks the end of the array.
 
 !!! note
-    `int argc` and `char *argv[]` are parameters, not global variables. The OS
+    `int argc` and `char *argv[]` are parameters — the named inputs a function
+    declares it needs, listed inside its parentheses — not global variables (a
+    global variable would be visible to every function in the program; a
+    parameter belongs only to the one function that declared it). The OS
     fills them before calling `main`. You cannot change what was typed, but you
     can read every word.
 
@@ -170,12 +178,16 @@ init_cli_context(&ctx);
 ```
 
 `CLIContext` is a struct (defined in `cli.h`) that holds the parsed subcommand,
-file paths, output format, and flags for the current run. Declaring `CLIContext ctx`
-creates the struct on the stack. `init_cli_context` fills it with safe defaults —
+file paths, output format, and flags for the current run — a *struct* just
+bundles several related fields under one name instead of juggling them as
+separate loose variables (Lesson 5 covers this properly). Declaring `CLIContext ctx`
+creates the struct on the stack — one of two places C stores data in memory;
+for now just know it is automatically cleaned up the moment `main` returns
+(Lesson 10 explains exactly what the stack is and why that matters). `init_cli_context` fills it with safe defaults —
 zeroes, NULLs, and the human-readable output format.
 
 The `&ctx` syntax means "the address of ctx." `init_cli_context` receives a
-pointer so it can modify the struct in place. You will see this pattern constantly
+pointer — a variable that stores an address instead of a value (Lesson 9) — so it can modify the struct in place. You will see this pattern constantly
 in C because functions cannot return large structs cheaply — they operate through
 pointers instead.
 
@@ -197,7 +209,9 @@ It returns:
 - **0** — a help or version request was handled; exit cleanly.
 - **negative** — invalid arguments; exit with an error code.
 
-The early return here is a guard clause: get the error cases out of the way
+The early return here is a guard clause — a pattern where you handle a
+problem case immediately and exit, rather than wrapping the rest of the
+function in a big "if everything's fine" block. Get the error cases out of the way
 immediately so the rest of the function reads top-to-bottom without nesting.
 
 !!! tip
