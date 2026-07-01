@@ -288,4 +288,12 @@ costs almost 40 mm of metacentric height.
   low in the ship still lowers the centre of gravity even as its free surface partially
   offsets the benefit.
 
+## Check yourself
+
+??? question "Why does breadth matter so much more than fill level in the free-surface formula?"
+    The formula is ρ·l·b³/12 — breadth is *cubed*, so a wide shallow tank is far more dangerous than a deep narrow one of the same volume. Fill level doesn't even appear as a variable: the penalty is constant for any partial fill and drops to zero only right at the 0%/100% extremes.
+
+??? question "Why does one lengthwise baffle cut the free-surface penalty to roughly 1/4, not 1/2?"
+    Each of the two resulting half-width compartments has (b/2)³ = b³/8 of the original moment, but there are now two of them: 2 × b³/8 = b³/4. The cube shrinks each half faster than the doubling adds back, so the total lands at a quarter, not a half.
+
 *Next: [Longitudinal strength](37-longitudinal-strength.md).*

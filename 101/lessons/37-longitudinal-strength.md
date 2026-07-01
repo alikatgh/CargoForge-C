@@ -244,4 +244,12 @@ The JSON output layer (in `json_output.c`) serialises all three alongside the st
 - Positive bending moment = hogging; negative = sagging. Both are tracked separately against class-society limits.
 - `check_strength_limits` returns `1` (pass), `0` (fail), or `−1` (not checked) depending on whether `StrengthLimits` was loaded from the ship config.
 
+## Check yourself
+
+??? question "What's the difference between hogging and sagging?"
+    Hogging is the hull bending concave-down — midship pushed *up* relative to the ends, like a hog's back. Sagging is the opposite: concave-up, with midship pushed *down* relative to the ends.
+
+??? question "Why can a stow that passes every GM and stability check still fail the longitudinal-strength check?"
+    Stability is about the ship staying upright. Longitudinal strength is about the hull girder not physically bending or breaking under an uneven weight-vs-buoyancy distribution — a perfectly upright, perfectly balanced ship can still concentrate too much weight in one section and overstress the steel there.
+
 *Next: [Lab 9 - Turn on a hydro table and a tank](lab-09-engine.md).*

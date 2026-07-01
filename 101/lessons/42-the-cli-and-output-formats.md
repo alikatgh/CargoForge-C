@@ -320,4 +320,12 @@ ctx->color = isatty(STDERR_FILENO);
 - In JSON output, an overweight rejection sets `"overweight": true` and all stability fields to `null`, giving consumers a clean sentinel rather than a NAN.
 - Diagnostics go to stderr; data goes to stdout — keeping the streams separable for pipelines.
 
+## Check yourself
+
+??? question "Why does CargoForge-C keep the physics engine and the output formatting strictly separate?"
+    The engine computes an AnalysisResult once; the `--format` flag then decides only how to *present* that same data — console, JSON, CSV, and so on. Keeping computation and presentation apart means adding a new output format never touches the physics.
+
+??? question "What does the JSON output do differently for an overweight ship, and why?"
+    It emits `"overweight": true` and sets every stability field to `null`, instead of some numeric placeholder. That way a downstream program never has to guess whether a zero means "the computed value is genuinely zero" or "this was never computed at all."
+
 *Next: [The library and public API](43-the-library-and-public-api.md).*

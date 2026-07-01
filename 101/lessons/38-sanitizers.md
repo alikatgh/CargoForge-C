@@ -210,4 +210,12 @@ ship->cargo_count = 0; // prevent iteration over freed memory
 - ASan does not catch uninitialised stack reads (use Valgrind/MSan) or logic errors; it is one layer of a multi-layer safety net.
 - The real bug in `parse_cargo_list` — heap-use-after-free on the cargo array — was silent without sanitizers and immediately visible with them.
 
+## Check yourself
+
+??? question "How does AddressSanitizer actually detect a bad memory access?"
+    It keeps a hidden shadow-memory ledger — one byte per eight real bytes — recording whether each byte is live, freed, or never allocated. Every read or write checks that ledger first; hitting a poisoned byte triggers an immediate, precisely located report.
+
+??? question "Why can't you mix ASan-instrumented and plain object files in the same build?"
+    One un-instrumented object file has no shadow-memory bookkeeping for its memory, which silently breaks the shadow-memory model for the whole binary. That's why `make test-asan` does a full clean rebuild rather than an incremental one.
+
 *Next: [Static analysis](39-static-analysis.md).*

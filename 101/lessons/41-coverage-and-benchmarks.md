@@ -269,4 +269,12 @@ None of these layers replaces the others. A benchmark can pass even if there is 
 - Test 4 cross-checks `gz_at_30` against the wall-sided formula computed independently in the test itself, catching unit or sign errors without needing an external reference.
 - `make validate` exits non-zero if any check fails, making physics accuracy a first-class CI gate alongside memory safety (`make test-asan`) and unit correctness (`make test`).
 
+## Check yourself
+
+??? question "Why must coverage measurement build with -O0 instead of the normal optimised build?"
+    Optimisation can inline or merge lines until they vanish from the coverage map entirely, making the report lie about what actually ran. `-O0` keeps a one-to-one correspondence between the source lines you read and the binary that executes.
+
+??? question "A function can have 100% line coverage and still return a wrong stability number. Why doesn't coverage catch that?"
+    Coverage only proves a line *executed*, not that it computed the right value. A sign error in an interpolation formula could run on every test case and still silently return the wrong number — only comparing against known-good reference values, the way `validate_benchmark.c` does, catches that.
+
 *Next: [Lab 10 — The Quality Gate](lab-10-quality.md).*

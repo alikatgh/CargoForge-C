@@ -204,4 +204,12 @@ AddressSanitizer (ASan) is what actually *caught* the heap-use-after-free in `pa
 - Static analysis does not verify domain correctness (wrong physics formula, wrong range for a numeric field) — that requires tests and validation against known benchmarks.
 - In CargoForge-C, static analysis is the *first* defense layer; sanitizers (`make test-asan`) and Valgrind (`make test-valgrind`) run on top of it for dynamic confirmation.
 
+## Check yourself
+
+??? question "Why did plain compiler warnings (-Wall -Wextra) miss the real use-after-free bug, when an interprocedural tool like scan-build could catch it?"
+    `-Wall`/`-Wextra` only reason about one function at a time. The bug spanned two functions — freed in `parse_cargo_list`, read in `ship_cleanup` — which needs a tool that follows calls *across* functions to see the whole dangerous path.
+
+??? question "What's something static analysis fundamentally cannot catch, no matter how good the tool?"
+    Whether the domain logic is *correct*. A wrong physics formula — say, a sign error in `gz_at_angle` — can pass every static check perfectly while still computing the wrong answer. Catching that needs tests and benchmarks against known-good values, not a linter.
+
 *Next: [Fuzzing](40-fuzzing.md).*

@@ -334,4 +334,12 @@ then you revert to the optimised release build for deployment.
   `free`, preventing any downstream code from following the dangling pointer.
 - Fixed seed (default `RANDOM=1`) makes fuzz runs deterministic and reproducible in CI.
 
+## Check yourself
+
+??? question "Why does the fuzzer default to a fixed seed instead of true randomness?"
+    A fixed seed makes a fuzzing run deterministic and reproducible. If it finds a crash, the exact same sequence of "random" inputs can be replayed later to reproduce and debug it, instead of chasing a one-off event that may never recur.
+
+??? question "What counts as a failure in scripts/fuzz.sh?"
+    An exit code of 128 or higher (a signal, i.e. a crash) or any sanitizer diagnostic appearing on stderr. Either one means the program failed to cleanly reject bad input the way its contract requires.
+
 *Next: [Coverage and benchmarks](41-coverage-and-benchmarks.md).*
