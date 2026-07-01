@@ -20,7 +20,7 @@ A good public API is mostly about what it *hides*. Callers get an **opaque handl
 <rect x="208" y="74" width="168" height="72" rx="6" fill="#12A594" fill-opacity="0.1" stroke="#12A594" stroke-width="1.2"/>
 <text x="292" y="96" font-size="10.5" text-anchor="middle" fill="currentColor" font-family="var(--md-code-font,monospace)">libcargoforge</text>
 <text x="292" y="112" font-size="8.5" text-anchor="middle" fill="currentColor" opacity="0.65">.a / .so / .dylib</text>
-<text x="292" y="128" font-size="8" text-anchor="middle" fill="#12A594" opacity="0.85">opaque CargoForge* · CF_ codes</text>
+<text x="292" y="128" font-size="8" text-anchor="middle" fill="#12A594" opacity="0.85">opaque CargoForge&#42; · CF_ codes</text>
 <g font-size="9.5" text-anchor="middle">
 <rect x="430" y="22" width="150" height="32" rx="5" fill="currentColor" fill-opacity="0.05" stroke="currentColor" stroke-opacity="0.4"/><text x="505" y="42" fill="currentColor">CLI (cargoforge)</text>
 <rect x="430" y="64" width="150" height="32" rx="5" fill="currentColor" fill-opacity="0.05" stroke="currentColor" stroke-opacity="0.4"/><text x="505" y="84" fill="currentColor">server (serve)</text>

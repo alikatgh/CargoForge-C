@@ -14,7 +14,7 @@ The reach matters. Plain compiler warnings (`-Wall -Wextra`) look *inside* one f
 <text x="184" y="26" font-size="10" text-anchor="middle" fill="currentColor" opacity="0.7">source code — examined, not executed</text>
 <rect x="24" y="34" width="320" height="116" rx="5" fill="currentColor" fill-opacity="0.03" stroke="currentColor" stroke-opacity="0.35"/>
 <g font-family="var(--md-code-font,monospace)" font-size="10.5" fill="currentColor" opacity="0.8">
-<text x="38" y="56">Space *p = find_space(bin);</text>
+<text x="38" y="56">Space &#42;p = find_space(bin);</text>
 <text x="38" y="78">if (cond)</text>
 <text x="38" y="100">    p = NULL;</text>
 <rect x="30" y="108" width="308" height="20" fill="#D05663" fill-opacity="0.1"/>

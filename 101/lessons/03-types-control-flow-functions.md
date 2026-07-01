@@ -14,7 +14,7 @@ The catch the clerk *won't* save you from: types pin size and meaning, not truth
 <title>A function is a machine with a typed input and a typed output</title>
 <desc>calculate_gm takes one Ship pointer, runs its body with control flow that branches on a condition, and returns exactly one float. The compiler enforces the declared types at both ends.</desc>
 <rect x="18" y="80" width="118" height="46" rx="5" fill="#12A594" fill-opacity="0.1" stroke="#12A594" stroke-width="1.1"/>
-<text x="77" y="101" font-size="12" text-anchor="middle" fill="currentColor" font-family="var(--md-code-font,monospace)">Ship *ship</text>
+<text x="77" y="101" font-size="12" text-anchor="middle" fill="currentColor" font-family="var(--md-code-font,monospace)">Ship &#42;ship</text>
 <text x="77" y="117" font-size="9.5" text-anchor="middle" fill="currentColor" opacity="0.55">typed input</text>
 <line x1="136" y1="103" x2="192" y2="103" stroke="currentColor" stroke-opacity="0.5"/>
 <path d="M185,99 L192,103 L185,107" fill="none" stroke="currentColor" stroke-opacity="0.6"/>

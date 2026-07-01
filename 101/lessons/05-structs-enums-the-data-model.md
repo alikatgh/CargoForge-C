@@ -20,7 +20,7 @@ An **enum** is the form's drop-down menu. Rather than a free-text "output format
 <text x="40" y="104" font-size="11" fill="currentColor" opacity="0.8" font-family="var(--md-code-font,monospace)">float width</text><text x="198" y="104" font-size="11" text-anchor="end" fill="currentColor" opacity="0.6" font-family="var(--md-code-font,monospace)">20.0</text>
 <text x="40" y="128" font-size="11" fill="currentColor" opacity="0.8" font-family="var(--md-code-font,monospace)">int cargo_count</text><text x="198" y="128" font-size="11" text-anchor="end" fill="currentColor" opacity="0.6" font-family="var(--md-code-font,monospace)">3</text>
 <rect x="32" y="150" width="174" height="64" rx="4" fill="#12A594" fill-opacity="0.1" stroke="#12A594" stroke-opacity="0.5"/>
-<text x="40" y="172" font-size="11" fill="currentColor" opacity="0.85" font-family="var(--md-code-font,monospace)">Cargo *cargo</text>
+<text x="40" y="172" font-size="11" fill="currentColor" opacity="0.85" font-family="var(--md-code-font,monospace)">Cargo &#42;cargo</text>
 <text x="40" y="190" font-size="9" fill="currentColor" opacity="0.55">a pointer, not the data —</text>
 <text x="40" y="205" font-size="9" fill="currentColor" opacity="0.55">it points to the heap →</text>
 <circle cx="196" cy="183" r="4" fill="#12A594"/>
