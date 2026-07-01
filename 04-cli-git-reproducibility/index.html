@@ -1,0 +1,3569 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="From zero to systems & naval-architecture engineer, on a real codebase">
+      
+      
+      
+      
+        <link rel="prev" href="../03-types-control-flow-functions/">
+      
+      
+        <link rel="next" href="../lab-01-foundations/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>CLI, git, and reproducible builds - CargoForge-C 101</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/extra.css">
+    
+      <link rel="stylesheet" href="../assets/widgets/_core.css">
+    
+      <link rel="stylesheet" href="../assets/terms-popup.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="teal">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#cli-git-and-reproducible-builds" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="CargoForge-C 101" class="md-header__button md-logo" aria-label="CargoForge-C 101" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            CargoForge-C 101
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              CLI, git, and reproducible builds
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="teal"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="teal"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="CargoForge-C 101" class="md-nav__button md-logo" aria-label="CargoForge-C 101" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    CargoForge-C 101
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Welcome
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1 · Programming foundations (C)
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    1 · Programming foundations (C)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01-why-c-and-the-toolchain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Why C, and the toolchain
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../02-your-first-c-program/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Your first C program
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../03-types-control-flow-functions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Types, control flow, and functions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI, git, and reproducible builds
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI, git, and reproducible builds
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-mental-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The mental model 🧠
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-this-actually-means-plain-english" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What this actually means (plain English)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-shell-and-the-binary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The shell and the binary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-make-does" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What make does
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="What make does">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-compiler-flags" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The compiler flags
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#source-file-groups" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Source file groups
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-main-targets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The main targets
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#platform-detection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Platform detection
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#other-useful-targets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Other useful targets
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#git-basics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        git basics
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="git basics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#why-commit-messages-matter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why commit messages matter
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#branches-and-pull-requests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Branches and pull requests
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#why-deterministic-builds-matter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why deterministic builds matter
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#continuous-integration-ci" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Continuous Integration (CI)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Continuous Integration (CI)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#reading-the-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reading the workflow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-ci-cannot-replace" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What CI cannot replace
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#putting-it-together-a-complete-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Putting it together: a complete workflow
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recap
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#check-yourself" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Check yourself
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-01-foundations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 1 — Build and Run It
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2 · The C language in depth
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    2 · The C language in depth
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../05-structs-enums-the-data-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Structs, enums, and the data model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../06-the-preprocessor-and-headers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The preprocessor and headers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../07-strings-and-char-arrays/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Strings and char arrays
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../08-error-handling-without-exceptions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Error handling without exceptions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-02-c-in-depth/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 2 — Read the Data Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3 · Memory & pointers
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    3 · Memory & pointers
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../09-pointers-and-addresses/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pointers and addresses
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../10-the-stack-and-the-heap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The stack and the heap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../11-malloc-free-and-ownership/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    malloc, free, and ownership
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../12-arrays-buffers-and-bounds/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arrays, buffers, and bounds
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../13-memory-bugs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Memory bugs (the real ones)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-03-memory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 3 — Reproduce the Use-After-Free
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    4 · Build, test, reproduce
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    4 · Build, test, reproduce
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../14-make-and-cmake/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Make and CMake
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../15-unit-testing-in-c/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Unit testing in C
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../16-continuous-integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Continuous integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-04-build-test/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 4 - Run and extend the tests
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    5 · Naval architecture I — flotation
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    5 · Naval architecture I — flotation
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../17-buoyancy-and-archimedes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Buoyancy and Archimedes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../18-displacement-density-draft/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Displacement, density, and draft
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../19-the-box-hull-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The box-hull model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../20-the-hydrostatic-table/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The hydrostatic table
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-05-flotation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 5 — Compute a Draft by Hand
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    6 · Naval architecture II — stability
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    6 · Naval architecture II — stability
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../21-center-of-gravity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Center of gravity (KG)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../22-buoyancy-and-the-metacenter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The center of buoyancy and the metacenter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../23-gm-why-ships-self-right/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GM: why ships self-right
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../24-trim-and-heel/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trim and heel
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../25-free-surface-and-imo-criteria/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Free surface and the IMO criteria
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-06-stability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 6 — Compute GM, then break it
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    7 · Parsing & data
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    7 · Parsing & data
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../26-config-and-manifest-formats/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Config and manifest formats
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../27-tokenizing-and-parsing-in-c/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tokenizing and parsing in C
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../28-validation-and-robustness/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Validation and robustness
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../29-dangerous-goods-imdg-parsing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dangerous-goods (IMDG) parsing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-07-parsing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 7 — Break the parser (safely)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    8 · Algorithms — stowage & placement
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    8 · Algorithms — stowage & placement
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../30-the-stowage-problem/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The stowage problem
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../31-first-fit-decreasing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    First-Fit-Decreasing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../32-3d-bins-and-weight/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3D bins and weight limits
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../33-constraints-segregation-stackability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Constraints: segregation and stackability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-08-placement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 8 - Place cargo and trigger a violation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    9 · The stability engine in code
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    9 · The stability engine in code
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../34-the-analysis-module/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The analysis module
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../35-hydrostatic-interpolation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hydrostatic interpolation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../36-tanks-and-free-surface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tanks and free surface
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../37-longitudinal-strength/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Longitudinal strength
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-09-engine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 9 - Turn on a hydro table and a tank
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_11" >
+        
+          
+          <label class="md-nav__link" for="__nav_11" id="__nav_11_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    10 · Quality engineering
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    10 · Quality engineering
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../38-sanitizers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sanitizers (ASan/UBSan)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../39-static-analysis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Static analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../40-fuzzing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fuzzing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../41-coverage-and-benchmarks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Coverage and benchmarks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-10-quality/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 10 — The Quality Gate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_12" >
+        
+          
+          <label class="md-nav__link" for="__nav_12" id="__nav_12_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    11 · Shipping it
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    11 · Shipping it
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../42-the-cli-and-output-formats/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The CLI and output formats
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../43-the-library-and-public-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The library and public API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../44-the-json-rpc-server/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The JSON-RPC server
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../45-wasm-and-on-device/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WASM and on-device
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-11-shipping/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 11 - Link the library
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_13" >
+        
+          
+          <label class="md-nav__link" for="__nav_13" id="__nav_13_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    12 · Capstone & frontier
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    12 · Capstone & frontier
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../46-the-whole-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The whole pipeline, end to end
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../47-frontier-classed-software/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontier: classed stability software
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-12-capstone/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 12 — A Realistic Voyage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../glossary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Glossary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-mental-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The mental model 🧠
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-this-actually-means-plain-english" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What this actually means (plain English)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-shell-and-the-binary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The shell and the binary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-make-does" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What make does
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="What make does">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-compiler-flags" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The compiler flags
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#source-file-groups" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Source file groups
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-main-targets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The main targets
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#platform-detection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Platform detection
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#other-useful-targets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Other useful targets
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#git-basics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        git basics
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="git basics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#why-commit-messages-matter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why commit messages matter
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#branches-and-pull-requests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Branches and pull requests
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#why-deterministic-builds-matter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why deterministic builds matter
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#continuous-integration-ci" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Continuous Integration (CI)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Continuous Integration (CI)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#reading-the-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reading the workflow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-ci-cannot-replace" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What CI cannot replace
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#putting-it-together-a-complete-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Putting it together: a complete workflow
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recap
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#check-yourself" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Check yourself
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="cli-git-and-reproducible-builds">CLI, git, and reproducible builds<a class="headerlink" href="#cli-git-and-reproducible-builds" title="Permanent link">&para;</a></h1>
+<p>Every program you write eventually has to be compiled, versioned, tested, and shipped — in a way that anyone can reproduce exactly. This lesson walks through how CargoForge-C handles all three: the shell commands you use day-to-day, the <a href="https://github.com/alikatgh/CargoForge-C/blob/main/Makefile"><code>Makefile</code></a> that automates building, and the GitHub Actions workflow that re-runs those same steps on every change. Understanding this infrastructure is what separates "code that works on my machine" from code you can trust in production.</p>
+<h2 id="the-mental-model">The mental model 🧠<a class="headerlink" href="#the-mental-model" title="Permanent link">&para;</a></h2>
+<p>A reproducible build is a recipe so precise that any kitchen produces the <em>identical</em> cake. "Works on my machine" is the opposite — a recipe that says "bake until done," secretly depending on your oven, your altitude, your particular bag of flour.</p>
+<p>CargoForge removes the guesswork. <strong>Git</strong> is the lab notebook: every change stamped with who, when, and exactly what. The <strong>compiler flags</strong> pinned in the <a href="https://github.com/alikatgh/CargoForge-C/blob/main/Makefile"><code>Makefile</code></a> — <code>-std=c99 -D_POSIX_C_SOURCE=200809L</code> — are the exact oven temperature and bake time. Because the dialect of C and the library level are nailed down, the same source compiled on your laptop and on the CI runner produces a binary that behaves identically: a port authority's server computes the same GM you do.</p>
+<p>The payoff is <strong>trust</strong>. When a result looks wrong you can reproduce it exactly, walk the git history back to the commit that broke it, and know the fix is real — not an accident of one machine's environment.</p>
+<p><svg viewBox="0 0 600 220" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:560px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+<title>A reproducible build: identical inputs yield an identical binary anywhere</title>
+<desc>The same source at one git commit plus the same pinned compiler flags and toolchain, built on a laptop and on CI, produce byte-for-byte the same binary, verified by matching SHA-256 hashes.</desc>
+<rect x="16" y="40" width="190" height="44" rx="5" fill="#12A594" fill-opacity="0.1" stroke="#12A594" stroke-width="1.1"/>
+<text x="111" y="60" font-size="11" text-anchor="middle" fill="currentColor" font-family="var(--md-code-font,monospace)">source @ git a1b2c3d</text>
+<text x="111" y="76" font-size="9.5" text-anchor="middle" fill="currentColor" opacity="0.55">exact same commit</text>
+<rect x="16" y="132" width="190" height="44" rx="5" fill="#12A594" fill-opacity="0.1" stroke="#12A594" stroke-width="1.1"/>
+<text x="111" y="152" font-size="10.5" text-anchor="middle" fill="currentColor" font-family="var(--md-code-font,monospace)">-std=c99  -O2  -Wall</text>
+<text x="111" y="168" font-size="9.5" text-anchor="middle" fill="currentColor" opacity="0.55">pinned flags + toolchain</text>
+<rect x="266" y="36" width="120" height="46" rx="5" fill="currentColor" fill-opacity="0.05" stroke="currentColor" stroke-opacity="0.4"/>
+<text x="326" y="63" font-size="11.5" text-anchor="middle" fill="currentColor">your laptop</text>
+<rect x="266" y="134" width="120" height="46" rx="5" fill="currentColor" fill-opacity="0.05" stroke="currentColor" stroke-opacity="0.4"/>
+<text x="326" y="161" font-size="11.5" text-anchor="middle" fill="currentColor">CI runner</text>
+<line x1="206" y1="62" x2="264" y2="59" stroke="currentColor" stroke-opacity="0.45"/><path d="M257,55 L264,59 L257,63" fill="none" stroke="currentColor" stroke-opacity="0.55"/>
+<line x1="206" y1="154" x2="264" y2="157" stroke="currentColor" stroke-opacity="0.45"/><path d="M257,153 L264,157 L257,161" fill="none" stroke="currentColor" stroke-opacity="0.55"/>
+<line x1="206" y1="70" x2="264" y2="150" stroke="currentColor" stroke-opacity="0.16" stroke-dasharray="3 3"/>
+<line x1="206" y1="146" x2="264" y2="66" stroke="currentColor" stroke-opacity="0.16" stroke-dasharray="3 3"/>
+<line x1="386" y1="59" x2="452" y2="100" stroke="currentColor" stroke-opacity="0.45"/><path d="M445,97 L452,100 L446,105" fill="none" stroke="currentColor" stroke-opacity="0.55"/>
+<line x1="386" y1="157" x2="452" y2="116" stroke="currentColor" stroke-opacity="0.45"/><path d="M446,111 L452,116 L445,119" fill="none" stroke="currentColor" stroke-opacity="0.55"/>
+<rect x="454" y="84" width="132" height="48" rx="5" fill="#12A594" fill-opacity="0.12" stroke="#12A594" stroke-width="1.2"/>
+<text x="520" y="104" font-size="11.5" text-anchor="middle" fill="currentColor" font-family="var(--md-code-font,monospace)">cargoforge</text>
+<text x="520" y="120" font-size="9.5" text-anchor="middle" fill="#12A594">sha256 ✓ identical</text>
+</svg></p>
+<h2 id="what-this-actually-means-plain-english">What this actually means (plain English)<a class="headerlink" href="#what-this-actually-means-plain-english" title="Permanent link">&para;</a></h2>
+<p>No jargon — here's what the ideas in this lesson <em>actually</em> mean, and why they matter.</p>
+<ul>
+<li><strong>Subcommand</strong> = "the first word you give the program that tells it what job to do" — <code>./cargoforge optimize</code> picks the stowage-and-stability path, while <code>validate</code>, <code>info</code>, or <code>serve</code> each activate a completely different code path inside <code>main.c</code> and <code>cli.c</code>.</li>
+<li><strong>Makefile</strong> = "a recipe book that only cooks the dishes whose ingredients have changed" — instead of retyping the full <code>gcc</code> incantation for all ten source files, you run <code>make</code> and it timestamps each <code>.o</code> against its <code>.c</code>; only files that changed since last time are recompiled.</li>
+<li><strong>Compiler flags (<code>-std=c99 -D_POSIX_C_SOURCE=200809L</code>)</strong> = "a contract that locks the dialect of C the project speaks" — any machine with a conforming C99 compiler and a POSIX.1-2008 library will produce the same binary from the same source, which is why a stability calculation gives the same answer on a port authority's server as on your laptop.</li>
+<li><strong>Deterministic build</strong> = "the compiler, given the same inputs and flags, always produces bit-for-bit identical output" — CargoForge-C achieves this by pinning the C standard, the POSIX level, and writing every <code>.c</code> file by hand with no generated or time-dependent code, so the physics results never drift between environments.</li>
+<li><strong>git commit</strong> = "a permanent, labelled snapshot of exactly what the code looked like at one moment, plus a message explaining why" — the lesson uses the use-after-free fix (<code>fix: null cargo pointer on parse error</code>) as a concrete example of a commit message that tells the <em>why</em>, not just the <em>what</em>.</li>
+<li><strong>Continuous Integration (CI)</strong> = "a robot that rebuilds and smoke-tests your code on a clean machine every time you push" — the <code>.github/workflows/c-build.yml</code> workflow runs <code>make</code> and then <code>./cargoforge examples/...</code> on a fresh Ubuntu VM, so a change that only worked because of a leftover file on your laptop gets caught before it can reach <code>main</code>.</li>
+<li><strong><code>make test-asan</code></strong> = "rebuild everything with memory-error detectors switched on, then run the test suite" — AddressSanitizer and UBSan are the tools that catch the kind of heap-use-after-free bug described elsewhere in the course; the <code>clean</code> step inside the target is mandatory because sanitizer-compiled <code>.o</code> files cannot be mixed with ordinary ones.</li>
+</ul>
+<p><strong>Why it matters:</strong> if the build is not deterministic and the CI not clean, a stability number that looks correct on a developer's laptop can silently differ on the vessel's navigation system — and in cargo stowage, a wrong GM or free-surface calculation is a safety defect, not just a test failure.</p>
+<hr />
+<h2 id="the-shell-and-the-binary">The shell and the binary<a class="headerlink" href="#the-shell-and-the-binary" title="Permanent link">&para;</a></h2>
+<p>CargoForge-C compiles to a single executable called <code>cargoforge</code>. Once built, you run it from the terminal (also called a shell or command line). A shell is a text interface to your operating system: you type a command, press Enter, and the OS executes it.</p>
+<p>The most basic interaction looks like this:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>./cargoforge<span class="w"> </span>optimize<span class="w"> </span>examples/sample_ship.cfg<span class="w"> </span>examples/sample_cargo.txt
+</code></pre></div>
+<p>Breaking this down:</p>
+<ul>
+<li><code>./cargoforge</code> — the <code>./</code> prefix means "look in the current directory for a file named <code>cargoforge</code> and run it". Without <code>./</code>, the shell would search the system-wide <code>PATH</code> instead — a list of folders the shell always checks when you type a bare command name, which is how typing <code>make</code> or <code>git</code> works from anywhere without spelling out where those programs live.</li>
+<li><code>optimize</code> — a <strong>subcommand</strong>. CargoForge-C uses the same pattern as tools like <code>git</code> or <code>docker</code>: the first argument selects what the program does. Other subcommands are <code>validate</code>, <code>info</code>, <code>serve</code>, <code>version</code>, and <code>help</code>.</li>
+<li><a href="https://github.com/alikatgh/CargoForge-C/blob/main/examples/sample_ship.cfg"><code>examples/sample_ship.cfg</code></a> and <a href="https://github.com/alikatgh/CargoForge-C/blob/main/examples/sample_cargo.txt"><code>examples/sample_cargo.txt</code></a> — arguments to the subcommand: the ship configuration file and the cargo manifest.</li>
+</ul>
+<p>Other output formats are available via a flag:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>./cargoforge<span class="w"> </span>optimize<span class="w"> </span>examples/sample_ship.cfg<span class="w"> </span>examples/sample_cargo.txt<span class="w"> </span>--format<span class="w"> </span>json
+</code></pre></div>
+<p>Valid formats are <code>human</code> (default), <code>json</code>, <code>csv</code>, <code>table</code>, and <code>markdown</code>. The <code>json</code> format is what the HTTP server and library consumers receive.</p>
+<div class="admonition note">
+<p class="admonition-title">Stdin as input</p>
+<p>Both the ship config and cargo manifest parsers accept <code>"-"</code> as the filename, which means "read from standard input." This lets you pipe data without touching the filesystem:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>cat<span class="w"> </span>examples/sample_cargo.txt<span class="w"> </span><span class="p">|</span><span class="w"> </span>./cargoforge<span class="w"> </span>optimize<span class="w"> </span>examples/sample_ship.cfg<span class="w"> </span>-
+</code></pre></div></p>
+</div>
+<hr />
+<h2 id="what-make-does">What <code>make</code> does<a class="headerlink" href="#what-make-does" title="Permanent link">&para;</a></h2>
+<p>Compiling a C program by hand means invoking <code>gcc</code> with a list of source files, flags, and output names. For a project with ten source files and eight test binaries, that list becomes unmanageable — and you'd have to recompile everything even if only one file changed. <code>make</code> solves both problems.</p>
+<p>The <a href="https://github.com/alikatgh/CargoForge-C/blob/main/Makefile"><code>Makefile</code></a> at the root of CargoForge-C is a set of <strong>rules</strong>. Each rule says: "to produce target X, you need files Y and Z; if any of them are newer than X, run this command." <code>make</code> compares timestamps and only recompiles what changed.</p>
+<h3 id="the-compiler-flags">The compiler flags<a class="headerlink" href="#the-compiler-flags" title="Permanent link">&para;</a></h3>
+<p>Every object file and binary is compiled with the same flags, declared at the top of the <a href="https://github.com/alikatgh/CargoForge-C/blob/main/Makefile"><code>Makefile</code></a>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nv">CC</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>gcc
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="nv">CFLAGS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>-O3<span class="w"> </span>-Wall<span class="w"> </span>-Wextra<span class="w"> </span>-std<span class="o">=</span>c99<span class="w"> </span>-D_POSIX_C_SOURCE<span class="o">=</span>200809L<span class="w"> </span>-Iinclude
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="nv">LDFLAGS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>-lm
+</code></pre></div>
+<p>What each flag does:</p>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-O3</code></td>
+<td>Optimize aggressively for speed (three levels above none)</td>
+</tr>
+<tr>
+<td><code>-Wall -Wextra</code></td>
+<td>Enable a broad set of compiler warnings; warnings are treated as useful diagnostics</td>
+</tr>
+<tr>
+<td><code>-std=c99</code></td>
+<td>Require strict C99 conformance — no compiler-specific extensions</td>
+</tr>
+<tr>
+<td><code>-D_POSIX_C_SOURCE=200809L</code></td>
+<td>Expose POSIX.1-2008 functions (like <code>strtok_r</code>, <code>open_memstream</code>)</td>
+</tr>
+<tr>
+<td><code>-Iinclude</code></td>
+<td>Add the <code>include/</code> directory to the header search path</td>
+</tr>
+<tr>
+<td><code>-lm</code></td>
+<td>Link the math library (<code>libm</code>) for <code>sin</code>, <code>cos</code>, <code>atan</code>, etc.</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>-std=c99</code> and <code>-D_POSIX_C_SOURCE</code> flags together define a precise dialect of C. Any code that compiles under these flags will compile identically on any conforming C99 implementation — Linux, macOS, or Windows with a POSIX layer. That is what "portable" means in practice.</p>
+<h3 id="source-file-groups">Source file groups<a class="headerlink" href="#source-file-groups" title="Permanent link">&para;</a></h3>
+<p>The <a href="https://github.com/alikatgh/CargoForge-C/blob/main/Makefile"><code>Makefile</code></a> splits sources into two groups:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nv">LIB_SRCS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">$(</span>SRC_DIR<span class="k">)</span>/parser.c<span class="w"> </span><span class="k">$(</span>SRC_DIR<span class="k">)</span>/analysis.c<span class="w"> </span><span class="k">$(</span>SRC_DIR<span class="k">)</span>/placement_3d.c<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">           </span><span class="k">$(</span>SRC_DIR<span class="k">)</span>/constraints.c<span class="w"> </span><span class="k">$(</span>SRC_DIR<span class="k">)</span>/json_output.c<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">           </span><span class="k">$(</span>SRC_DIR<span class="k">)</span>/hydrostatics.c<span class="w"> </span><span class="k">$(</span>SRC_DIR<span class="k">)</span>/tanks.c<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">           </span><span class="k">$(</span>SRC_DIR<span class="k">)</span>/longitudinal_strength.c<span class="w"> </span><span class="k">$(</span>SRC_DIR<span class="k">)</span>/imdg.c<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">           </span><span class="k">$(</span>SRC_DIR<span class="k">)</span>/libcargoforge.c
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="nv">CLI_SRCS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">$(</span>SRC_DIR<span class="k">)</span>/main.c<span class="w"> </span><span class="k">$(</span>SRC_DIR<span class="k">)</span>/cli.c<span class="w"> </span><span class="k">$(</span>SRC_DIR<span class="k">)</span>/visualization.c<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">           </span><span class="k">$(</span>SRC_DIR<span class="k">)</span>/server.c
+</code></pre></div>
+<p><code>LIB_SRCS</code> is the pure engine — the stability physics, parser, placement algorithm, and public API. It has no <code>main()</code> function and no terminal output. <code>CLI_SRCS</code> is the thin shell that wraps it: argument parsing, output formatting, the HTTP server. This separation is intentional: the same <code>LIB_SRCS</code> are compiled into <code>libcargoforge.a</code> and <code>libcargoforge.dylib</code>/<code>.so</code> for use by other programs, without dragging in any CLI behaviour.</p>
+<h3 id="the-main-targets">The main targets<a class="headerlink" href="#the-main-targets" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nf">all</span><span class="o">:</span><span class="w"> </span><span class="k">$(</span><span class="nv">BUILD_DIR</span><span class="k">)</span> <span class="k">$(</span><span class="nv">TARGET</span><span class="k">)</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="nf">$(TARGET)</span><span class="o">:</span><span class="w"> </span><span class="k">$(</span><span class="nv">ALL_OBJS</span><span class="k">)</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">    </span><span class="k">$(</span>CC<span class="k">)</span><span class="w"> </span><span class="k">$(</span>CFLAGS<span class="k">)</span><span class="w"> </span>-o<span class="w"> </span><span class="k">$(</span>TARGET<span class="k">)</span><span class="w"> </span><span class="k">$(</span>ALL_OBJS<span class="k">)</span><span class="w"> </span><span class="k">$(</span>LDFLAGS<span class="k">)</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="nf">$(BUILD_DIR)/%.o</span><span class="o">:</span><span class="w"> </span><span class="k">$(</span><span class="nv">SRC_DIR</span><span class="k">)</span>/%.<span class="n">c</span> <span class="k">$(</span><span class="nv">HDRS</span><span class="k">)</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">    </span><span class="k">$(</span>CC<span class="k">)</span><span class="w"> </span><span class="k">$(</span>CFLAGS<span class="k">)</span><span class="w"> </span>-fPIC<span class="w"> </span>-c<span class="w"> </span>$&lt;<span class="w"> </span>-o<span class="w"> </span><span class="nv">$@</span>
+</code></pre></div>
+<p>The pattern rule <code>$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c</code> compiles any <code>.c</code> file in <code>src/</code> to a <code>.o</code> (object file) in <code>build/</code>. The <code>-fPIC</code> flag ("position-independent code") is required for shared libraries; it costs nothing for a binary.</p>
+<p>The <code>$(TARGET)</code> rule then <strong>links</strong> all the object files into the final executable. Linking is the step where all the separately compiled pieces are joined together and external libraries (like <code>-lm</code>) are resolved.</p>
+<h3 id="platform-detection">Platform detection<a class="headerlink" href="#platform-detection" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nv">UNAME</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="k">$(</span>shell<span class="w"> </span>uname<span class="w"> </span>-s<span class="k">)</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="cp">ifeq ($(UNAME),Darwin)</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">  </span><span class="nv">SHARED_EXT</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>dylib
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">  </span><span class="nv">SHARED_FLAGS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>-dynamiclib<span class="w"> </span>-install_name<span class="w"> </span>@rpath/libcargoforge.<span class="k">$(</span>SHARED_EXT<span class="k">)</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="cp">else</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">  </span><span class="nv">SHARED_EXT</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>so
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">  </span><span class="nv">SHARED_FLAGS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>-shared<span class="w"> </span>-Wl,-soname,libcargoforge.<span class="k">$(</span>SHARED_EXT<span class="k">)</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="cp">endif</span>
+</code></pre></div>
+<p>macOS uses <code>.dylib</code> for shared libraries; Linux uses <code>.so</code>. The <a href="https://github.com/alikatgh/CargoForge-C/blob/main/Makefile"><code>Makefile</code></a> queries the OS at build time with <code>$(shell uname -s)</code> and sets the right extension automatically. This is a simple but real example of cross-platform portability handled in the build system rather than the source code.</p>
+<h3 id="other-useful-targets">Other useful targets<a class="headerlink" href="#other-useful-targets" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Target</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>make</code></td>
+<td>Build <code>cargoforge</code> (the default <code>all</code> target)</td>
+</tr>
+<tr>
+<td><code>make lib</code></td>
+<td>Build <code>libcargoforge.a</code> and the shared library only</td>
+</tr>
+<tr>
+<td><code>make test</code></td>
+<td>Build and run all 8 test binaries</td>
+</tr>
+<tr>
+<td><code>make test-asan</code></td>
+<td>Rebuild with AddressSanitizer + UBSan, then run tests</td>
+</tr>
+<tr>
+<td><code>make test-valgrind</code></td>
+<td>Run each test binary under Valgrind memory checker</td>
+</tr>
+<tr>
+<td><code>make fuzz</code></td>
+<td>Run the random-input fuzzer (<a href="https://github.com/alikatgh/CargoForge-C/blob/main/scripts/fuzz.sh"><code>scripts/fuzz.sh</code></a>)</td>
+</tr>
+<tr>
+<td><code>make clean</code></td>
+<td>Delete <code>build/</code>, the binary, libs, and all test binaries</td>
+</tr>
+<tr>
+<td><code>make install</code></td>
+<td>Copy binary, libs, and header to <code>/usr/local</code> (configurable via <code>PREFIX</code>)</td>
+</tr>
+<tr>
+<td><code>make validate</code></td>
+<td>Run the DNV-SE-0475 benchmark vessel validation</td>
+</tr>
+<tr>
+<td><code>make wasm</code></td>
+<td>Compile to WebAssembly with Emscripten (<code>emcc</code> required)</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition tip">
+<p class="admonition-title">Always run <code>make clean</code> before a sanitizer build</p>
+<p>The <code>test-asan</code> target does this for you — notice the rule: <code>test-asan: clean all test</code>. This is because object files compiled without sanitizer flags cannot be mixed with ones compiled with them. A partial rebuild would silently skip the sanitizer on older files.</p>
+</div>
+<hr />
+<h2 id="git-basics">git basics<a class="headerlink" href="#git-basics" title="Permanent link">&para;</a></h2>
+<p><code>git</code> is a version control system — a tool that keeps a complete, searchable history of every change ever made to a project, so nothing is ever truly lost and you can always see who changed what and when. It records every change to your code as a <strong>commit</strong> — a snapshot with a unique ID (a 40-character hash), a message, an author, and a timestamp. A collection of commits forms a <strong>repository</strong>.</p>
+<p>The most important commands:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>git<span class="w"> </span>status<span class="w">          </span><span class="c1"># what files have changed since the last commit?</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>git<span class="w"> </span>diff<span class="w">            </span><span class="c1"># what exactly changed in those files?</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>git<span class="w"> </span>add<span class="w"> </span>src/parser.c<span class="w">  </span><span class="c1"># stage a file (mark it for inclusion in the next commit)</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;fix: null-out cargo pointer on parse error&quot;</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>git<span class="w"> </span>log<span class="w"> </span>--oneline<span class="w">   </span><span class="c1"># one-line summary of recent commits</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>git<span class="w"> </span>push<span class="w">            </span><span class="c1"># send commits to the remote repository (GitHub)</span>
+</code></pre></div>
+<h3 id="why-commit-messages-matter">Why commit messages matter<a class="headerlink" href="#why-commit-messages-matter" title="Permanent link">&para;</a></h3>
+<p>A commit message is a permanent record of <em>why</em> a change was made. The fix covered in <a href="../13-memory-bugs/">Lesson 13</a> — nulling out <code>ship-&gt;cargo</code> after freeing it to prevent a heap-use-after-free — belongs in a commit message, not just a code comment. Future developers (including your future self) will read it and understand the intent without reconstructing it from the diff.</p>
+<p>A common convention: start with a short prefix that classifies the change. For example:
+- <code>fix:</code> — a bug fix
+- <code>feat:</code> — a new feature
+- <code>test:</code> — adding or changing tests
+- <code>docs:</code> — documentation only</p>
+<h3 id="branches-and-pull-requests">Branches and pull requests<a class="headerlink" href="#branches-and-pull-requests" title="Permanent link">&para;</a></h3>
+<p>When you want to work on a new feature or a fix without disturbing the main history, you create a <strong>branch</strong> — a parallel line of commits. When the work is ready, you open a <strong>pull request</strong> (PR) on GitHub, which asks for the branch to be merged into <code>main</code>. This is where CI runs (see next section).</p>
+<hr />
+<h2 id="why-deterministic-builds-matter">Why deterministic builds matter<a class="headerlink" href="#why-deterministic-builds-matter" title="Permanent link">&para;</a></h2>
+<p>"Deterministic" means: given the same source code and the same flags, the compiler always produces the same binary. CargoForge-C achieves this by:</p>
+<ol>
+<li><strong>Pinning the C standard.</strong> <code>-std=c99</code> excludes any GCC-specific behaviour that might vary between versions.</li>
+<li><strong>Explicit POSIX level.</strong> <code>-D_POSIX_C_SOURCE=200809L</code> is the same constant on any POSIX-conformant system. If this were unset, different Linux distributions might expose different sets of functions.</li>
+<li><strong>No generated code.</strong> There is no code-generation step — every <code>.c</code> file is hand-written and committed. Nothing in the build is random or time-dependent.</li>
+</ol>
+<p>This matters for safety-critical software. If a stability calculation gives a different answer on the port authority's server than on your laptop, you cannot trust either. Determinism is the foundation of correctness.</p>
+<hr />
+<h2 id="continuous-integration-ci">Continuous Integration (CI)<a class="headerlink" href="#continuous-integration-ci" title="Permanent link">&para;</a></h2>
+<p>Continuous Integration (CI) means: every time someone pushes code or opens a pull request, an automated system checks whether the code still builds and passes tests. If it does not, the PR is blocked.</p>
+<p>CargoForge-C uses GitHub Actions. The workflow is defined in <code>.github/workflows/c-build.yml</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">C/C++ CI</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="nt">on</span><span class="p">:</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">  </span><span class="nt">push</span><span class="p">:</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">    </span><span class="nt">branches</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="w"> </span><span class="s">&quot;main&quot;</span><span class="w"> </span><span class="p p-Indicator">]</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="w">  </span><span class="nt">pull_request</span><span class="p">:</span>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="w">    </span><span class="nt">branches</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="w"> </span><span class="s">&quot;main&quot;</span><span class="w"> </span><span class="p p-Indicator">]</span>
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="nt">jobs</span><span class="p">:</span>
+<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a><span class="w">  </span><span class="nt">build</span><span class="p">:</span>
+<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a><span class="w">    </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span>
+<a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>
+<a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a><span class="w">    </span><span class="nt">steps</span><span class="p">:</span>
+<a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Check out code</span>
+<a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a><span class="w">        </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/checkout@v4</span>
+<a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a>
+<a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Compile the project</span>
+<a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a><span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">make</span>
+<a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a>
+<a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Run a basic test</span>
+<a id="__codelineno-8-21" name="__codelineno-8-21" href="#__codelineno-8-21"></a><span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./cargoforge examples/sample_ship.cfg examples/sample_cargo.txt</span>
+</code></pre></div>
+<h3 id="reading-the-workflow">Reading the workflow<a class="headerlink" href="#reading-the-workflow" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong><code>on:</code></strong> — when to run. This workflow runs on every push to <code>main</code> and on every PR that targets <code>main</code>.</li>
+<li><strong><code>jobs: build:</code></strong> — a single job named <code>build</code>. A job is a sequence of steps that runs on one machine.</li>
+<li><strong><code>runs-on: ubuntu-latest</code></strong> — GitHub provides a fresh Ubuntu virtual machine for each run. "Fresh" matters: the machine has no state from previous runs, so if something only works because a file was left over from last time, CI will catch it.</li>
+<li><strong><code>actions/checkout@v4</code></strong> — a pre-built action that clones the repository into the VM.</li>
+<li><strong><code>run: make</code></strong> — exactly the same command you type locally. If the compiler flags, source list, or any header has a problem, this step fails and the PR is blocked.</li>
+<li><strong><code>run: ./cargoforge examples/sample_ship.cfg examples/sample_cargo.txt</code></strong> — a smoke test: run the binary on the sample files and verify it exits cleanly (exit code 0). A non-zero exit code fails the step.</li>
+</ul>
+<h3 id="what-ci-cannot-replace">What CI cannot replace<a class="headerlink" href="#what-ci-cannot-replace" title="Permanent link">&para;</a></h3>
+<p>The CI workflow above is a minimal smoke test — it verifies compilation and a basic end-to-end run, but it does not run the eight unit test binaries (<code>make test</code>), the memory-safety suite (<code>make test-asan</code>), or the benchmark validation (<code>make validate</code>). Those are available locally and can be added to the workflow as additional steps. The lesson: CI is only as thorough as the commands you put in it.</p>
+<div class="admonition warning">
+<p class="admonition-title">The environment is always clean</p>
+<p>Local development accumulates state: cached binaries, leftover files, environment variables set in your shell profile. CI starts clean every time. A build that passes locally but fails in CI almost always means the local build relied on something not committed to the repository — a missing <code>make clean</code>, an untracked file, or a system library that is not standard.</p>
+</div>
+<hr />
+<h2 id="putting-it-together-a-complete-workflow">Putting it together: a complete workflow<a class="headerlink" href="#putting-it-together-a-complete-workflow" title="Permanent link">&para;</a></h2>
+<p>Here is what happens from a code change to a merged PR:</p>
+<ol>
+<li>You edit <a href="https://github.com/alikatgh/CargoForge-C/blob/main/src/parser.c"><code>src/parser.c</code></a> to fix a bug.</li>
+<li><code>make test-asan</code> — rebuild with sanitizers, run all 8 tests. Fix any failures.</li>
+<li><code>git add src/parser.c</code> — stage the changed file only.</li>
+<li><code>git commit -m "fix: null cargo pointer on parse error to prevent UAF"</code> — commit with a clear message.</li>
+<li><code>git push origin my-fix-branch</code> — push to GitHub.</li>
+<li>Open a pull request. GitHub Actions automatically starts the CI job.</li>
+<li>CI runs <code>make</code> then <code>./cargoforge examples/...</code> on a clean Ubuntu VM.</li>
+<li>If both steps pass, the PR shows a green check. A reviewer can then merge it to <code>main</code>.</li>
+</ol>
+<hr />
+<h2 id="recap">Recap<a class="headerlink" href="#recap" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>cargoforge</code> is invoked as <code>./cargoforge &lt;subcommand&gt; &lt;ship_cfg&gt; &lt;cargo_manifest&gt;</code>, with optional <code>--format</code> for output style.</li>
+<li>The <a href="https://github.com/alikatgh/CargoForge-C/blob/main/Makefile"><code>Makefile</code></a> encodes the complete build recipe: compiler, flags, source groups, test binaries, and platform detection. <code>make</code> only recompiles what changed.</li>
+<li><code>-std=c99 -D_POSIX_C_SOURCE=200809L</code> pins the language dialect exactly, making the build portable and deterministic across systems.</li>
+<li><code>git</code> records every change as a committed snapshot with a message; branches and pull requests gate changes through review and CI.</li>
+<li>The GitHub Actions workflow in <code>.github/workflows/c-build.yml</code> re-runs <code>make</code> and a smoke test on a clean Ubuntu VM on every push and PR, catching regressions before they reach <code>main</code>.</li>
+<li>CI is only as thorough as its step list — <code>make test</code>, <code>make test-asan</code>, and <code>make validate</code> are available but must be added explicitly to gain their protection in CI.</li>
+</ul>
+<h2 id="check-yourself">Check yourself<a class="headerlink" href="#check-yourself" title="Permanent link">&para;</a></h2>
+<details class="question">
+<summary>Why does pinning <code>-std=c99 -D_POSIX_C_SOURCE=200809L</code> matter for reproducibility, specifically?</summary>
+<p>It locks the exact C dialect and POSIX feature level the code assumes. Any machine with a conforming C99 compiler and POSIX.1-2008 library then produces the same behaviour from the same source — a stability calculation gives the same answer on a port authority's server as on your laptop.</p>
+</details>
+<details class="question">
+<summary>What does a Makefile pattern rule buy you over writing one compile recipe per source file?</summary>
+<p>One rule like <code>$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c $(HDRS)</code> covers every current and future source file with a single wildcard recipe — add a fifteenth <code>.c</code> file tomorrow and it is built with zero new Makefile code.</p>
+</details>
+<p><em>Next: <a href="../lab-01-foundations/">Lab 1 — Build and Run It</a>.</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../03-types-control-flow-functions/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Types, control flow, and functions">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Types, control flow, and functions
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../lab-01-foundations/" class="md-footer__link md-footer__link--next" aria-label="Next: Lab 1 — Build and Run It">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Lab 1 — Build and Run It
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.top", "navigation.tracking", "navigation.footer", "toc.follow", "content.code.copy", "search.suggest", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../assets/sidebar-toggle.js"></script>
+      
+        <script src="../assets/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+        <script src="../assets/terms-data.js"></script>
+      
+        <script src="../assets/terms-popup.js"></script>
+      
+        <script src="../assets/widgets/_core.js"></script>
+      
+        <script src="../assets/widgets/cg-balance-beam.js"></script>
+      
+        <script src="../assets/widgets/gm-stability-explorer.js"></script>
+      
+        <script src="../assets/widgets/free-surface-explorer.js"></script>
+      
+        <script src="../assets/widgets/hydro-interpolation-explorer.js"></script>
+      
+        <script src="../assets/widgets/ffd-stepper.js"></script>
+      
+        <script src="../assets/widgets/malloc-lifecycle-stepper.js"></script>
+      
+        <script src="../assets/widgets/tokenizer-playground.js"></script>
+      
+        <script src="../assets/widgets/asan-toggle-demo.js"></script>
+      
+    
+  </body>
+</html>

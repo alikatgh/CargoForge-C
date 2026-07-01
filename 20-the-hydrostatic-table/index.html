@@ -1,0 +1,3395 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="From zero to systems & naval-architecture engineer, on a real codebase">
+      
+      
+      
+      
+        <link rel="prev" href="../19-the-box-hull-model/">
+      
+      
+        <link rel="next" href="../lab-05-flotation/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>The hydrostatic table - CargoForge-C 101</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/extra.css">
+    
+      <link rel="stylesheet" href="../assets/widgets/_core.css">
+    
+      <link rel="stylesheet" href="../assets/terms-popup.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="teal">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#the-hydrostatic-table" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="CargoForge-C 101" class="md-header__button md-logo" aria-label="CargoForge-C 101" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            CargoForge-C 101
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              The hydrostatic table
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="teal"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="teal"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="CargoForge-C 101" class="md-nav__button md-logo" aria-label="CargoForge-C 101" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    CargoForge-C 101
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Welcome
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1 · Programming foundations (C)
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    1 · Programming foundations (C)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01-why-c-and-the-toolchain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Why C, and the toolchain
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../02-your-first-c-program/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Your first C program
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../03-types-control-flow-functions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Types, control flow, and functions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../04-cli-git-reproducibility/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI, git, and reproducible builds
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-01-foundations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 1 — Build and Run It
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2 · The C language in depth
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    2 · The C language in depth
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../05-structs-enums-the-data-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Structs, enums, and the data model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../06-the-preprocessor-and-headers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The preprocessor and headers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../07-strings-and-char-arrays/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Strings and char arrays
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../08-error-handling-without-exceptions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Error handling without exceptions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-02-c-in-depth/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 2 — Read the Data Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3 · Memory & pointers
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    3 · Memory & pointers
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../09-pointers-and-addresses/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pointers and addresses
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../10-the-stack-and-the-heap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The stack and the heap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../11-malloc-free-and-ownership/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    malloc, free, and ownership
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../12-arrays-buffers-and-bounds/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arrays, buffers, and bounds
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../13-memory-bugs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Memory bugs (the real ones)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-03-memory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 3 — Reproduce the Use-After-Free
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    4 · Build, test, reproduce
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    4 · Build, test, reproduce
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../14-make-and-cmake/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Make and CMake
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../15-unit-testing-in-c/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Unit testing in C
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../16-continuous-integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Continuous integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-04-build-test/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 4 - Run and extend the tests
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    5 · Naval architecture I — flotation
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    5 · Naval architecture I — flotation
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../17-buoyancy-and-archimedes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Buoyancy and Archimedes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../18-displacement-density-draft/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Displacement, density, and draft
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../19-the-box-hull-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The box-hull model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The hydrostatic table
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The hydrostatic table
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-mental-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The mental model 🧠
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-this-actually-means-plain-english" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What this actually means (plain English)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#why-the-box-hull-model-is-only-an-approximation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why the box-hull model is only an approximation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-the-csv-columns-mean" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What the CSV columns mean
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tpc-and-mtc-what-they-are-for" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TPC and MTC — what they are for
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reading-and-validating-the-table-in-c" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reading and validating the table in C
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#interpolation-from-displacement-to-all-other-quantities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Interpolation: from displacement to all other quantities
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Interpolation: from displacement to all other quantities">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#forward-draft-everything-else" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Forward: draft → everything else
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inverse-displacement-draft" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inverse: displacement → draft
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-the-table-changes-the-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How the table changes the analysis
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#connecting-the-table-to-your-ship-config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Connecting the table to your ship config
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recap
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#check-yourself" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Check yourself
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-05-flotation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 5 — Compute a Draft by Hand
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    6 · Naval architecture II — stability
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    6 · Naval architecture II — stability
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../21-center-of-gravity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Center of gravity (KG)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../22-buoyancy-and-the-metacenter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The center of buoyancy and the metacenter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../23-gm-why-ships-self-right/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GM: why ships self-right
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../24-trim-and-heel/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trim and heel
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../25-free-surface-and-imo-criteria/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Free surface and the IMO criteria
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-06-stability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 6 — Compute GM, then break it
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    7 · Parsing & data
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    7 · Parsing & data
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../26-config-and-manifest-formats/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Config and manifest formats
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../27-tokenizing-and-parsing-in-c/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tokenizing and parsing in C
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../28-validation-and-robustness/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Validation and robustness
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../29-dangerous-goods-imdg-parsing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dangerous-goods (IMDG) parsing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-07-parsing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 7 — Break the parser (safely)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    8 · Algorithms — stowage & placement
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    8 · Algorithms — stowage & placement
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../30-the-stowage-problem/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The stowage problem
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../31-first-fit-decreasing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    First-Fit-Decreasing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../32-3d-bins-and-weight/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3D bins and weight limits
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../33-constraints-segregation-stackability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Constraints: segregation and stackability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-08-placement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 8 - Place cargo and trigger a violation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    9 · The stability engine in code
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    9 · The stability engine in code
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../34-the-analysis-module/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The analysis module
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../35-hydrostatic-interpolation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hydrostatic interpolation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../36-tanks-and-free-surface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tanks and free surface
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../37-longitudinal-strength/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Longitudinal strength
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-09-engine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 9 - Turn on a hydro table and a tank
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_11" >
+        
+          
+          <label class="md-nav__link" for="__nav_11" id="__nav_11_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    10 · Quality engineering
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    10 · Quality engineering
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../38-sanitizers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sanitizers (ASan/UBSan)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../39-static-analysis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Static analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../40-fuzzing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fuzzing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../41-coverage-and-benchmarks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Coverage and benchmarks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-10-quality/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 10 — The Quality Gate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_12" >
+        
+          
+          <label class="md-nav__link" for="__nav_12" id="__nav_12_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    11 · Shipping it
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    11 · Shipping it
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../42-the-cli-and-output-formats/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The CLI and output formats
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../43-the-library-and-public-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The library and public API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../44-the-json-rpc-server/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The JSON-RPC server
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../45-wasm-and-on-device/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WASM and on-device
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-11-shipping/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 11 - Link the library
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_13" >
+        
+          
+          <label class="md-nav__link" for="__nav_13" id="__nav_13_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    12 · Capstone & frontier
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    12 · Capstone & frontier
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../46-the-whole-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The whole pipeline, end to end
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../47-frontier-classed-software/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontier: classed stability software
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-12-capstone/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 12 — A Realistic Voyage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../glossary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Glossary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-mental-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The mental model 🧠
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-this-actually-means-plain-english" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What this actually means (plain English)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#why-the-box-hull-model-is-only-an-approximation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why the box-hull model is only an approximation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-the-csv-columns-mean" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What the CSV columns mean
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tpc-and-mtc-what-they-are-for" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TPC and MTC — what they are for
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reading-and-validating-the-table-in-c" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reading and validating the table in C
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#interpolation-from-displacement-to-all-other-quantities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Interpolation: from displacement to all other quantities
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Interpolation: from displacement to all other quantities">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#forward-draft-everything-else" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Forward: draft → everything else
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inverse-displacement-draft" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inverse: displacement → draft
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-the-table-changes-the-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How the table changes the analysis
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#connecting-the-table-to-your-ship-config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Connecting the table to your ship config
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recap
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#check-yourself" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Check yourself
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="the-hydrostatic-table">The hydrostatic table<a class="headerlink" href="#the-hydrostatic-table" title="Permanent link">&para;</a></h1>
+<p>A ship is not a rectangular box, and treating it as one introduces errors that grow quickly as loading changes. This lesson introduces the hydrostatic table — a pre-computed dataset from a ship's stability booklet — and shows exactly how CargoForge-C reads, validates, and interpolates it to replace the box-hull fallback with real naval-architecture data.</p>
+<h2 id="the-mental-model">The mental model 🧠<a class="headerlink" href="#the-mental-model" title="Permanent link">&para;</a></h2>
+<p>A hydrostatic table is the ship's body measured once and written down, so the program never has to guess. Where the box-hull model uses fixed constants (0.75, 0.53), the table gives the <em>real</em> draft, KB, and BM at every depth — the shipyard measured the actual hull and recorded one row per draft. The numbers it captures are stubbornly non-linear: BM, for instance, plunges from about 12 m at a 2 m draft to under 1 m at 10 m, because the submerged volume grows far faster than the waterplane widens — exactly the curve fixed constants cannot follow.</p>
+<p>The table is used <em>backwards</em> from how it reads. You don't start by knowing the draft; you know the total weight. <code>hydro_draft_from_displacement</code> takes that weight, finds the two rows that bracket it, and interpolates the draft between them. That only works if the rows are in strictly ascending order — so <code>parse_hydro_table</code> rejects any table that is out of sequence rather than returning a quietly wrong answer.</p>
+<p><svg viewBox="0 0 600 230" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:560px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+<title>Reading a hydrostatic table backwards: from known weight to draft by interpolation</title>
+<desc>The table lists displacement, KB, and BM at each draft. In practice you know the total weight, not the draft, so the code finds the two rows that bracket the weight and interpolates the draft between them. The rows must be in strictly ascending order.</desc>
+<rect x="16" y="96" width="104" height="44" rx="5" fill="#12A594" fill-opacity="0.1" stroke="#12A594" stroke-width="1.1"/>
+<text x="68" y="116" font-size="11" text-anchor="middle" fill="currentColor" font-family="var(--md-code-font,monospace)">W = 8400 t</text>
+<text x="68" y="131" font-size="9" text-anchor="middle" fill="currentColor" opacity="0.6">known weight</text>
+<line x1="120" y1="118" x2="156" y2="118" stroke="#12A594" stroke-opacity="0.7"/><path d="M149,114 L156,118 L149,122" fill="none" stroke="#12A594"/>
+<g font-family="var(--md-code-font,monospace)" font-size="10.5" text-anchor="middle">
+<rect x="158" y="34" width="300" height="28" fill="currentColor" fill-opacity="0.06"/>
+<text x="196" y="53" fill="currentColor" opacity="0.8">draft</text><text x="276" y="53" fill="currentColor" opacity="0.8">displ</text><text x="356" y="53" fill="currentColor" opacity="0.8">KB</text><text x="424" y="53" fill="currentColor" opacity="0.8">BM</text>
+<text x="196" y="79" fill="currentColor" opacity="0.7">2.0</text><text x="276" y="79" fill="currentColor" opacity="0.7">3200</text><text x="356" y="79" fill="currentColor" opacity="0.7">1.06</text><text x="424" y="79" fill="currentColor" opacity="0.7">12.1</text>
+<text x="196" y="105" fill="currentColor" opacity="0.7">4.0</text><text x="276" y="105" fill="currentColor" opacity="0.7">6500</text><text x="356" y="105" fill="currentColor" opacity="0.7">2.12</text><text x="424" y="105" fill="currentColor" opacity="0.7">4.30</text>
+<rect x="158" y="114" width="300" height="26" fill="#12A594" fill-opacity="0.12"/><text x="196" y="131" fill="currentColor">6.0</text><text x="276" y="131" fill="currentColor">8000</text><text x="356" y="131" fill="currentColor">3.18</text><text x="424" y="131" fill="currentColor">2.05</text>
+<rect x="158" y="140" width="300" height="26" fill="#12A594" fill-opacity="0.12"/><text x="196" y="157" fill="currentColor">8.0</text><text x="276" y="157" fill="currentColor">11000</text><text x="356" y="157" fill="currentColor">4.24</text><text x="424" y="157" fill="currentColor">1.32</text>
+</g>
+<rect x="158" y="34" width="300" height="132" fill="none" stroke="currentColor" stroke-opacity="0.35"/>
+<line x1="232" y1="34" x2="232" y2="166" stroke="currentColor" stroke-opacity="0.18"/>
+<line x1="320" y1="34" x2="320" y2="166" stroke="currentColor" stroke-opacity="0.18"/>
+<line x1="392" y1="34" x2="392" y2="166" stroke="currentColor" stroke-opacity="0.18"/>
+<path d="M464,114 L476,114 L476,166 L464,166" fill="none" stroke="#12A594" stroke-opacity="0.7"/>
+<text x="498" y="136" font-size="9.5" fill="#12A594">8400 t</text>
+<text x="498" y="148" font-size="9.5" fill="#12A594">sits here</text>
+<text x="300" y="192" font-size="10.5" text-anchor="middle" fill="currentColor" opacity="0.8">interpolate between the two rows → draft ≈ 6.3 m</text>
+<text x="300" y="214" font-size="9.5" text-anchor="middle" fill="#D05663" opacity="0.85">rows must be strictly ascending, or parse_hydro_table rejects the table</text>
+</svg></p>
+<h2 id="what-this-actually-means-plain-english">What this actually means (plain English)<a class="headerlink" href="#what-this-actually-means-plain-english" title="Permanent link">&para;</a></h2>
+<p>No jargon — here's what the ideas in this lesson <em>actually</em> mean, and why they matter.</p>
+<ul>
+<li><strong>Hydrostatic table</strong> = "a lookup table that tells the program exactly how the ship's body behaves at every depth" — rather than guessing with fixed constants (0.75, 0.53, 0.85), <code>perform_analysis</code> consults this table so every draft, KB, and BM value matches the real hull geometry the shipyard measured.</li>
+<li><strong>KB (centre of buoyancy height)</strong> = "how high the average push of water sits below the ship's centre" — as the ship sinks deeper, this point rises, and the table records that non-linear climb row by row instead of approximating it as <code>0.53 × draft</code>.</li>
+<li><strong>BM (metacentric radius)</strong> = "a measure of how wide the waterplane is compared to how much water is displaced" — computed from the formula <span class="arithmatex">\(BM = I_T / \nabla\)</span>; it falls dramatically as draft increases (12.14 m at 2 m draft down to 0.96 m at 10 m draft) because the submerged volume grows faster than the waterplane width.</li>
+<li><strong>TPC (tonnes per centimetre)</strong> = "how many tonnes you must load or unload to move the waterline by 1 cm" — <code>parse_hydro_table</code> reads this per-row so <code>perform_analysis</code> can translate a change in cargo weight into a precise change in draft.</li>
+<li><strong><code>hydro_draft_from_displacement</code></strong> = "the function that works backwards: given total weight, find the resulting draft" — this is the direction the analysis always runs in practice (you know the cargo, not the draft), and it requires the table rows to be in strictly ascending order so the binary search finds the right bracket.</li>
+<li><strong><code>parse_hydro_table</code> ascending-order check</strong> = "a guard that rejects any table whose rows are out of sequence" — a reversed or duplicate draft row would make the interpolation return a silently wrong answer, so <code>hydrostatics.c</code> returns <code>-1</code> immediately if order is violated.</li>
+<li><strong><code>hydro_table_used</code> flag</strong> = "a field in <code>AnalysisResult</code> that records whether real table data or the box-hull fallback was used" — checking this in the JSON output is the only reliable way to confirm that <code>perform_analysis</code> reached the table path rather than the approximate constants.</li>
+</ul>
+<p><strong>Why it matters:</strong> if the box-hull constants are used on a vessel with unusual underwater form, GM can be off by metres — enough to classify a stable ship as unsafe or vice versa. And if the table rows are accepted out of order, every interpolation downstream silently produces wrong drafts and wrong stability numbers with no error to catch it.</p>
+<hr />
+<h2 id="why-the-box-hull-model-is-only-an-approximation">Why the box-hull model is only an approximation<a class="headerlink" href="#why-the-box-hull-model-is-only-an-approximation" title="Permanent link">&para;</a></h2>
+<p>When no table is available, <code>perform_analysis</code> in <code>analysis.c</code> falls back to a simplified box hull:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>draft = displaced_volume / (L × B × C_b)       where C_b = 0.75
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>KB    = 0.53 × draft
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>BM    = (L × B³ / 12 × C_wp) / displaced_volume   where C_wp = 0.85
+</code></pre></div>
+<p>These constants — 0.75 for the block coefficient, 0.53 for the KB fraction, 0.85 for the waterplane coefficient — are reasonable ballpark figures for a generic cargo ship at moderate loading. But a real vessel's underwater form changes shape as it sinks deeper into the water. At light displacement the waterplane area may be quite different from what it is at full load; the centre of buoyancy shifts non-linearly; and the metacentric radius BM depends on the actual second moment of waterplane area, not a global constant.</p>
+<p>A hydrostatic table records all of these values at a series of evenly-spaced drafts, calculated once (by the shipyard's naval architects) from the actual hull geometry. For any intermediate draft, the program interpolates. The result can be accurate to within fractions of a centimetre — the same figures a chief officer would read from the paper stability booklet on the bridge.</p>
+<hr />
+<h2 id="what-the-csv-columns-mean">What the CSV columns mean<a class="headerlink" href="#what-the-csv-columns-mean" title="Permanent link">&para;</a></h2>
+<p>The file <a href="https://github.com/alikatgh/CargoForge-C/blob/main/examples/sample_hydro.csv"><code>examples/sample_hydro.csv</code></a> ships with CargoForge-C as a worked example for a 150 m × 25 m general cargo vessel (block coefficient 0.75):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a># Hydrostatic table for MV Example (150m x 25m general cargo vessel)
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a># Derived from typical cargo ship characteristics with Cb=0.75
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a># draft_m,displacement_t,KM_m,KB_m,BM_m,TPC_t_cm,MTC_t_m,waterplane_m2,LCB_m
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>2.0,2306,13.20,1.06,12.14,9.60,185.0,3375,1.5
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>3.0,3544,9.92,1.58,8.34,10.20,195.0,3570,1.2
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>...
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>10.0,13502,6.10,5.14,0.96,12.25,265.0,4070,-0.4
+</code></pre></div>
+<p>Each row is one draught. The nine columns are:</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Symbol</th>
+<th>Unit</th>
+<th>What it describes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>draft_m</code></td>
+<td>T</td>
+<td>m</td>
+<td>Mean draught from keel</td>
+</tr>
+<tr>
+<td><code>displacement_t</code></td>
+<td>Δ</td>
+<td>tonnes</td>
+<td>Total mass of water displaced</td>
+</tr>
+<tr>
+<td><code>KM_m</code></td>
+<td>KM</td>
+<td>m</td>
+<td>Height of transverse metacentre above keel</td>
+</tr>
+<tr>
+<td><code>KB_m</code></td>
+<td>KB</td>
+<td>m</td>
+<td>Height of centre of buoyancy above keel</td>
+</tr>
+<tr>
+<td><code>BM_m</code></td>
+<td>BM</td>
+<td>m</td>
+<td>Transverse metacentric radius (KM − KB)</td>
+</tr>
+<tr>
+<td><code>TPC_t_cm</code></td>
+<td>TPC</td>
+<td>t/cm</td>
+<td>Tonnes per centimetre immersion</td>
+</tr>
+<tr>
+<td><code>MTC_t_m</code></td>
+<td>MTC</td>
+<td>t·m/cm</td>
+<td>Moment to change trim 1 cm</td>
+</tr>
+<tr>
+<td><code>waterplane_m2</code></td>
+<td><span class="arithmatex">\(A_w\)</span></td>
+<td>m²</td>
+<td>Waterplane area at this draft</td>
+</tr>
+<tr>
+<td><code>LCB_m</code></td>
+<td>LCB</td>
+<td>m</td>
+<td>Longitudinal centre of buoyancy, measured from midship</td>
+</tr>
+</tbody>
+</table>
+<p>The relationship <span class="arithmatex">\(KM = KB + BM\)</span> holds at every row — KM is simply the combined column, provided for quick manual lookup. BM is the structurally important value: it measures how wide the waterplane is relative to the submerged volume:</p>
+<div class="arithmatex">\[BM = \frac{I_T}{\nabla}\]</div>
+<p>where <span class="arithmatex">\(I_T\)</span> is the second moment of the waterplane area about the ship's centreline and <span class="arithmatex">\(\nabla\)</span> is displaced volume. A wide ship with a small displacement (shallow draft) has a large BM; as the ship settles deeper, BM falls — which is exactly what the table shows: BM drops from 12.14 m at 2 m draft to 0.96 m at 10 m draft.</p>
+<div class="admonition note">
+<p class="admonition-title">KM and GM are different things</p>
+<p>The table gives KM — the height of the metacentre above the keel, a purely geometric property of the hull. GM (metacentric height) subtracts the cargo's centre of gravity: <span class="arithmatex">\(GM = KM - KG\)</span>. KM comes from the table; KG comes from the loading calculation. The program computes both.</p>
+</div>
+<hr />
+<h2 id="tpc-and-mtc-what-they-are-for">TPC and MTC — what they are for<a class="headerlink" href="#tpc-and-mtc-what-they-are-for" title="Permanent link">&para;</a></h2>
+<p><strong>TPC (tonnes per centimetre)</strong> tells you how many tonnes of cargo must be added or removed to change the mean draught by exactly 1 cm. It is the derivative of displacement with respect to draft, scaled to convenient units. At 5 m draft the sample vessel shows TPC = 11.10, meaning adding 11.1 t sinks the ship 1 cm further.</p>
+<p><strong>MTC (moment to change trim 1 cm)</strong> is the longitudinal equivalent: the couple (in tonne-metres) required to rotate the vessel so that the difference between aft and forward drafts changes by 1 cm. CargoForge-C uses MTC to compute the longitudinal metacentric radius when table data is present:</p>
+<div class="arithmatex">\[BM_L = \frac{MTC \times 100 \times L}{\Delta}\]</div>
+<p>and from that derives trim:</p>
+<div class="arithmatex">\[\text{trim} = \frac{LCG \times L}{GM_L} \quad \text{(metres by stern)}\]</div>
+<p>where <span class="arithmatex">\(LCG\)</span> is the longitudinal distance between the centre of gravity and the centre of buoyancy.</p>
+<hr />
+<h2 id="reading-and-validating-the-table-in-c">Reading and validating the table in C<a class="headerlink" href="#reading-and-validating-the-table-in-c" title="Permanent link">&para;</a></h2>
+<p><code>parse_hydro_table</code> in <a href="https://github.com/alikatgh/CargoForge-C/blob/main/src/hydrostatics.c"><code>src/hydrostatics.c</code></a> reads the CSV one line at a time, skipping <code>#</code> comments and blank lines:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kt">int</span><span class="w"> </span><span class="n">parsed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sscanf</span><span class="p">(</span><span class="n">line</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;%f,%f,%f,%f,%f,%f,%f,%f,%f&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">                    </span><span class="o">&amp;</span><span class="n">e</span><span class="o">-&gt;</span><span class="n">draft</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">e</span><span class="o">-&gt;</span><span class="n">displacement</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">e</span><span class="o">-&gt;</span><span class="n">km</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">e</span><span class="o">-&gt;</span><span class="n">kb</span><span class="p">,</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">                    </span><span class="o">&amp;</span><span class="n">e</span><span class="o">-&gt;</span><span class="n">bm</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">e</span><span class="o">-&gt;</span><span class="n">tpc</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">e</span><span class="o">-&gt;</span><span class="n">mtc</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">e</span><span class="o">-&gt;</span><span class="n">waterplane_area</span><span class="p">,</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">                    </span><span class="o">&amp;</span><span class="n">e</span><span class="o">-&gt;</span><span class="n">lcb</span><span class="p">);</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">parsed</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">7</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">    </span><span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Warning: Skipping malformed hydrostatic entry at line %d &quot;</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">            </span><span class="s">&quot;(got %d fields, need at least 7)</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">line_num</span><span class="p">,</span><span class="w"> </span><span class="n">parsed</span><span class="p">);</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">    </span><span class="k">continue</span><span class="p">;</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="p">}</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="cm">/* Default LCB to 0 if not provided (8-column format) */</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">parsed</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">9</span><span class="p">)</span><span class="w"> </span><span class="n">e</span><span class="o">-&gt;</span><span class="n">lcb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0f</span><span class="p">;</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="cm">/* Default waterplane_area to 0 if not provided (7-column format) */</span>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">parsed</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">8</span><span class="p">)</span><span class="w"> </span><span class="n">e</span><span class="o">-&gt;</span><span class="n">waterplane_area</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0f</span><span class="p">;</span>
+</code></pre></div>
+<p>Three format variants are accepted: 7 columns (no waterplane area or LCB), 8 columns (waterplane area but no LCB), and 9 columns (full). Missing trailing fields default to zero rather than causing a parse error — common in real stability booklets that predate standardised electronic formats.</p>
+<p>After each row, the parser enforces strictly ascending draft order:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">table</span><span class="o">-&gt;</span><span class="n">count</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">&amp;&amp;</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">    </span><span class="n">e</span><span class="o">-&gt;</span><span class="n">draft</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">table</span><span class="o">-&gt;</span><span class="n">entries</span><span class="p">[</span><span class="n">table</span><span class="o">-&gt;</span><span class="n">count</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">].</span><span class="n">draft</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span><span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Error: Hydrostatic table not in ascending draft order &quot;</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">            </span><span class="s">&quot;at line %d (%.2f &lt;= %.2f)</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">            </span><span class="n">line_num</span><span class="p">,</span><span class="w"> </span><span class="n">e</span><span class="o">-&gt;</span><span class="n">draft</span><span class="p">,</span><span class="w"> </span><span class="n">table</span><span class="o">-&gt;</span><span class="n">entries</span><span class="p">[</span><span class="n">table</span><span class="o">-&gt;</span><span class="n">count</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">].</span><span class="n">draft</span><span class="p">);</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">    </span><span class="n">fclose</span><span class="p">(</span><span class="n">fp</span><span class="p">);</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="p">}</span>
+</code></pre></div>
+<p>This requirement is not cosmetic: the interpolation functions both rely on the assumption that displacement increases monotonically with draft. A duplicate or reversed row would cause the binary search to silently return a wrong answer.</p>
+<p>Finally, at least two entries are required, because a single data point cannot support interpolation:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">table</span><span class="o">-&gt;</span><span class="n">count</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">    </span><span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Error: Hydrostatic table needs at least 2 entries (got %d)</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">            </span><span class="n">table</span><span class="o">-&gt;</span><span class="n">count</span><span class="p">);</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="p">}</span>
+</code></pre></div>
+<hr />
+<h2 id="interpolation-from-displacement-to-all-other-quantities">Interpolation: from displacement to all other quantities<a class="headerlink" href="#interpolation-from-displacement-to-all-other-quantities" title="Permanent link">&para;</a></h2>
+<p>After loading, the program uses the table in two directions.</p>
+<h3 id="forward-draft-everything-else">Forward: draft → everything else<a class="headerlink" href="#forward-draft-everything-else" title="Permanent link">&para;</a></h3>
+<p><code>hydro_interpolate</code> takes a known draft and returns a fully populated <code>HydroEntry</code>. It finds the two bounding rows and interpolates linearly across all nine fields simultaneously:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kt">float</span><span class="w"> </span><span class="n">range</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">hi</span><span class="o">-&gt;</span><span class="n">draft</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">lo</span><span class="o">-&gt;</span><span class="n">draft</span><span class="p">;</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="kt">float</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">range</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mf">1e-6f</span><span class="p">)</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="p">(</span><span class="n">draft</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">lo</span><span class="o">-&gt;</span><span class="n">draft</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">range</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mf">0.0f</span><span class="p">;</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="n">interpolate_entries</span><span class="p">(</span><span class="n">lo</span><span class="p">,</span><span class="w"> </span><span class="n">hi</span><span class="p">,</span><span class="w"> </span><span class="n">t</span><span class="p">,</span><span class="w"> </span><span class="n">result</span><span class="p">);</span>
+</code></pre></div>
+<p><code>interpolate_entries</code> calls <code>lerp</code> on every field:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">static</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="nf">lerp</span><span class="p">(</span><span class="kt">float</span><span class="w"> </span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">b</span><span class="p">,</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">t</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">b</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">a</span><span class="p">);</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="p">}</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">interpolate_entries</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">HydroEntry</span><span class="w"> </span><span class="o">*</span><span class="n">lo</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">HydroEntry</span><span class="w"> </span><span class="o">*</span><span class="n">hi</span><span class="p">,</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">                                </span><span class="kt">float</span><span class="w"> </span><span class="n">t</span><span class="p">,</span><span class="w"> </span><span class="n">HydroEntry</span><span class="w"> </span><span class="o">*</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">    </span><span class="n">out</span><span class="o">-&gt;</span><span class="n">draft</span><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="n">lerp</span><span class="p">(</span><span class="n">lo</span><span class="o">-&gt;</span><span class="n">draft</span><span class="p">,</span><span class="w">        </span><span class="n">hi</span><span class="o">-&gt;</span><span class="n">draft</span><span class="p">,</span><span class="w">        </span><span class="n">t</span><span class="p">);</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="w">    </span><span class="n">out</span><span class="o">-&gt;</span><span class="n">displacement</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">lerp</span><span class="p">(</span><span class="n">lo</span><span class="o">-&gt;</span><span class="n">displacement</span><span class="p">,</span><span class="w"> </span><span class="n">hi</span><span class="o">-&gt;</span><span class="n">displacement</span><span class="p">,</span><span class="w"> </span><span class="n">t</span><span class="p">);</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="w">    </span><span class="n">out</span><span class="o">-&gt;</span><span class="n">km</span><span class="w">           </span><span class="o">=</span><span class="w"> </span><span class="n">lerp</span><span class="p">(</span><span class="n">lo</span><span class="o">-&gt;</span><span class="n">km</span><span class="p">,</span><span class="w">           </span><span class="n">hi</span><span class="o">-&gt;</span><span class="n">km</span><span class="p">,</span><span class="w">           </span><span class="n">t</span><span class="p">);</span>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="w">    </span><span class="n">out</span><span class="o">-&gt;</span><span class="n">kb</span><span class="w">           </span><span class="o">=</span><span class="w"> </span><span class="n">lerp</span><span class="p">(</span><span class="n">lo</span><span class="o">-&gt;</span><span class="n">kb</span><span class="p">,</span><span class="w">           </span><span class="n">hi</span><span class="o">-&gt;</span><span class="n">kb</span><span class="p">,</span><span class="w">           </span><span class="n">t</span><span class="p">);</span>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="w">    </span><span class="n">out</span><span class="o">-&gt;</span><span class="n">bm</span><span class="w">           </span><span class="o">=</span><span class="w"> </span><span class="n">lerp</span><span class="p">(</span><span class="n">lo</span><span class="o">-&gt;</span><span class="n">bm</span><span class="p">,</span><span class="w">           </span><span class="n">hi</span><span class="o">-&gt;</span><span class="n">bm</span><span class="p">,</span><span class="w">           </span><span class="n">t</span><span class="p">);</span>
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span class="w">    </span><span class="n">out</span><span class="o">-&gt;</span><span class="n">tpc</span><span class="w">          </span><span class="o">=</span><span class="w"> </span><span class="n">lerp</span><span class="p">(</span><span class="n">lo</span><span class="o">-&gt;</span><span class="n">tpc</span><span class="p">,</span><span class="w">          </span><span class="n">hi</span><span class="o">-&gt;</span><span class="n">tpc</span><span class="p">,</span><span class="w">          </span><span class="n">t</span><span class="p">);</span>
+<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a><span class="w">    </span><span class="n">out</span><span class="o">-&gt;</span><span class="n">mtc</span><span class="w">          </span><span class="o">=</span><span class="w"> </span><span class="n">lerp</span><span class="p">(</span><span class="n">lo</span><span class="o">-&gt;</span><span class="n">mtc</span><span class="p">,</span><span class="w">          </span><span class="n">hi</span><span class="o">-&gt;</span><span class="n">mtc</span><span class="p">,</span><span class="w">          </span><span class="n">t</span><span class="p">);</span>
+<a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a><span class="w">    </span><span class="n">out</span><span class="o">-&gt;</span><span class="n">waterplane_area</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">lerp</span><span class="p">(</span><span class="n">lo</span><span class="o">-&gt;</span><span class="n">waterplane_area</span><span class="p">,</span><span class="w"> </span><span class="n">hi</span><span class="o">-&gt;</span><span class="n">waterplane_area</span><span class="p">,</span><span class="w"> </span><span class="n">t</span><span class="p">);</span>
+<a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a><span class="w">    </span><span class="n">out</span><span class="o">-&gt;</span><span class="n">lcb</span><span class="w">          </span><span class="o">=</span><span class="w"> </span><span class="n">lerp</span><span class="p">(</span><span class="n">lo</span><span class="o">-&gt;</span><span class="n">lcb</span><span class="p">,</span><span class="w">          </span><span class="n">hi</span><span class="o">-&gt;</span><span class="n">lcb</span><span class="p">,</span><span class="w">          </span><span class="n">t</span><span class="p">);</span>
+<a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a><span class="p">}</span>
+</code></pre></div>
+<p>If the requested draft falls outside the table range, the function clamps to the nearest boundary entry rather than extrapolating. Extrapolation beyond the measured range of a hydrostatic table is unreliable — hull form near the keel and near the freeboard deck deviates significantly from the middle-body behaviour that linear interpolation assumes.</p>
+<h3 id="inverse-displacement-draft">Inverse: displacement → draft<a class="headerlink" href="#inverse-displacement-draft" title="Permanent link">&para;</a></h3>
+<p>The more common computation direction is the reverse: the program knows displacement (lightship + cargo + tank liquid) and needs to find what draft results. <code>hydro_draft_from_displacement</code> does this by searching for the bracketing entries by displacement and inverting the interpolation:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kt">float</span><span class="w"> </span><span class="n">range</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">disp_hi</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">disp_lo</span><span class="p">;</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="kt">float</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">range</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mf">1e-6f</span><span class="p">)</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="p">(</span><span class="n">displacement_t</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">disp_lo</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">range</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mf">0.0f</span><span class="p">;</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="k">return</span><span class="w"> </span><span class="n">lerp</span><span class="p">(</span><span class="n">table</span><span class="o">-&gt;</span><span class="n">entries</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">draft</span><span class="p">,</span><span class="w"> </span><span class="n">table</span><span class="o">-&gt;</span><span class="n">entries</span><span class="p">[</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">].</span><span class="n">draft</span><span class="p">,</span><span class="w"> </span><span class="n">t</span><span class="p">);</span>
+</code></pre></div>
+<p>Once draft is found, <code>hydro_interpolate</code> is called on that draft to populate KB, BM, MTC, and all other quantities for the stability calculation.</p>
+<hr />
+<h2 id="how-the-table-changes-the-analysis">How the table changes the analysis<a class="headerlink" href="#how-the-table-changes-the-analysis" title="Permanent link">&para;</a></h2>
+<p>When <code>ship-&gt;hydro-&gt;loaded == 1</code>, <code>perform_analysis</code> in <code>analysis.c</code> replaces every box-hull formula with a table lookup:</p>
+<table>
+<thead>
+<tr>
+<th>Quantity</th>
+<th>Box-hull formula</th>
+<th>Table-based source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Draft</td>
+<td><span class="arithmatex">\(\nabla / (L \times B \times 0.75)\)</span></td>
+<td><code>hydro_draft_from_displacement</code></td>
+</tr>
+<tr>
+<td>KB</td>
+<td><span class="arithmatex">\(0.53 \times T\)</span></td>
+<td><code>HydroEntry.kb</code></td>
+</tr>
+<tr>
+<td>BM</td>
+<td><span class="arithmatex">\(I_T / \nabla\)</span> (approximate <span class="arithmatex">\(I_T\)</span>)</td>
+<td><code>HydroEntry.bm</code></td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(BM_L\)</span></td>
+<td>Approximated from hull dimensions</td>
+<td>Derived from <code>HydroEntry.mtc</code></td>
+</tr>
+</tbody>
+</table>
+<p>The result field <code>hydro_table_used</code> in <code>AnalysisResult</code> is set to 1 when the table path was taken, and 0 when the box-hull fallback was used. You can check this in the JSON output or the human-readable report to confirm which model produced the numbers.</p>
+<div class="admonition warning">
+<p class="admonition-title">Overloading past the table boundary</p>
+<p>If the computed displacement exceeds the heaviest entry in the table, <code>hydro_draft_from_displacement</code> clamps to the last row. The analysis will still complete, but the draft and all derived values are wrong. A separate check — comparing <code>total_cargo_weight_kg + lightship_weight</code> against <code>ship-&gt;max_weight</code> — rejects the load before the hydrostatic lookup is even attempted.</p>
+</div>
+<hr />
+<h2 id="connecting-the-table-to-your-ship-config">Connecting the table to your ship config<a class="headerlink" href="#connecting-the-table-to-your-ship-config" title="Permanent link">&para;</a></h2>
+<p>To use a hydrostatic table, add one line to your ship configuration file:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>hydrostatic_table = data/mv_example_hydro.csv
+</code></pre></div>
+<p><code>parse_ship_config</code> in <code>parser.c</code> reads this key, stores the path, and immediately calls <code>parse_hydro_table</code>. If parsing fails, the ship config load returns <code>-1</code> and the program reports the error before attempting any analysis.</p>
+<p>The tank configuration key (<code>tank_config</code>) works identically: one key in the config triggers the full CSV parse for free-surface correction data. Both paths must succeed for the analysis to proceed with full fidelity.</p>
+<hr />
+<h2 id="recap">Recap<a class="headerlink" href="#recap" title="Permanent link">&para;</a></h2>
+<ul>
+<li>The hydrostatic table encodes how a specific hull's geometry — displacement, KB, BM, TPC, MTC, waterplane area, and LCB — varies with draft, pre-computed by naval architects from the actual hull lines.</li>
+<li>The nine-column CSV format used by CargoForge-C mirrors what real stability booklets provide; 7- and 8-column variants are also accepted with sensible defaults for missing fields.</li>
+<li><code>parse_hydro_table</code> in <a href="https://github.com/alikatgh/CargoForge-C/blob/main/src/hydrostatics.c"><code>src/hydrostatics.c</code></a> enforces strictly ascending draft order because the interpolation functions require monotonicity.</li>
+<li><code>hydro_draft_from_displacement</code> performs inverse interpolation: given a displacement (tonnes), it returns the draft — the direction the analysis always runs in practice.</li>
+<li>When a table is loaded, every approximate box-hull constant (0.75, 0.53, 0.85) is replaced by real data read from the table, and <code>AnalysisResult.hydro_table_used</code> is set to 1.</li>
+<li>Clamping at table boundaries prevents extrapolation; an overweight ship is caught earlier by the weight limit check.</li>
+</ul>
+<h2 id="check-yourself">Check yourself<a class="headerlink" href="#check-yourself" title="Permanent link">&para;</a></h2>
+<details class="question">
+<summary>Why must a hydrostatic table's rows be in strictly ascending order for interpolation to work?</summary>
+<p>The lookup finds the bracketing rows by assuming the table is monotonic. A reversed or duplicated row would make it return the wrong bracket, silently producing a wrong interpolated value instead of a clear error — which is exactly why parse_hydro_table rejects an out-of-order table.</p>
+</details>
+<details class="question">
+<summary>A ship displaces 8400 t, and the table has rows at 8000 t (draft 6.0 m) and 11000 t (draft 8.0 m). Roughly what draft does linear interpolation give?</summary>
+<p>About 6.3 m — the target sits (8400-8000)/(11000-8000) ≈ 0.133 of the way from the first row to the second, so draft ≈ 6.0 + 0.133 x 2.0.</p>
+</details>
+<p><em>Next: <a href="../lab-05-flotation/">Lab 5 — Compute a Draft by Hand</a>.</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../19-the-box-hull-model/" class="md-footer__link md-footer__link--prev" aria-label="Previous: The box-hull model">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                The box-hull model
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../lab-05-flotation/" class="md-footer__link md-footer__link--next" aria-label="Next: Lab 5 — Compute a Draft by Hand">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Lab 5 — Compute a Draft by Hand
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.top", "navigation.tracking", "navigation.footer", "toc.follow", "content.code.copy", "search.suggest", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../assets/sidebar-toggle.js"></script>
+      
+        <script src="../assets/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+        <script src="../assets/terms-data.js"></script>
+      
+        <script src="../assets/terms-popup.js"></script>
+      
+        <script src="../assets/widgets/_core.js"></script>
+      
+        <script src="../assets/widgets/cg-balance-beam.js"></script>
+      
+        <script src="../assets/widgets/gm-stability-explorer.js"></script>
+      
+        <script src="../assets/widgets/free-surface-explorer.js"></script>
+      
+        <script src="../assets/widgets/hydro-interpolation-explorer.js"></script>
+      
+        <script src="../assets/widgets/ffd-stepper.js"></script>
+      
+        <script src="../assets/widgets/malloc-lifecycle-stepper.js"></script>
+      
+        <script src="../assets/widgets/tokenizer-playground.js"></script>
+      
+        <script src="../assets/widgets/asan-toggle-demo.js"></script>
+      
+    
+  </body>
+</html>

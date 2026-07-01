@@ -1,0 +1,125 @@
+/* Shared chrome for interactive lesson widgets — hairline border, no shadow,
+   reuses the site's existing tokens (--md-default-fg-color--lightest for
+   borders, 8px radius) plus the two accent colors already used across every
+   lesson's inline SVG diagrams (#12A594 teal, #D05663 red/warning). */
+
+.cf-widget {
+  margin: 1.8rem auto;
+  max-width: 600px;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 8px;
+  padding: 1.1rem 1.3rem 1.3rem;
+  font-size: 0.92em;
+}
+
+.cf-widget__hint {
+  margin: 0 0 0.9rem;
+  color: var(--md-default-fg-color--light);
+  font-size: 0.95em;
+}
+
+.cf-widget__controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9rem 1.4rem;
+  margin-bottom: 0.6rem;
+}
+
+.cf-widget__control {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1 1 150px;
+  font-size: 0.9em;
+}
+
+.cf-widget__control output {
+  font-family: var(--md-code-font, monospace);
+  font-feature-settings: "tnum" 1;
+  color: var(--md-default-fg-color);
+  opacity: 0.85;
+}
+
+.cf-widget input[type="range"] {
+  width: 100%;
+  accent-color: #12a594;
+}
+
+.cf-widget__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 0.4rem 0;
+  font-family: var(--md-text-font, inherit);
+  color: var(--md-default-fg-color);
+}
+
+.cf-widget__readout {
+  margin: 0.6rem 0 0;
+  font-size: 0.95em;
+}
+
+.cf-widget__readout strong {
+  font-family: var(--md-code-font, monospace);
+  font-feature-settings: "tnum" 1;
+}
+
+.cf-widget__readout--warn strong {
+  color: #d05663;
+}
+
+.cf-widget__text--warn {
+  color: #d05663;
+}
+
+.cf-widget__field {
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 6px;
+  padding: 0.4rem 0.6rem;
+}
+
+.cf-widget__field--invalid {
+  border-color: #d05663;
+}
+
+.cf-widget__button {
+  font: inherit;
+  font-size: 0.88em;
+  font-weight: 600;
+  color: var(--md-default-fg-color);
+  background: transparent;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 6px;
+  padding: 0.4rem 0.9rem;
+  cursor: pointer;
+}
+
+.cf-widget__button:hover:not(:disabled) {
+  background: color-mix(in srgb, #12a594 12%, transparent);
+  border-color: #12a594;
+}
+
+.cf-widget__button:focus-visible {
+  outline: 2px solid #12a594;
+  outline-offset: 1px;
+}
+
+.cf-widget__button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.cf-widget__row {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.6rem;
+}
+
+/* Graceful degradation: an unmounted widget (JS disabled, or the script
+   failed to load) collapses to nothing rather than showing an empty box.
+   The static diagram directly above every widget already carries the lesson. */
+.lesson-widget:empty {
+  display: none;
+}

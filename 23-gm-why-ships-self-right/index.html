@@ -1,0 +1,3450 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="From zero to systems & naval-architecture engineer, on a real codebase">
+      
+      
+      
+      
+        <link rel="prev" href="../22-buoyancy-and-the-metacenter/">
+      
+      
+        <link rel="next" href="../24-trim-and-heel/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>GM: why ships self-right - CargoForge-C 101</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/extra.css">
+    
+      <link rel="stylesheet" href="../assets/widgets/_core.css">
+    
+      <link rel="stylesheet" href="../assets/terms-popup.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="teal">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#gm-why-ships-self-right" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="CargoForge-C 101" class="md-header__button md-logo" aria-label="CargoForge-C 101" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            CargoForge-C 101
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              GM: why ships self-right
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="teal"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="teal"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="CargoForge-C 101" class="md-nav__button md-logo" aria-label="CargoForge-C 101" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    CargoForge-C 101
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Welcome
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1 · Programming foundations (C)
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    1 · Programming foundations (C)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01-why-c-and-the-toolchain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Why C, and the toolchain
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../02-your-first-c-program/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Your first C program
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../03-types-control-flow-functions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Types, control flow, and functions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../04-cli-git-reproducibility/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI, git, and reproducible builds
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-01-foundations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 1 — Build and Run It
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2 · The C language in depth
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    2 · The C language in depth
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../05-structs-enums-the-data-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Structs, enums, and the data model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../06-the-preprocessor-and-headers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The preprocessor and headers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../07-strings-and-char-arrays/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Strings and char arrays
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../08-error-handling-without-exceptions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Error handling without exceptions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-02-c-in-depth/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 2 — Read the Data Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3 · Memory & pointers
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    3 · Memory & pointers
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../09-pointers-and-addresses/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pointers and addresses
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../10-the-stack-and-the-heap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The stack and the heap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../11-malloc-free-and-ownership/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    malloc, free, and ownership
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../12-arrays-buffers-and-bounds/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arrays, buffers, and bounds
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../13-memory-bugs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Memory bugs (the real ones)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-03-memory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 3 — Reproduce the Use-After-Free
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    4 · Build, test, reproduce
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    4 · Build, test, reproduce
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../14-make-and-cmake/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Make and CMake
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../15-unit-testing-in-c/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Unit testing in C
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../16-continuous-integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Continuous integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-04-build-test/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 4 - Run and extend the tests
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    5 · Naval architecture I — flotation
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    5 · Naval architecture I — flotation
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../17-buoyancy-and-archimedes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Buoyancy and Archimedes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../18-displacement-density-draft/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Displacement, density, and draft
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../19-the-box-hull-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The box-hull model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../20-the-hydrostatic-table/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The hydrostatic table
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-05-flotation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 5 — Compute a Draft by Hand
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    6 · Naval architecture II — stability
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    6 · Naval architecture II — stability
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../21-center-of-gravity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Center of gravity (KG)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../22-buoyancy-and-the-metacenter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The center of buoyancy and the metacenter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GM: why ships self-right
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GM: why ships self-right
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-mental-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The mental model 🧠
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-this-actually-means-plain-english" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What this actually means (plain English)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-three-heights" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The three heights
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#why-gm-tells-you-whether-the-ship-self-rights" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why GM tells you whether the ship self-rights
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-the-code-computes-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How the code computes it
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How the code computes it">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#box-hull-fallback-no-csv-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Box-hull fallback (no CSV table)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#table-based-hydrostatics-csv-loaded" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table-based hydrostatics (CSV loaded)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kg-the-centre-of-gravity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        KG — the centre of gravity
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#assembling-gm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assembling GM
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#free-surface-correction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Free-surface correction
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-gz-curve-stability-beyond-small-angles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The GZ curve — stability beyond small angles
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#imo-criteria-the-regulatory-floor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        IMO criteria: the regulatory floor
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-too-tender-and-too-stiff-mean" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What "too tender" and "too stiff" mean
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recap
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#check-yourself" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Check yourself
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../24-trim-and-heel/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trim and heel
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../25-free-surface-and-imo-criteria/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Free surface and the IMO criteria
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-06-stability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 6 — Compute GM, then break it
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    7 · Parsing & data
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    7 · Parsing & data
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../26-config-and-manifest-formats/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Config and manifest formats
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../27-tokenizing-and-parsing-in-c/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tokenizing and parsing in C
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../28-validation-and-robustness/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Validation and robustness
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../29-dangerous-goods-imdg-parsing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dangerous-goods (IMDG) parsing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-07-parsing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 7 — Break the parser (safely)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    8 · Algorithms — stowage & placement
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    8 · Algorithms — stowage & placement
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../30-the-stowage-problem/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The stowage problem
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../31-first-fit-decreasing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    First-Fit-Decreasing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../32-3d-bins-and-weight/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3D bins and weight limits
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../33-constraints-segregation-stackability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Constraints: segregation and stackability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-08-placement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 8 - Place cargo and trigger a violation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    9 · The stability engine in code
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    9 · The stability engine in code
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../34-the-analysis-module/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The analysis module
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../35-hydrostatic-interpolation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hydrostatic interpolation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../36-tanks-and-free-surface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tanks and free surface
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../37-longitudinal-strength/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Longitudinal strength
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-09-engine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 9 - Turn on a hydro table and a tank
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_11" >
+        
+          
+          <label class="md-nav__link" for="__nav_11" id="__nav_11_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    10 · Quality engineering
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    10 · Quality engineering
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../38-sanitizers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sanitizers (ASan/UBSan)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../39-static-analysis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Static analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../40-fuzzing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fuzzing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../41-coverage-and-benchmarks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Coverage and benchmarks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-10-quality/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 10 — The Quality Gate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_12" >
+        
+          
+          <label class="md-nav__link" for="__nav_12" id="__nav_12_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    11 · Shipping it
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    11 · Shipping it
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../42-the-cli-and-output-formats/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The CLI and output formats
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../43-the-library-and-public-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The library and public API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../44-the-json-rpc-server/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The JSON-RPC server
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../45-wasm-and-on-device/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WASM and on-device
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-11-shipping/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 11 - Link the library
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_13" >
+        
+          
+          <label class="md-nav__link" for="__nav_13" id="__nav_13_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    12 · Capstone & frontier
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    12 · Capstone & frontier
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../46-the-whole-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The whole pipeline, end to end
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../47-frontier-classed-software/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontier: classed stability software
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-12-capstone/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 12 — A Realistic Voyage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../glossary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Glossary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-mental-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The mental model 🧠
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-this-actually-means-plain-english" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What this actually means (plain English)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-three-heights" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The three heights
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#why-gm-tells-you-whether-the-ship-self-rights" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why GM tells you whether the ship self-rights
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-the-code-computes-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How the code computes it
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How the code computes it">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#box-hull-fallback-no-csv-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Box-hull fallback (no CSV table)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#table-based-hydrostatics-csv-loaded" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table-based hydrostatics (CSV loaded)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kg-the-centre-of-gravity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        KG — the centre of gravity
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#assembling-gm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assembling GM
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#free-surface-correction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Free-surface correction
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-gz-curve-stability-beyond-small-angles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The GZ curve — stability beyond small angles
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#imo-criteria-the-regulatory-floor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        IMO criteria: the regulatory floor
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-too-tender-and-too-stiff-mean" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What "too tender" and "too stiff" mean
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recap
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#check-yourself" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Check yourself
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="gm-why-ships-self-right">GM: why ships self-right<a class="headerlink" href="#gm-why-ships-self-right" title="Permanent link">&para;</a></h1>
+<p>A ship tilted by a wave, a gust of wind, or a shifting load must develop a force that pushes it back upright. Whether that force exists — and how strong it is — reduces to a single number: the <strong>metacentric height</strong>, GM. This lesson unpacks what GM means physically, how the equation <span class="arithmatex">\(GM = KB + BM - KG\)</span> is derived from first principles, and how <code>perform_analysis</code> in <a href="https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c"><code>src/analysis.c</code></a> computes and judges it.</p>
+<h2 id="the-mental-model">The mental model 🧠<a class="headerlink" href="#the-mental-model" title="Permanent link">&para;</a></h2>
+<p>GM is the length of the lever that fights to stand the ship back up. When the hull heels, gravity pulling down through G and buoyancy pushing up through the shifted B no longer line up — they are offset by a horizontal gap, and that gap times the ship's weight is a <em>righting moment</em> that twists the vessel upright. A tall GM means a stiff ship that snaps back hard; a small GM means a tender ship that lolls and rolls slowly.</p>
+<p>It all rides on one subtraction: <code>GM = KB + BM − KG</code>. <code>KB + BM</code> is how high the metacentre M sits — fixed by the hull and how deep it floats. <code>KG</code> is how high the centre of gravity sits — fixed by how you load. As long as M stays <em>above</em> G the ship self-rights. Stack cargo too high and KG climbs until it passes M: GM goes negative, the lever now pushes the <em>wrong way</em>, and the ship capsizes. That sign flip is the line between a voyage and a casualty, which is why every IMO check in CargoForge keys off <code>r.gm</code>.</p>
+<h2 id="what-this-actually-means-plain-english">What this actually means (plain English)<a class="headerlink" href="#what-this-actually-means-plain-english" title="Permanent link">&para;</a></h2>
+<p>No jargon — here's what the ideas in this lesson <em>actually</em> mean, and why they matter.</p>
+<ul>
+<li><strong>GM (metacentric height)</strong> = "a single number that tells you whether a tilted ship will push itself back upright or keep tipping over" — if <code>r.gm</code> (computed in <code>perform_analysis</code>) is positive, the restoring force wins; if it is zero or negative, the ship is in trouble.</li>
+<li><strong>KB, BM, KG</strong> = "three heights measured from the ship's keel, whose difference gives you GM" — <code>KB</code> is where buoyancy acts, <code>KG</code> is where weight acts, and <code>BM</code> is the geometry bonus from hull width; <code>perform_analysis</code> computes each one before adding them with <code>r.gm = r.kb + r.bm - r.kg</code>.</li>
+<li><strong>Righting lever GZ</strong> = "the horizontal gap between where buoyancy pushes up and where gravity pulls down" — the larger this gap at a given heel angle, the harder the ship fights to come back; <code>gz_at_angle</code> computes it for the full GZ curve beyond small angles.</li>
+<li><strong>Free-surface correction</strong> = "a penalty on GM because sloshing liquid in a half-full tank acts like raising the centre of gravity" — <code>calculate_virtual_kg_rise</code> sums this penalty across all partially filled tanks and subtracts it to give <code>gm_corrected</code>, the value every subsequent check uses.</li>
+<li><strong>Too tender / too stiff</strong> = "two opposite loading mistakes" — a tender ship (low GM, below 0.3 m) rolls slowly but has almost no reserve against capsize; a stiff ship (GM above 3.0 m) snaps back so violently it damages cargo and crew; <code>print_loading_plan</code> flags both conditions by name.</li>
+<li><strong>IMO criteria</strong> = "six regulatory minimums a loaded ship must clear before sailing" — <code>perform_analysis</code> sets <code>imo_compliant = 1</code> only when <code>gm_corrected</code> and the GZ curve areas all exceed every threshold simultaneously; failing even one means the loading plan must change.</li>
+</ul>
+<p><strong>Why it matters:</strong> A loading plan that looks fine on paper can produce a negative GM when heavy cargo is stowed too high or tanks are left half-full — the ship becomes a capsizing risk before it leaves port. <code>perform_analysis</code> exists precisely to catch this before it happens.</p>
+<hr />
+<h2 id="the-three-heights">The three heights<a class="headerlink" href="#the-three-heights" title="Permanent link">&para;</a></h2>
+<p>Every stability calculation pivots on three vertical distances, all measured from the <strong>keel</strong> (the bottom of the hull) upward.</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Name</th>
+<th>What it marks</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(K\)</span></td>
+<td>Keel</td>
+<td>Reference origin — always 0</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(B\)</span></td>
+<td>Centre of Buoyancy</td>
+<td>Centroid of the <strong>submerged volume</strong>; pushes upward</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(G\)</span></td>
+<td>Centre of Gravity</td>
+<td>Centroid of the <strong>entire ship weight</strong>; pulls downward</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(M\)</span></td>
+<td>Transverse Metacentre</td>
+<td>The point about which the ship rotates at small angles</td>
+</tr>
+</tbody>
+</table>
+<p>So:</p>
+<ul>
+<li><span class="arithmatex">\(KB\)</span> — how high the buoyancy force acts</li>
+<li><span class="arithmatex">\(KG\)</span> — how high the weight force acts</li>
+<li><span class="arithmatex">\(KM = KB + BM\)</span> — height of the metacentre above the keel</li>
+</ul>
+<p>And:</p>
+<div class="arithmatex">\[GM = KB + BM - KG = KM - KG\]</div>
+<p><svg viewBox="0 0 620 372" role="img" xmlns="http://www.w3.org/2000/svg" style="max-width:600px;width:100%;height:auto;display:block;margin:1.8rem auto;font-family:var(--md-text-font,inherit);color:var(--md-default-fg-color)">
+<title>The metacentric diagram: a heeled ship rights itself when M is above G</title>
+<desc>A ship heeled to one side. Weight acts down through the centre of gravity G; buoyancy acts up through the shifted centre of buoyancy B. The vertical through B meets the ship's centreline at the metacentre M. The horizontal gap between the two force lines is the righting arm GZ. Because M is above G, the couple rotates the ship back upright.</desc>
+<defs>
+<marker id="ar-up" viewBox="0 0 10 10" refX="5" refY="9" markerWidth="7" markerHeight="7" orient="auto"><path d="M5 0 L9 9 L1 9 Z" fill="#12A594"/></marker>
+<marker id="ar-dn" viewBox="0 0 10 10" refX="5" refY="1" markerWidth="7" markerHeight="7" orient="auto"><path d="M5 10 L1 1 L9 1 Z" fill="#D05663"/></marker>
+</defs></p>
+<!-- waterline -->
+<p><line x1="70" y1="222" x2="552" y2="222" stroke="currentColor" stroke-width="1" opacity="0.35"/>
+<text x="552" y="218" fill="currentColor" font-size="11" opacity="0.5" text-anchor="end">waterline</text></p>
+<!-- heeled hull -->
+<p><path d="M232,104 L246,286 Q250,316 270,308 Q310,294 392,156" fill="currentColor" fill-opacity="0.05" stroke="currentColor" stroke-width="1.4" opacity="0.7"/>
+<line x1="232" y1="104" x2="392" y2="156" stroke="currentColor" stroke-width="1.4" opacity="0.7"/></p>
+<!-- ship centreline (tilted), K -> G -> M -->
+<p><line x1="255" y1="309" x2="329" y2="81" stroke="currentColor" stroke-width="1" stroke-dasharray="4 3" opacity="0.55"/></p>
+<!-- force line of buoyancy: world-vertical through B, up to M -->
+<p><line x1="329" y1="250" x2="329" y2="110" stroke="#12A594" stroke-width="1.6" marker-end="url(#ar-up)"/></p>
+<!-- force line of weight: world-vertical through G, downward -->
+<p><line x1="289" y1="204" x2="289" y2="330" stroke="#D05663" stroke-width="1.6" marker-end="url(#ar-dn)"/></p>
+<!-- righting arm GZ -->
+<p><line x1="289" y1="204" x2="329" y2="204" stroke="#12A594" stroke-width="3"/>
+<text x="309" y="196" fill="#12A594" font-size="13" font-weight="600" text-anchor="middle">GZ</text></p>
+<!-- heel angle arc at M -->
+<p><path d="M329,116 A35 35 0 0 0 314,123" fill="none" stroke="currentColor" stroke-width="1" opacity="0.55"/>
+<text x="322" y="133" fill="currentColor" font-size="12" opacity="0.7">θ</text></p>
+<!-- points -->
+<p><circle cx="255" cy="309" r="3.4" fill="currentColor"/><text x="245" y="313" fill="currentColor" font-size="13" text-anchor="end" font-weight="600">K</text>
+<circle cx="329" cy="250" r="3.4" fill="#12A594"/><text x="339" y="254" fill="#12A594" font-size="13" font-weight="600">B</text>
+<circle cx="289" cy="204" r="3.4" fill="#D05663"/><text x="279" y="208" fill="#D05663" font-size="13" text-anchor="end" font-weight="600">G</text>
+<circle cx="329" cy="81" r="3.4" fill="currentColor"/><text x="339" y="85" fill="currentColor" font-size="13" font-weight="600">M</text></p>
+<!-- labels for the forces -->
+<p><text x="329" y="104" fill="#12A594" font-size="11" text-anchor="middle">buoyancy ↑</text>
+<text x="289" y="345" fill="#D05663" font-size="11" text-anchor="middle">weight ↓</text></p>
+<!-- caption -->
+<p><text x="430" y="250" fill="currentColor" font-size="12.5" opacity="0.75">M is above G,</text>
+<text x="430" y="269" fill="currentColor" font-size="12.5" opacity="0.75">so the couple</text>
+<text x="430" y="288" fill="#12A594" font-size="12.5" font-weight="600">rights the ship.</text>
+<text x="430" y="312" fill="currentColor" font-size="11.5" opacity="0.6">GM = GZ / sin θ &gt; 0</text>
+</svg></p>
+<div class="lesson-widget" data-widget="gm-stability-explorer"></div>
+
+<hr />
+<h2 id="why-gm-tells-you-whether-the-ship-self-rights">Why GM tells you whether the ship self-rights<a class="headerlink" href="#why-gm-tells-you-whether-the-ship-self-rights" title="Permanent link">&para;</a></h2>
+<p>Imagine tilting the ship slightly to starboard by angle <span class="arithmatex">\(\theta\)</span>. The submerged volume shifts toward the low side, moving <span class="arithmatex">\(B\)</span> to starboard. The weight still acts through <span class="arithmatex">\(G\)</span> on the centreline. These two forces — buoyancy up through the new <span class="arithmatex">\(B\)</span>, gravity down through <span class="arithmatex">\(G\)</span> — form a couple.</p>
+<p>The horizontal separation between where those forces act is called the <strong>righting lever</strong> <span class="arithmatex">\(GZ\)</span>:</p>
+<div class="arithmatex">\[GZ(\theta) \approx GM \cdot \sin\theta \quad \text{(for small angles)}\]</div>
+<ul>
+<li>If <span class="arithmatex">\(GM &gt; 0\)</span>: <span class="arithmatex">\(G\)</span> is <strong>below</strong> <span class="arithmatex">\(M\)</span>. The couple acts to push the ship back upright. The ship is <strong>stable</strong>.</li>
+<li>If <span class="arithmatex">\(GM = 0\)</span>: no restoring force at small angles. Neutral — marginally dangerous.</li>
+<li>If <span class="arithmatex">\(GM &lt; 0\)</span>: <span class="arithmatex">\(G\)</span> is <strong>above</strong> <span class="arithmatex">\(M\)</span>. The couple acts to push the ship <strong>further</strong> over. <strong>Capsizing</strong>.</li>
+</ul>
+<div class="admonition warning">
+<p class="admonition-title">Negative GM</p>
+<p>A ship with <span class="arithmatex">\(GM &lt; 0\)</span> will not return to upright after a small disturbance. It will find a new equilibrium (the "loll angle") or capsize. Causes include top-heavy loading, free liquid in tanks, or ice accumulation on topsides.</p>
+</div>
+<hr />
+<h2 id="how-the-code-computes-it">How the code computes it<a class="headerlink" href="#how-the-code-computes-it" title="Permanent link">&para;</a></h2>
+<p><code>perform_analysis</code> in <a href="https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c"><code>src/analysis.c</code></a> works in two modes depending on whether a hydrostatic table CSV has been loaded.</p>
+<h3 id="box-hull-fallback-no-csv-table">Box-hull fallback (no CSV table)<a class="headerlink" href="#box-hull-fallback-no-csv-table" title="Permanent link">&para;</a></h3>
+<p>When <code>ship-&gt;hydro</code> is NULL, the code uses analytic formulas for a rectangular barge:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="cm">/* from src/analysis.c — box-hull path */</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="n">r</span><span class="p">.</span><span class="n">draft</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">displaced_vol</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="n">ship</span><span class="o">-&gt;</span><span class="n">length</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">ship</span><span class="o">-&gt;</span><span class="n">width</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">BLOCK_COEFF</span><span class="p">);</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">r</span><span class="p">.</span><span class="n">kb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">KB_FACTOR</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">r</span><span class="p">.</span><span class="n">draft</span><span class="p">;</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="kt">float</span><span class="w"> </span><span class="n">inertia_t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">ship</span><span class="o">-&gt;</span><span class="n">length</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">powf</span><span class="p">(</span><span class="n">ship</span><span class="o">-&gt;</span><span class="n">width</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">12.0f</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">WATERPLANE_COEFF</span><span class="p">;</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="n">r</span><span class="p">.</span><span class="n">bm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">inertia_t</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">displaced_vol</span><span class="p">;</span>
+</code></pre></div>
+<p>The constants are defined at the top of the file:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="cp">#define BLOCK_COEFF      0.75f   </span><span class="cm">/* Cb: underwater hull vol / bounding box */</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="cp">#define WATERPLANE_COEFF 0.85f   </span><span class="cm">/* Cw: waterplane area / L*B              */</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="cp">#define KB_FACTOR        0.53f   </span><span class="cm">/* KB ~ 0.53*T for typical cargo ships     */</span>
+</code></pre></div>
+<p><strong>Why these values?</strong></p>
+<ul>
+<li><code>BLOCK_COEFF = 0.75</code> means the hull displaces 75% of its bounding box volume — typical for a loaded cargo vessel (a box barge = 1.0, a streamlined yacht ≈ 0.35).</li>
+<li><code>KB_FACTOR = 0.53</code> is the empirical rule-of-thumb <span class="arithmatex">\(KB \approx 0.53T\)</span> valid for cargo-ship hull forms; the true value depends on the hull's underwater shape.</li>
+<li><code>WATERPLANE_COEFF = 0.85</code> scales the waterplane area below a full rectangle, giving a more realistic second moment of area <span class="arithmatex">\(I_T\)</span>.</li>
+</ul>
+<p><span class="arithmatex">\(BM\)</span> comes from the transverse second moment of the waterplane area divided by the displaced volume:</p>
+<div class="arithmatex">\[BM = \frac{I_T}{\nabla} = \frac{C_w \cdot L \cdot B^3 / 12}{\nabla}\]</div>
+<p>This is exact for a wall-sided hull and a good approximation for ships of moderate form.</p>
+<h3 id="table-based-hydrostatics-csv-loaded">Table-based hydrostatics (CSV loaded)<a class="headerlink" href="#table-based-hydrostatics-csv-loaded" title="Permanent link">&para;</a></h3>
+<p>When a hydrostatic table is present (<code>ship-&gt;hydro-&gt;loaded == 1</code>), the code interpolates <span class="arithmatex">\(KB\)</span> and <span class="arithmatex">\(BM\)</span> directly from the table at the computed draft — these values already account for the ship's actual hull shape:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="cm">/* from src/analysis.c — table-based path */</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">r</span><span class="p">.</span><span class="n">draft</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">hydro_draft_from_displacement</span><span class="p">(</span><span class="n">ship</span><span class="o">-&gt;</span><span class="n">hydro</span><span class="p">,</span><span class="w"> </span><span class="n">displacement_t</span><span class="p">);</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">HydroEntry</span><span class="w"> </span><span class="n">he</span><span class="p">;</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="n">hydro_interpolate</span><span class="p">(</span><span class="n">ship</span><span class="o">-&gt;</span><span class="n">hydro</span><span class="p">,</span><span class="w"> </span><span class="n">r</span><span class="p">.</span><span class="n">draft</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">he</span><span class="p">);</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="n">r</span><span class="p">.</span><span class="n">kb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">he</span><span class="p">.</span><span class="n">kb</span><span class="p">;</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="n">r</span><span class="p">.</span><span class="n">bm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">he</span><span class="p">.</span><span class="n">bm</span><span class="p">;</span>
+</code></pre></div>
+<h3 id="kg-the-centre-of-gravity">KG — the centre of gravity<a class="headerlink" href="#kg-the-centre-of-gravity" title="Permanent link">&para;</a></h3>
+<p><span class="arithmatex">\(KG\)</span> is computed in the single-pass cargo accumulation loop by summing vertical weight moments, then dividing:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="cm">/* from src/analysis.c — KG computation */</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="kt">float</span><span class="w"> </span><span class="n">vertical_moment</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ship</span><span class="o">-&gt;</span><span class="n">lightship_weight</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">ship</span><span class="o">-&gt;</span><span class="n">lightship_kg</span><span class="p">;</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">ship</span><span class="o">-&gt;</span><span class="n">cargo_count</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">Cargo</span><span class="w"> </span><span class="o">*</span><span class="n">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">ship</span><span class="o">-&gt;</span><span class="n">cargo</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">c</span><span class="o">-&gt;</span><span class="n">pos_x</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">continue</span><span class="p">;</span><span class="w">           </span><span class="cm">/* skip unplaced items */</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="n">cz</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">c</span><span class="o">-&gt;</span><span class="n">pos_z</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">c</span><span class="o">-&gt;</span><span class="n">dimensions</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">2.0f</span><span class="p">;</span><span class="w">   </span><span class="cm">/* centroid height */</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">    </span><span class="n">vertical_moment</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">c</span><span class="o">-&gt;</span><span class="n">weight</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">cz</span><span class="p">;</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="p">}</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="n">r</span><span class="p">.</span><span class="n">kg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vertical_moment</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">displacement_kg</span><span class="p">;</span>
+</code></pre></div>
+<p>Each item's vertical centroid is its <code>pos_z</code> (base of the item, from the hull origin) plus half its height. Unplaced items (<code>pos_x &lt; 0</code>) are excluded — they are not yet aboard.</p>
+<h3 id="assembling-gm">Assembling GM<a class="headerlink" href="#assembling-gm" title="Permanent link">&para;</a></h3>
+<p>With <span class="arithmatex">\(KB\)</span>, <span class="arithmatex">\(BM\)</span>, and <span class="arithmatex">\(KG\)</span> known, the formula is a single line in <a href="https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c"><code>src/analysis.c</code></a>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="cm">/* GM before free surface correction */</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="n">r</span><span class="p">.</span><span class="n">gm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">r</span><span class="p">.</span><span class="n">kb</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">r</span><span class="p">.</span><span class="n">bm</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">r</span><span class="p">.</span><span class="n">kg</span><span class="p">;</span>
+</code></pre></div>
+<hr />
+<h2 id="free-surface-correction">Free-surface correction<a class="headerlink" href="#free-surface-correction" title="Permanent link">&para;</a></h2>
+<p>Liquid in a partially filled tank sloshes when the ship heels. This shifts the effective centre of gravity upward — a <strong>virtual</strong> rise in <span class="arithmatex">\(KG\)</span> — reducing <span class="arithmatex">\(GM\)</span>. The correction is calculated from the tank geometry:</p>
+<div class="arithmatex">\[\text{FSM} = \rho \cdot \frac{l \cdot b^3}{12} \qquad \text{(per tank)}\]</div>
+<div class="arithmatex">\[\text{FSC} = \frac{\sum \text{FSM}}{\Delta} \qquad \text{(virtual KG rise, metres)}\]</div>
+<p>where <span class="arithmatex">\(l\)</span> and <span class="arithmatex">\(b\)</span> are the tank's length and breadth, <span class="arithmatex">\(\rho\)</span> is the liquid density, and <span class="arithmatex">\(\Delta\)</span> is the ship's displacement in tonnes. Empty and 100%-full tanks contribute zero (no free surface).</p>
+<p>In <a href="https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c"><code>src/analysis.c</code></a>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">r</span><span class="p">.</span><span class="n">free_surface_correction</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0f</span><span class="p">;</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ship</span><span class="o">-&gt;</span><span class="n">tanks</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">ship</span><span class="o">-&gt;</span><span class="n">tanks</span><span class="o">-&gt;</span><span class="n">count</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="n">r</span><span class="p">.</span><span class="n">free_surface_correction</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">calculate_virtual_kg_rise</span><span class="p">(</span><span class="n">ship</span><span class="o">-&gt;</span><span class="n">tanks</span><span class="p">,</span><span class="w"> </span><span class="n">displacement_t</span><span class="p">);</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="p">}</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="n">r</span><span class="p">.</span><span class="n">gm_corrected</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">r</span><span class="p">.</span><span class="n">gm</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">r</span><span class="p">.</span><span class="n">free_surface_correction</span><span class="p">;</span>
+</code></pre></div>
+<p>Every subsequent calculation — heel, GZ curve, IMO criteria — uses <code>gm_corrected</code>, not the raw <code>gm</code>. This is why the output report prints both:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>  GM (transverse)       : 1.43 m
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>  Free surface corr     : -0.089 m
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>  GM (corrected)        : 1.34 m
+</code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Always correct for free surface</p>
+<p>Forgetting the FSC is a real-world loading error. Ballast tanks are typically kept either empty or full — a half-filled double-bottom tank can reduce GM by 0.1–0.3 m, which can be the margin between pass and fail on IMO criteria.</p>
+</div>
+<hr />
+<h2 id="the-gz-curve-stability-beyond-small-angles">The GZ curve — stability beyond small angles<a class="headerlink" href="#the-gz-curve-stability-beyond-small-angles" title="Permanent link">&para;</a></h2>
+<p><span class="arithmatex">\(GM\)</span> is only a linearisation valid for small heels (roughly below 10–15°). At larger angles, the righting lever <span class="arithmatex">\(GZ(\theta)\)</span> is computed via the <strong>wall-sided formula</strong>:</p>
+<div class="arithmatex">\[GZ(\theta) = \sin\theta \cdot \left[ GM + \frac{BM}{2} \tan^2\theta \right]\]</div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="cm">/* from src/analysis.c */</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="k">static</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="nf">gz_at_angle</span><span class="p">(</span><span class="kt">float</span><span class="w"> </span><span class="n">gm</span><span class="p">,</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">bm</span><span class="p">,</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">theta_deg</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="n">theta</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">theta_deg</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="kt">float</span><span class="p">)</span><span class="n">M_PI</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">180.0f</span><span class="p">;</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="n">tan_theta</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tanf</span><span class="p">(</span><span class="n">theta</span><span class="p">);</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">sinf</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">gm</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">bm</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">tan_theta</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">tan_theta</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">2.0f</span><span class="p">);</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="p">}</span>
+</code></pre></div>
+<p>The <span class="arithmatex">\(BM \tan^2\theta / 2\)</span> term accounts for the increasing waterplane inertia effect as the ship heels — this is what makes the GZ curve rise above the small-angle linear approximation at moderate angles.</p>
+<hr />
+<h2 id="imo-criteria-the-regulatory-floor">IMO criteria: the regulatory floor<a class="headerlink" href="#imo-criteria-the-regulatory-floor" title="Permanent link">&para;</a></h2>
+<p>International regulations (IMO Resolution MSC.267/85, Part A, Chapter 2.2) define six minimum thresholds that every cargo vessel must meet. CargoForge-C checks all six using <code>gm_corrected</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="cm">/* from src/analysis.c */</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="n">r</span><span class="p">.</span><span class="n">imo_compliant</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">    </span><span class="n">gm_effective</span><span class="w">   </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">IMO_GM_MIN</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w">        </span><span class="cm">/* &gt;= 0.15 m */</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">    </span><span class="n">r</span><span class="p">.</span><span class="n">gz_at_30</span><span class="w">     </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">IMO_GZ_AT_30_MIN</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w">  </span><span class="cm">/* &gt;= 0.20 m */</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">    </span><span class="n">r</span><span class="p">.</span><span class="n">gz_max_angle</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">IMO_GZ_MAX_ANGLE</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w">  </span><span class="cm">/* &gt;= 25 deg  */</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="w">    </span><span class="n">r</span><span class="p">.</span><span class="n">area_0_30</span><span class="w">    </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">IMO_AREA_0_30_MIN</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="cm">/* &gt;= 0.055 m·rad */</span>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="w">    </span><span class="n">r</span><span class="p">.</span><span class="n">area_0_40</span><span class="w">    </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">IMO_AREA_0_40_MIN</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="cm">/* &gt;= 0.090 m·rad */</span>
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="w">    </span><span class="n">r</span><span class="p">.</span><span class="n">area_30_40</span><span class="w">   </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">IMO_AREA_30_40_MIN</span><span class="w">   </span><span class="cm">/* &gt;= 0.030 m·rad */</span>
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="p">)</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Criterion</th>
+<th>Threshold</th>
+<th>Why it matters</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(GM \geq 0.15\)</span> m</td>
+<td><code>IMO_GM_MIN</code></td>
+<td>Minimum self-righting ability at small angles</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(GZ_{30°} \geq 0.20\)</span> m</td>
+<td><code>IMO_GZ_AT_30_MIN</code></td>
+<td>Adequate lever at a realistic wave-heel angle</td>
+</tr>
+<tr>
+<td>Angle of max GZ <span class="arithmatex">\(\geq 25°\)</span></td>
+<td><code>IMO_GZ_MAX_ANGLE</code></td>
+<td>Righting arm must peak late enough to resist large rolls</td>
+</tr>
+<tr>
+<td>Area 0–30° <span class="arithmatex">\(\geq 0.055\)</span> m·rad</td>
+<td><code>IMO_AREA_0_30_MIN</code></td>
+<td>Energy absorbed in early heeling</td>
+</tr>
+<tr>
+<td>Area 0–40° <span class="arithmatex">\(\geq 0.090\)</span> m·rad</td>
+<td><code>IMO_AREA_0_40_MIN</code></td>
+<td>Total energy reserve up to steep heel</td>
+</tr>
+<tr>
+<td>Area 30–40° <span class="arithmatex">\(\geq 0.030\)</span> m·rad</td>
+<td><code>IMO_AREA_30_40_MIN</code></td>
+<td>Reserve between 30° and 40° — guards against "dead ship" scenarios</td>
+</tr>
+</tbody>
+</table>
+<p>The area criteria capture energy, not just force: a wider, flatter GZ curve survives a wave better than a tall, narrow one with the same peak.</p>
+<hr />
+<h2 id="what-too-tender-and-too-stiff-mean">What "too tender" and "too stiff" mean<a class="headerlink" href="#what-too-tender-and-too-stiff-mean" title="Permanent link">&para;</a></h2>
+<p><code>print_loading_plan</code> in <a href="https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c"><code>src/analysis.c</code></a> classifies the corrected GM for the human-readable report:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">gm_display</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mf">0.3f</span><span class="p">)</span><span class="w">       </span><span class="n">gm_str</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;CRITICAL - Too tender&quot;</span><span class="p">;</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">gm_display</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mf">3.0f</span><span class="p">)</span><span class="w">  </span><span class="n">gm_str</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;WARNING - Too stiff&quot;</span><span class="p">;</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">gm_display</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mf">0.5f</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">gm_display</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="mf">2.5f</span><span class="p">)</span><span class="w"> </span><span class="n">gm_str</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Optimal&quot;</span><span class="p">;</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="k">else</span><span class="w">                          </span><span class="n">gm_str</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Acceptable&quot;</span><span class="p">;</span>
+</code></pre></div>
+<ul>
+<li><strong>Too tender</strong> (<span class="arithmatex">\(GM &lt; 0.3\)</span> m): slow, wallowing roll with little reserve. A heavy sea could capsize the ship.</li>
+<li><strong>Optimal</strong> (<span class="arithmatex">\(0.5 \leq GM \leq 2.5\)</span> m): comfortable roll period, good reserve.</li>
+<li><strong>Too stiff</strong> (<span class="arithmatex">\(GM &gt; 3.0\)</span> m): short, violent snap-roll. Structurally hard on cargo, crew, and fastenings — and counterintuitively dangerous if a high sea coincides with the ship's roll period (resonance).</li>
+</ul>
+<p>Stiffness is often a bigger practical concern for cargo operators than tenderness: heavy cargo concentrated low makes a stiff ship, which produces acceleration loads that damage cargo and crew.</p>
+<hr />
+<h2 id="recap">Recap<a class="headerlink" href="#recap" title="Permanent link">&para;</a></h2>
+<ul>
+<li><span class="arithmatex">\(GM = KB + BM - KG\)</span>: height of the metacentre above the keel, minus height of the centre of gravity.</li>
+<li><span class="arithmatex">\(GM &gt; 0\)</span> means the ship self-rights; <span class="arithmatex">\(GM \leq 0\)</span> means it does not.</li>
+<li><code>perform_analysis</code> computes <span class="arithmatex">\(KB\)</span> and <span class="arithmatex">\(BM\)</span> either analytically (box-hull constants) or by interpolating a hydrostatic CSV table, and <span class="arithmatex">\(KG\)</span> from a single-pass weight-moment sum over all placed cargo.</li>
+<li>The free-surface correction reduces <span class="arithmatex">\(GM\)</span> by a virtual KG rise from sloshing liquid; all IMO criteria use the corrected value <code>gm_corrected</code>.</li>
+<li>The GZ curve extends stability assessment beyond small angles using the wall-sided formula; <code>gz_at_angle</code> implements it in four lines of C.</li>
+<li>IMO MSC.267/85 sets six thresholds; <code>imo_compliant = 1</code> only when all six pass simultaneously.</li>
+</ul>
+<h2 id="check-yourself">Check yourself<a class="headerlink" href="#check-yourself" title="Permanent link">&para;</a></h2>
+<details class="question">
+<summary>If GM is exactly zero, is the ship already unstable?</summary>
+<p>It's right on the boundary — no restoring force develops at all, so any small disturbance can tip it further with nothing pushing back. Strictly negative GM is where it actively capsizes without help.</p>
+</details>
+<details class="question">
+<summary>Loading cargo higher raises KG. What happens to GM, and by how much?</summary>
+<p>GM shrinks one-for-one with KG — every extra metre KG rises subtracts a metre from GM = KB + BM - KG, since KB and BM are hull-geometry properties that don't change just because cargo moved higher.</p>
+</details>
+<p><em>Next: <a href="../24-trim-and-heel/">Trim and heel</a>.</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../22-buoyancy-and-the-metacenter/" class="md-footer__link md-footer__link--prev" aria-label="Previous: The center of buoyancy and the metacenter">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                The center of buoyancy and the metacenter
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../24-trim-and-heel/" class="md-footer__link md-footer__link--next" aria-label="Next: Trim and heel">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Trim and heel
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.top", "navigation.tracking", "navigation.footer", "toc.follow", "content.code.copy", "search.suggest", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../assets/sidebar-toggle.js"></script>
+      
+        <script src="../assets/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+        <script src="../assets/terms-data.js"></script>
+      
+        <script src="../assets/terms-popup.js"></script>
+      
+        <script src="../assets/widgets/_core.js"></script>
+      
+        <script src="../assets/widgets/cg-balance-beam.js"></script>
+      
+        <script src="../assets/widgets/gm-stability-explorer.js"></script>
+      
+        <script src="../assets/widgets/free-surface-explorer.js"></script>
+      
+        <script src="../assets/widgets/hydro-interpolation-explorer.js"></script>
+      
+        <script src="../assets/widgets/ffd-stepper.js"></script>
+      
+        <script src="../assets/widgets/malloc-lifecycle-stepper.js"></script>
+      
+        <script src="../assets/widgets/tokenizer-playground.js"></script>
+      
+        <script src="../assets/widgets/asan-toggle-demo.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,3285 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="From zero to systems & naval-architecture engineer, on a real codebase">
+      
+      
+      
+      
+        <link rel="prev" href="../lab-12-capstone/">
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Glossary - CargoForge-C 101</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/extra.css">
+    
+      <link rel="stylesheet" href="../assets/widgets/_core.css">
+    
+      <link rel="stylesheet" href="../assets/terms-popup.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="teal">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#glossary" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="CargoForge-C 101" class="md-header__button md-logo" aria-label="CargoForge-C 101" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            CargoForge-C 101
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Glossary
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="teal"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="teal"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="CargoForge-C 101" class="md-nav__button md-logo" aria-label="CargoForge-C 101" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    CargoForge-C 101
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Welcome
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    1 · Programming foundations (C)
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    1 · Programming foundations (C)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01-why-c-and-the-toolchain/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Why C, and the toolchain
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../02-your-first-c-program/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Your first C program
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../03-types-control-flow-functions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Types, control flow, and functions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../04-cli-git-reproducibility/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI, git, and reproducible builds
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-01-foundations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 1 — Build and Run It
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    2 · The C language in depth
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    2 · The C language in depth
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../05-structs-enums-the-data-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Structs, enums, and the data model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../06-the-preprocessor-and-headers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The preprocessor and headers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../07-strings-and-char-arrays/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Strings and char arrays
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../08-error-handling-without-exceptions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Error handling without exceptions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-02-c-in-depth/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 2 — Read the Data Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3 · Memory & pointers
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    3 · Memory & pointers
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../09-pointers-and-addresses/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pointers and addresses
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../10-the-stack-and-the-heap/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The stack and the heap
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../11-malloc-free-and-ownership/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    malloc, free, and ownership
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../12-arrays-buffers-and-bounds/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arrays, buffers, and bounds
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../13-memory-bugs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Memory bugs (the real ones)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-03-memory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 3 — Reproduce the Use-After-Free
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    4 · Build, test, reproduce
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    4 · Build, test, reproduce
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../14-make-and-cmake/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Make and CMake
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../15-unit-testing-in-c/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Unit testing in C
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../16-continuous-integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Continuous integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-04-build-test/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 4 - Run and extend the tests
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    5 · Naval architecture I — flotation
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    5 · Naval architecture I — flotation
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../17-buoyancy-and-archimedes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Buoyancy and Archimedes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../18-displacement-density-draft/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Displacement, density, and draft
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../19-the-box-hull-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The box-hull model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../20-the-hydrostatic-table/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The hydrostatic table
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-05-flotation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 5 — Compute a Draft by Hand
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    6 · Naval architecture II — stability
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    6 · Naval architecture II — stability
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../21-center-of-gravity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Center of gravity (KG)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../22-buoyancy-and-the-metacenter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The center of buoyancy and the metacenter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../23-gm-why-ships-self-right/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GM: why ships self-right
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../24-trim-and-heel/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trim and heel
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../25-free-surface-and-imo-criteria/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Free surface and the IMO criteria
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-06-stability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 6 — Compute GM, then break it
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    7 · Parsing & data
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    7 · Parsing & data
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../26-config-and-manifest-formats/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Config and manifest formats
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../27-tokenizing-and-parsing-in-c/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tokenizing and parsing in C
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../28-validation-and-robustness/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Validation and robustness
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../29-dangerous-goods-imdg-parsing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dangerous-goods (IMDG) parsing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-07-parsing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 7 — Break the parser (safely)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    8 · Algorithms — stowage & placement
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    8 · Algorithms — stowage & placement
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../30-the-stowage-problem/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The stowage problem
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../31-first-fit-decreasing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    First-Fit-Decreasing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../32-3d-bins-and-weight/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    3D bins and weight limits
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../33-constraints-segregation-stackability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Constraints: segregation and stackability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-08-placement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 8 - Place cargo and trigger a violation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    9 · The stability engine in code
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    9 · The stability engine in code
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../34-the-analysis-module/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The analysis module
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../35-hydrostatic-interpolation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hydrostatic interpolation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../36-tanks-and-free-surface/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tanks and free surface
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../37-longitudinal-strength/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Longitudinal strength
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-09-engine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 9 - Turn on a hydro table and a tank
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_11" >
+        
+          
+          <label class="md-nav__link" for="__nav_11" id="__nav_11_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    10 · Quality engineering
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    10 · Quality engineering
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../38-sanitizers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sanitizers (ASan/UBSan)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../39-static-analysis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Static analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../40-fuzzing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fuzzing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../41-coverage-and-benchmarks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Coverage and benchmarks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-10-quality/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 10 — The Quality Gate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_12" >
+        
+          
+          <label class="md-nav__link" for="__nav_12" id="__nav_12_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    11 · Shipping it
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    11 · Shipping it
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../42-the-cli-and-output-formats/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The CLI and output formats
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../43-the-library-and-public-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The library and public API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../44-the-json-rpc-server/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The JSON-RPC server
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../45-wasm-and-on-device/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WASM and on-device
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-11-shipping/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 11 - Link the library
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_13" >
+        
+          
+          <label class="md-nav__link" for="__nav_13" id="__nav_13_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    12 · Capstone & frontier
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    12 · Capstone & frontier
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../46-the-whole-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The whole pipeline, end to end
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../47-frontier-classed-software/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontier: classed stability software
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lab-12-capstone/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 12 — A Realistic Voyage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Glossary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="glossary">Glossary<a class="headerlink" href="#glossary" title="Permanent link">&para;</a></h1>
+<p>Alphabetical reference for every term used across the CargoForge-C 101 course.
+Terms are grouped by domain within each letter where it aids clarity, but the
+overall order is strictly alphabetical by the bold entry word.</p>
+<hr />
+<p><strong>AddressSanitizer (ASan)</strong>
+A compiler runtime that instruments every memory access and reports heap
+overflows, use-after-free, and heap-use-after-free at the moment they occur.
+CargoForge-C's <code>make test-asan</code> rebuilds with <code>-fsanitize=address</code> and runs the
+full test suite; the fuzzer also runs under ASan with <code>abort_on_error=1</code> so any
+violation produces a non-zero exit code that the fuzz harness treats as a
+failure.</p>
+<p><strong>AddressSanitizer — see also</strong> <em>UndefinedBehaviorSanitizer</em>, <em>Sanitizer</em>.</p>
+<p><strong>Analysis result</strong>
+The in-memory struct (<code>AnalysisResult</code> internally, <code>CfResult</code> in the public
+library API) that <code>perform_analysis</code> returns after a full stability pass.  It
+carries every computed quantity — draft, KG, KB, BM, GM, trim, heel, GZ curve
+values, IMO compliance flag, and longitudinal-strength fields — keyed off the
+loaded <code>Ship</code> and its placed cargo.</p>
+<p><strong>Archimedes' principle</strong>
+A body immersed in a fluid is buoyed up by a force equal to the weight of the
+fluid it displaces.  The entire draft-and-displacement chain in CargoForge-C
+(<code>perform_analysis</code>, <code>hydro_draft_from_displacement</code>) rests on this principle:
+the ship sinks until the weight of displaced seawater equals total displacement.</p>
+<p><strong>Array</strong>
+A contiguous block of elements of the same type in C, accessed by index from 0
+to <code>n-1</code>.  CargoForge-C uses arrays extensively: <code>cargo[]</code> inside <code>Ship</code>,
+<code>spaces[]</code> inside <code>Bin3D</code>, and the hydrostatic-table row array inside
+<code>HydroTable</code>.  C does not bounds-check arrays at runtime, making off-by-one
+writes a common source of memory corruption.</p>
+<p><strong>AABB (Axis-Aligned Bounding Box)</strong>
+A rectangular box whose edges are parallel to the coordinate axes, defined by an
+origin and three extents.  <code>calculate_stack_pressure</code> in <code>constraints.c</code> uses
+AABB overlap to find all placed cargo whose footprint overlaps a candidate
+position, summing their weights to compute stacking pressure.</p>
+<hr />
+<p><strong>Bin packing</strong>
+The combinatorial problem of fitting a set of items into containers (bins) while
+respecting capacity constraints.  CargoForge-C solves a 3D variant: cargo items
+are rectangular boxes; bins are named holds and the weather deck; the objective
+is to place as many items as possible while honouring weight limits, point-load
+limits, stacking pressure, and IMDG segregation rules.  See also <em>First Fit
+Decreasing</em>, <em>Guillotine split</em>.</p>
+<p><strong>Bin3D</strong>
+The C struct (<code>placement_3d.h</code>) representing one named cargo hold or deck area.
+Fields: <code>name</code>, origin (<code>x/y/z</code>), dimensions (<code>width/depth/height</code>),
+<code>max_weight</code>, <code>current_weight</code>, and an array of <code>Space3D</code> free rectangles.
+<code>place_cargo_3d</code> creates three hard-coded bins — <code>ForwardHold</code>, <code>AftHold</code>, and
+<code>Deck</code> — from the ship's length and maximum weight.</p>
+<p><strong>Block coefficient (Cb)</strong>
+The ratio of a ship's underwater volume to the enclosing rectangular block
+(L × B × T).  CargoForge-C uses <code>BLOCK_COEFF = 0.75</code> in the box-hull fallback
+when computing draft from displaced volume: <code>draft = displaced_vol / (L × B × Cb)</code>.</p>
+<p><strong>BM (transverse metacentric radius)</strong>
+The vertical distance from the centre of buoyancy B to the transverse metacentre
+M, equal to the second moment of the waterplane area divided by displaced volume.
+For the box-hull model: <code>BM = (L × B³ / 12 × Cw) / V</code>.  When a hydrostatic
+table is loaded, BM is read directly from the interpolated <code>HydroEntry.bm</code> field.
+BM is a geometric property of the hull form; a wider hull has a larger BM.</p>
+<p><strong>Box-hull model</strong>
+A simplified ship geometry used when no hydrostatic CSV table is supplied.
+Displacement, draft, KB, and BM are computed from the ship's length, breadth,
+and fixed coefficients (<code>BLOCK_COEFF = 0.75</code>, <code>KB_FACTOR = 0.53</code>,
+<code>WATERPLANE_COEFF = 0.85</code>).  Lessons 19 and 34 cover the model in detail.</p>
+<p><strong>Buffer</strong>
+A region of memory used as temporary storage, typically a <code>char</code> array in C.
+CargoForge-C uses fixed-size buffers for parsing (e.g. a 64-byte copy of the DG
+field string in <code>parse_dg_field</code>) and for accumulating JSON output via
+<code>open_memstream</code>.  Writing past the end of a buffer is <em>buffer overflow</em>, the
+most exploitable class of C memory bug.</p>
+<p><strong>Buffer overflow</strong>
+Writing data beyond the allocated end of a buffer, corrupting adjacent memory.
+In C, there is no runtime check; the program continues with corrupted state.
+CargoForge-C avoids this by using bounded copy functions (<code>strncpy</code>, <code>snprintf</code>)
+and by validating string lengths before touching fixed-size fields like
+<code>Cargo.id[32]</code> and <code>Cargo.type[16]</code>.</p>
+<p><strong>Buoyancy</strong>
+The upward force a fluid exerts on a submerged or floating body, equal (by
+Archimedes' principle) to the weight of displaced fluid.  In CargoForge-C,
+buoyancy is modelled as a distributed load per hull station in
+<code>distribute_buoyancy</code> (normalized to match total displacement) and as a
+point-value lookup from the hydrostatic table at the computed draft.</p>
+<hr />
+<p><strong>C99</strong>
+The 1999 revision of the C standard, adding variable-length arrays, <code>//</code>
+comments, <code>&lt;stdbool.h&gt;</code>, designated initialisers, and <code>restrict</code>.
+CargoForge-C compiles with <code>-std=c99 -D_POSIX_C_SOURCE=200809L</code>; the POSIX
+macro unlocks <code>strtok_r</code>, <code>mkstemp</code>, and <code>open_memstream</code>.</p>
+<p><strong>Cargo</strong>
+The <code>Cargo</code> struct (<code>cargoforge.h:39</code>) is the core data record for one cargo
+item: a 32-char ID, weight in kg, three dimensions in metres, a type string, 3D
+position floats (<code>pos_x/y/z</code>, set to -1.0 until placed), and an optional
+heap-allocated <code>DGInfo *</code> pointer for dangerous-goods metadata.</p>
+<p><strong>Centre of buoyancy (B / KB)</strong>
+The centroid of the underwater volume; the point through which the buoyant force
+acts vertically upward.  KB (keel-to-centre-of-buoyancy) is the vertical
+distance from keel to B.  In the box-hull model <code>KB = 0.53 × draft</code>; from the
+hydrostatic table KB is interpolated directly.</p>
+<p><strong>Centre of gravity (G / KG)</strong>
+The point through which the ship's total weight acts vertically downward.  KG
+(keel-to-centre-of-gravity) is computed in CargoForge-C by summing the vertical
+moment of lightship mass, every placed cargo item (weight × mid-height), and
+every tank (weight × centre-of-liquid height), then dividing by total
+displacement.</p>
+<p><strong>Compilation unit</strong>
+A single <code>.c</code> source file processed by the compiler independently.  CargoForge-C
+has one compilation unit per module (<code>parser.c</code>, <code>analysis.c</code>, <code>hydrostatics.c</code>,
+etc.), linked together by the Makefile.  <code>static</code> functions and variables are
+local to their compilation unit; they are invisible to other units.</p>
+<p><strong>Constraints</strong>
+Rules that must hold for a cargo placement to be valid.  <code>check_cargo_constraints</code>
+in <code>constraints.c</code> enforces six: point-load limit (5 t/m²), IMDG segregation,
+legacy hazmat separation (3 m), stacking pressure (10 t/m², stricter for
+fragile), reefer-deck preference (advisory), and deck weight ratio.</p>
+<p><strong>Corpus (fuzzing)</strong>
+The seed set of inputs the fuzzer generates from.  CargoForge-C's <a href="https://github.com/alikatgh/CargoForge-C/blob/main/scripts/fuzz.sh"><code>scripts/fuzz.sh</code></a>
+defines arrays of adversarial values (negative numbers, overflow values, invalid
+DG strings) that are assembled into random ship-config and cargo-manifest files.
+The DG corpus includes both valid entries like <code>"DG:3.1:UN1203:A:F-E,S-D"</code> and
+malformed entries like <code>"DG:::"</code> and <code>"DG:abc"</code> to exercise error paths.</p>
+<hr />
+<p><strong>Dangling pointer</strong>
+A pointer that still holds the address of memory that has already been freed.
+Dereferencing a dangling pointer is undefined behaviour and typically causes
+heap-use-after-free.  The real bug fixed in CargoForge-C (<code>parser.c</code>) was
+exactly this: an error path freed <code>ship-&gt;cargo</code> but left the pointer non-NULL,
+so a later call to <code>ship_cleanup</code> dereferenced it again.  The fix NULLs the
+pointer immediately after <code>free</code>.</p>
+<p><strong>Deadweight (DWT)</strong>
+The total mass a ship can carry beyond its lightship weight, including cargo,
+fuel, ballast, stores, and crew.  In CargoForge-C <code>Ship.max_weight</code> represents
+the cargo deadweight limit (converted from tonnes to kg on parse); the
+displacement used in stability calculations is lightship + cargo + tank liquid.</p>
+<p><strong>Declaration vs. definition</strong>
+In C, a <em>declaration</em> introduces a name and type to the compiler without
+allocating storage (e.g. <code>extern int x;</code> or a function prototype in a header);
+a <em>definition</em> allocates storage or provides the function body.  CargoForge-C
+header files (<code>cargoforge.h</code>, <code>libcargoforge.h</code>) hold declarations; <code>.c</code> files
+hold definitions.</p>
+<p><strong>Deployment (WASM)</strong>
+CargoForge-C can be compiled to WebAssembly via Emscripten (<code>make wasm</code>),
+producing <code>cargoforge.js</code> and <code>cargoforge.wasm</code>.  Eight library functions are
+exported; <code>ALLOW_MEMORY_GROWTH=1</code> allows the heap to grow at runtime.  This
+enables the same C stability engine to run in a browser without a server.</p>
+<p><strong>DG (dangerous goods)</strong>
+Cargo classified under the IMDG Code as posing a chemical, biological, or
+physical hazard.  In CargoForge-C, a cargo item carries a heap-allocated
+<code>DGInfo *</code> pointer when its manifest line includes a <code>DG:</code> field; NULL means
+non-DG.  The IMDG segregation engine in <code>imdg.c</code> operates only on items where
+<code>dg != NULL</code>.</p>
+<p><strong>DGInfo</strong>
+The struct (<code>imdg.h</code>) that records IMDG metadata for one cargo item: <code>dg_class</code>
+(1–9), <code>dg_division</code>, <code>un_number</code>, <code>stowage</code> category, and <code>ems</code> string.
+It is heap-allocated by <code>parse_dg_field</code> and freed by <code>ship_cleanup</code> via
+<code>cargo[i].dg</code>.</p>
+<p><strong>Displacement</strong>
+The total mass of the ship plus everything on board, in tonnes.  By Archimedes'
+principle this equals the mass of seawater displaced.  In CargoForge-C:
+<code>displacement_t = (lightship_weight + cargo_weight + tank_weight) / 1000</code>.
+Displacement drives all hydrostatic lookups and the free-surface correction
+denominator.</p>
+<p><strong>Draft (T)</strong>
+The vertical distance from the waterline to the lowest point of the keel.  In
+CargoForge-C, draft is either computed from the box-hull formula
+(<code>displaced_vol / (L × B × Cb)</code>) or inverse-interpolated from the hydrostatic
+table (<code>hydro_draft_from_displacement</code>).  Draft gates every subsequent
+hydrostatic lookup (KB, BM, MTC).</p>
+<p><strong>Draft (T) — trim correction</strong>
+When the ship trims (bow/stern difference), the mean draft changes.  CargoForge-C
+computes a single mean draft; trim is reported separately as <code>trim</code> (metres by
+stern) and used to adjust the longitudinal centre-of-buoyancy lookup but not
+the hydrostatic draft itself in the current model.</p>
+<hr />
+<p><strong>EmS</strong>
+Emergency Schedule reference from the IMDG Code, stored in <code>DGInfo.ems</code> (e.g.
+<code>"F-E,S-D"</code>).  The fire (<code>F-*</code>) and spillage (<code>S-*</code>) schedules tell crew which
+emergency procedures to follow.  CargoForge-C stores the string verbatim; it does
+not validate the EmS format beyond accepting it as the tail of the DG field.</p>
+<p><strong>Enum</strong>
+A C type that defines a set of named integer constants.  CargoForge-C uses
+<code>SegregationType</code> (SEG_NONE, SEG_AWAY_FROM, SEG_SEPARATED, etc.) and
+<code>StowageCategory</code> (STOW_ANY, STOW_ON_DECK, STOW_UNDER_DECK) as enums, making
+constraint code readable without magic numbers.</p>
+<p><strong>Error path</strong>
+A code path reached when an operation fails (e.g. <code>safe_atof</code> returns NAN).  In
+C, error paths commonly involve early returns and cleanup; forgetting to NULL out
+a freed pointer on an error path is how CargoForge-C's real heap-use-after-free
+bug was introduced.  Lesson 8 and the bug journal cover error-handling patterns.</p>
+<hr />
+<p><strong>First Fit Decreasing (FFD)</strong>
+A bin-packing heuristic that sorts items largest-first and places each into the
+first bin where it fits.  <code>place_cargo_3d</code> sorts cargo by volume descending
+(<code>qsort</code> with <code>cargo_cmp_by_volume_desc</code>) before iterating; this tends to leave
+small residual spaces that fit small items rather than large odd-shaped gaps.
+Lesson 31 analyses FFD's approximation ratio and real-world performance.</p>
+<p><strong>Float (C type)</strong>
+A 32-bit IEEE 754 single-precision floating-point number.  CargoForge-C uses
+<code>float</code> for all physical quantities (weights, dimensions, hydrostatic values)
+because the precision is sufficient for stability calculations and matches the
+CSV source data.  <code>safe_atof</code> calls <code>strtof</code> (not <code>strtod</code>) and returns NAN on
+range or parse failure.</p>
+<p><strong>Free (memory)</strong>
+The C standard library function <code>free(ptr)</code> that returns a heap allocation to the
+allocator.  After <code>free</code>, the pointer is dangling; any access through it is
+undefined behaviour.  CargoForge-C's fix to the heap-use-after-free bug sets
+<code>ship-&gt;cargo = NULL</code> immediately after every <code>free(ship-&gt;cargo)</code> call so that
+<code>ship_cleanup</code>'s <code>if (ship-&gt;cargo)</code> guard makes the second access a no-op.</p>
+<p><strong>Free surface (effect)</strong>
+When a tank is partially filled with liquid, any roll of the ship causes the
+liquid surface to shift, moving the liquid's centre of gravity outward and
+reducing effective GM.  The correction is the sum of <code>ρ × l × b³ / 12</code> for each
+partial tank, divided by displacement, added to virtual KG.  CargoForge-C
+computes this in <code>calculate_virtual_kg_rise</code> (<code>tanks.c</code>) and subtracts it from
+GM to yield <code>gm_corrected</code>.</p>
+<p><strong>Free-surface correction (FSC)</strong>
+The numerical value of the virtual KG rise due to free surfaces, in metres.
+<code>GM_corrected = GM - FSC</code>.  All IMO criteria in CargoForge-C use <code>gm_corrected</code>,
+not raw GM.</p>
+<p><strong>Fuzzing</strong>
+Automated testing that feeds a program large volumes of randomly mutated or
+generated inputs looking for crashes and sanitizer violations.  CargoForge-C's
+<a href="https://github.com/alikatgh/CargoForge-C/blob/main/scripts/fuzz.sh"><code>scripts/fuzz.sh</code></a> runs 300 iterations by default, each constructing a random
+ship config and cargo manifest, running <code>cargoforge optimize</code> or <code>validate</code>
+under ASan+UBSan, and treating exit code ≥ 128 (signal) or sanitizer output
+as failure.  The real heap-use-after-free bug was discovered this way.</p>
+<hr />
+<p><strong>GZ (righting lever)</strong>
+The horizontal distance between the line of action of buoyancy and the line of
+action of gravity when the ship is heeled to angle θ.  A positive GZ produces a
+righting moment that returns the ship to upright.  CargoForge-C uses the
+wall-sided formula: <code>GZ(θ) = sin(θ) × (GM + BM × tan²(θ) / 2)</code>.</p>
+<p><strong>GZ curve</strong>
+A plot of GZ against heel angle, used to assess dynamic stability.  IMO intact
+stability criteria (MSC.267/85) specify minimum areas under the curve and a
+minimum GZ at 30°.  CargoForge-C computes <code>gz_at_30</code>, <code>gz_max</code>, <code>gz_max_angle</code>,
+<code>area_0_30</code>, <code>area_0_40</code>, and <code>area_30_40</code> from the wall-sided formula via
+trapezoidal integration over 100 steps.</p>
+<p><strong>Guillotine split</strong>
+A space-partitioning technique used in 2D and 3D bin-packing: after placing an
+item, the remaining free space is cut by axis-aligned planes into (up to three)
+new free rectangles — right remainder, back remainder, top remainder.
+<code>split_space_3d</code> in <code>placement_3d.c</code> implements this, appending new <code>Space3D</code>
+entries to the bin's free-space list.</p>
+<p><strong>GM (metacentric height)</strong>
+The vertical distance from the centre of gravity G to the transverse metacentre M.
+<code>GM = KB + BM - KG</code>.  A positive GM means the ship is stable; a negative GM means
+it will capsize without external support.  IMO requires <code>GM_corrected ≥ 0.15 m</code>.
+In CargoForge-C, <code>gm_corrected</code> (after free-surface deduction) is the value used
+for all criteria checks and heel/GZ computations.</p>
+<hr />
+<p><strong>Header file</strong>
+A <code>.h</code> file in C that contains declarations shared between compilation units:
+struct definitions, function prototypes, <code>#define</code> constants, and <code>typedef</code>
+aliases.  CargoForge-C's public API is declared in <code>libcargoforge.h</code>; internal
+module interfaces in <code>cargoforge.h</code>, <code>hydrostatics.h</code>, <code>tanks.h</code>, <code>imdg.h</code>,
+etc.  Headers are included via <code>#include</code>; include guards (<code>#ifndef …</code>) prevent
+double-inclusion.</p>
+<p><strong>Heap</strong>
+The region of memory managed by <code>malloc</code>/<code>free</code> for dynamic allocation.
+CargoForge-C heap-allocates the <code>cargo</code> array (<code>Ship.cargo</code>), each <code>DGInfo</code>
+struct, hydrostatic tables, tank configs, and strength-limits structs.  Heap
+memory persists until explicitly freed; failing to free it is a <em>memory leak</em>.</p>
+<p><strong>Heap-use-after-free</strong>
+Accessing heap memory after it has been freed.  The canonical bug in
+CargoForge-C: <code>parse_cargo_list</code> freed <code>ship-&gt;cargo</code> on an error path but left
+<code>ship-&gt;cargo_count</code> non-zero, so the later <code>ship_cleanup</code> iterated over the
+freed array and read <code>cargo[i].dg</code>.  AddressSanitizer detected this as
+<code>heap-use-after-free</code> at exit code 134.</p>
+<p><strong>Hogging</strong>
+A longitudinal bending mode where the midship section is pushed upward relative
+to the ends — the hull curves concave-down like a hog's back.  In CargoForge-C,
+<code>permissible_bm_hog</code> is the class-society limit on hogging bending moment.
+Positive SWBM values in <code>LongStrengthResult</code> correspond to hogging.</p>
+<hr />
+<p><strong>IMDG Code</strong>
+International Maritime Dangerous Goods Code, the IMO framework governing
+classification, packaging, marking, documentation, stowage, and segregation of
+dangerous goods at sea.  CargoForge-C implements Table 7.2.4 of the IMDG Code
+as a 17×17 segregation matrix in <code>imdg.c</code>.  Classes 1–9 (with subdivisions) are
+supported.</p>
+<p><strong>IMO (International Maritime Organization)</strong>
+The United Nations agency responsible for international shipping regulations.
+CargoForge-C's intact stability criteria come from IMO resolution MSC.267(85)
+(the IS Code 2008), Parts A Chapter 2.2.  The six thresholds are constants
+prefixed <code>IMO_</code> in <code>analysis.c</code>.</p>
+<p><strong>IMO intact stability criteria</strong>
+Six quantitative thresholds that a vessel's GZ curve must satisfy, per
+MSC.267(85): GM ≥ 0.15 m, GZ at 30° ≥ 0.20 m, angle of max GZ ≥ 25°,
+area 0–30° ≥ 0.055 m·rad, area 0–40° ≥ 0.090 m·rad, area 30–40° ≥ 0.030 m·rad.
+<code>imo_compliant = 1</code> in <code>AnalysisResult</code> only when all six pass.</p>
+<p><strong>Include guard</strong>
+A preprocessor pattern (<code>#ifndef HEADER_H / #define HEADER_H / … / #endif</code>)
+that prevents a header from being processed more than once per compilation unit.
+All CargoForge-C headers use include guards to avoid duplicate-declaration errors
+when multiple <code>.c</code> files include the same header chain.</p>
+<hr />
+<p><strong>JSON-RPC</strong>
+A remote procedure call protocol using JSON as the message format.  CargoForge-C's
+<code>cargoforge serve</code> subcommand starts a single-threaded POSIX socket server that
+accepts HTTP POST requests whose body is a JSON-RPC 2.0 object.  Supported
+methods: <code>optimize</code>, <code>validate</code>, <code>version</code>.</p>
+<hr />
+<p><strong>KB — see</strong> <em>Centre of buoyancy</em>.</p>
+<p><strong>KG — see</strong> <em>Centre of gravity</em>.</p>
+<hr />
+<p><strong>LCG (longitudinal centre of gravity)</strong>
+The fore-aft position of the ship's combined centre of gravity, measured from
+midship.  Positive = aft in CargoForge-C.  <code>LCG</code> drives the trim calculation:
+<code>trim = LCG × L / GM_L</code>.</p>
+<p><strong>Lightship</strong>
+The displacement of the ship itself — hull, machinery, fixed equipment — with no
+cargo, fuel, ballast, or stores on board.  <code>Ship.lightship_weight</code> (kg) and
+<code>Ship.lightship_kg</code> (m, vertical KG of lightship) are mandatory config keys.
+The lightship KG contributes the first term in the vertical-moment sum.</p>
+<p><strong>Linear interpolation</strong>
+Estimating a value between two known data points by assuming the function is a
+straight line between them.  <code>hydro_interpolate</code> and <code>hydro_draft_from_displacement</code>
+in <code>hydrostatics.c</code> use linear interpolation on the hydrostatic table to obtain
+draft, KB, BM, and MTC at any displacement or draft within the table's range.</p>
+<p><strong>Longitudinal strength</strong>
+The ability of the hull girder to resist bending and shear forces along its
+length, caused by the mismatch between weight and buoyancy distributions.
+CargoForge-C calculates still-water shear force (SWSF) and bending moment (SWBM)
+at 20 hull stations in <code>longitudinal_strength.c</code> and compares them to
+class-society permissible limits.</p>
+<hr />
+<p><strong>Macro</strong>
+A <code>#define</code> preprocessor token substitution.  CargoForge-C uses macros for
+constants (<code>IMO_GM_MIN</code>, <code>BLOCK_COEFF</code>, <code>MAX_POINT_LOAD</code>, <code>MIN_HAZMAT_SEPARATION</code>,
+<code>MAX_FREE_RECTS</code>) and for the library version string (<code>CF_VERSION_STRING</code>).
+Function-like macros are avoided in favour of <code>static inline</code> functions or
+regular functions to preserve type safety.</p>
+<p><strong>Malloc</strong>
+<code>malloc(n)</code> allocates <code>n</code> bytes on the heap and returns a pointer, or NULL on
+failure.  CargoForge-C allocates <code>DGInfo</code> structs in <code>parse_dg_field</code>,
+<code>ship-&gt;cargo</code> arrays in <code>parse_cargo_list</code>, and hydrostatic/tank/strength structs
+in their respective parsers.  Every <code>malloc</code> call is paired with a corresponding
+<code>free</code> path in <code>ship_cleanup</code>.</p>
+<p><strong>Memory leak</strong>
+Heap memory that is allocated but never freed, causing the process's memory
+footprint to grow.  CargoForge-C uses <code>ship_cleanup</code> as the single teardown
+function that frees all heap-allocated members of <code>Ship</code>; the library wraps this
+in <code>cargoforge_close</code>.</p>
+<p><strong>Metacentre (M)</strong>
+The point about which a slightly heeled ship rotates, located a distance BM above
+the centre of buoyancy B.  For small angles the metacentre is effectively fixed;
+for larger angles (handled by the wall-sided formula) M rises as the hull form
+changes.  A ship is initially stable if G is below M, i.e. GM &gt; 0.</p>
+<hr />
+<p><strong>NaN (Not a Number)</strong>
+A special IEEE 754 floating-point value indicating an invalid result.  CargoForge-C's
+<code>safe_atof</code> returns NAN when a field is out of range or unparseable.  Callers
+check <code>isnan(value)</code> to detect parse errors without needing separate error codes.
+<code>json_output.c</code> emits <code>null</code> for all hydrostatic fields when <code>result-&gt;gm</code> is NAN,
+which occurs when the ship is overweight.</p>
+<p><strong>Null pointer</strong>
+A pointer whose value is zero (or <code>NULL</code>), guaranteed to compare unequal to any
+valid object pointer.  Dereferencing NULL is undefined behaviour (and causes a
+segfault on most platforms).  CargoForge-C uses NULL as the sentinel for optional
+struct pointers (<code>Ship.hydro</code>, <code>Ship.tanks</code>, <code>Ship.strength_limits</code>, <code>Cargo.dg</code>)
+so that code can check <code>if (ptr)</code> before using it.</p>
+<hr />
+<p><strong>Opaque handle</strong>
+A pointer to an incomplete struct type whose fields are hidden from callers.
+<code>CargoForge *</code> in <code>libcargoforge.h</code> is an opaque handle: the internal struct
+<code>CargoForge</code> (with its <code>Ship</code>, flags, and caches) is defined only in
+<code>libcargoforge.c</code>.  Callers interact only through the public API functions, which
+gives CargoForge-C ABI stability across version changes.</p>
+<p><strong>Orientation (3D placement)</strong>
+One of the six axis-aligned rotations of a rectangular box (all permutations of
+length, width, height).  <code>get_orientation_dims</code> in <code>placement_3d.c</code> enumerates
+all six; <code>find_best_fit_3d</code> tries all six for each candidate space and picks the
+one that minimises wasted volume.</p>
+<hr />
+<p><strong>Parser</strong>
+Code that converts raw text (config files, cargo manifests, CSV tables) into C
+data structures.  CargoForge-C's <code>parser.c</code> handles ship config (key=value),
+cargo manifests (whitespace-delimited), and DG field grammar.  <code>hydrostatics.c</code>
+and <code>tanks.c</code> each contain their own CSV parsers.  <code>safe_atof</code> is the shared
+numeric-field parser used by all of them.</p>
+<p><strong>Point load</strong>
+The downforce per unit area exerted by a cargo item on the deck or cargo beneath
+it, in t/m².  Computed as <code>weight_t / (length_m × width_m)</code>.  If point load
+exceeds <code>MAX_POINT_LOAD</code> (5 t/m²), <code>check_cargo_constraints</code> rejects the
+placement.  High point loads can deform container floors and hatch covers.</p>
+<p><strong>Pointer</strong>
+A C variable that stores the memory address of another object.  Pointers enable
+dynamic allocation, linked data structures, and pass-by-reference semantics.
+CargoForge-C uses pointers pervasively: <code>Cargo *</code>, <code>Ship *</code>, <code>DGInfo *</code>,
+function arguments like <code>HydroEntry *result</code>.  Incorrect pointer arithmetic or
+failing to NULL a freed pointer are the two most common C memory bugs.</p>
+<p><strong>Preprocessor</strong>
+The first phase of C compilation, which handles <code>#include</code>, <code>#define</code>, and
+<code>#ifdef</code> directives before the compiler sees any code.  CargoForge-C uses the
+preprocessor for include guards, physical constants, and the <code>CF_VERSION_STRING</code>
+macro.  Lesson 6 covers the preprocessor in depth.</p>
+<hr />
+<p><strong>Reefer</strong>
+Refrigerated cargo requiring a controlled-temperature environment, typically
+carried in insulated containers connected to ship's power.  In CargoForge-C,
+<code>Cargo.type = "reefer"</code> triggers an advisory constraint in
+<code>check_cargo_constraints</code>: reefer cargo placed outside the <code>Deck</code> bin generates
+a warning (but is not rejected) because holds may lack reefer plug points.</p>
+<p><strong>Righting moment</strong>
+The torque that returns a heeled ship to upright, equal to <code>displacement × GZ</code>
+at heel angle θ.  A positive righting moment at all angles up to some range
+means the ship is self-righting; the IMO criteria encode minimum righting moment
+thresholds via minimum GZ values and minimum areas under the GZ curve.</p>
+<hr />
+<p><strong>safe_atof</strong>
+A CargoForge-C utility function (<code>parser.c</code>) that wraps <code>strtof</code> with range
+validation.  Signature: <code>float safe_atof(const char *s, float min, float max,
+const char *field_name)</code>.  Returns NAN and prints an error message on failure.
+Used for every numeric field in every parser, providing a single chokepoint for
+numeric input validation.</p>
+<p><strong>Sagging</strong>
+The opposite of hogging: midship is pushed downward relative to the ends — the
+hull curves concave-up.  Negative SWBM values in <code>LongStrengthResult</code> correspond
+to sagging.  <code>permissible_bm_sag</code> is the class-society sagging limit.</p>
+<p><strong>Sanitizer</strong>
+A compiler-inserted runtime checker for a specific class of bugs.  CargoForge-C
+uses two: AddressSanitizer (ASan) for memory errors and UndefinedBehaviorSanitizer
+(UBSan) for C undefined-behaviour violations.  Both are enabled together with
+<code>-fsanitize=address,undefined</code>.</p>
+<p><strong>Segregation (IMDG)</strong>
+The minimum required physical separation between incompatible dangerous goods,
+specified in IMDG Table 7.2.4 as one of five categories: <code>SEG_NONE</code> (0 m),
+<code>SEG_AWAY_FROM</code> (3 m), <code>SEG_SEPARATED</code> (6 m), <code>SEG_SEPARATED_COMPLETE</code> (12 m),
+<code>SEG_SEPARATED_LONG</code> (24 m), or <code>SEG_INCOMPATIBLE</code> (forbidden co-loading).
+<code>imdg.c</code> maps class+division pairs to <code>SegregationType</code> via a 17×17 matrix and
+<code>class_to_index</code>.</p>
+<p><strong>Sentinel value</strong>
+A special out-of-band value used to signal a particular state.  CargoForge-C
+uses <code>-1.0f</code> as the sentinel for "not yet placed" in <code>Cargo.pos_x/y/z</code>; analysis
+code checks <code>pos_x &lt; 0</code> to exclude unplaced items.  NULL serves as the sentinel
+for optional struct pointers.</p>
+<p><strong>Ship (struct)</strong>
+The central data structure (<code>cargoforge.h:53</code>) holding all ship parameters and
+the cargo manifest: dimensions, weight limits, lightship data, cargo array,
+optional hydrostatic table, optional tank config, and optional strength limits.
+<code>parse_ship_config</code> populates it; <code>perform_analysis</code> reads it; <code>ship_cleanup</code>
+frees its heap members.</p>
+<p><strong>Stack (call stack)</strong>
+The region of memory that holds function call frames — local variables, return
+addresses, and saved registers.  Stack memory is automatically allocated on
+function entry and freed on return.  CargoForge-C's parsing functions use stack
+buffers for small temporaries (e.g. 256-byte key/value buffers in
+<code>parse_ship_config</code>).  Stack overflow (too-deep recursion or large local arrays)
+is a harder-to-detect bug than heap overflow.</p>
+<p><strong>Stowage category</strong>
+An IMDG designation controlling where dangerous goods may be stowed: <code>A</code>
+(anywhere — <code>STOW_ANY</code>), <code>D</code> (on deck — <code>STOW_ON_DECK</code>), or <code>U</code> (under deck —
+<code>STOW_UNDER_DECK</code>).  <code>parse_dg_field</code> maps the single-letter code to
+<code>StowageCategory</code>; <code>check_cargo_constraints</code> enforces deck vs. hold preference.</p>
+<p><strong>strtok_r</strong>
+The POSIX reentrant string-tokeniser, splitting a string on delimiter characters
+without modifying a hidden global state variable (unlike <code>strtok</code>).  CargoForge-C
+uses <code>strtok_r</code> in <code>parse_dg_field</code> to split the <code>DG:class:UN:stow:EmS</code> field
+on <code>':'</code>.  Enabled by <code>-D_POSIX_C_SOURCE=200809L</code>.</p>
+<p><strong>Struct</strong>
+A C aggregate type grouping named fields of potentially different types.
+CargoForge-C's data model is expressed almost entirely as structs: <code>Cargo</code>,
+<code>Ship</code>, <code>DGInfo</code>, <code>HydroEntry</code>, <code>Tank</code>, <code>Bin3D</code>, <code>Space3D</code>, <code>AnalysisResult</code>,
+<code>CfResult</code>, <code>StrengthLimits</code>, <code>IMDGCheckResult</code>.  Structs are passed by pointer
+for efficiency and to allow callers to observe mutations.</p>
+<p><strong>SWBM (still-water bending moment)</strong>
+The longitudinal bending moment in a ship at rest in calm water, arising from
+the mismatch between the weight and buoyancy distributions.  CargoForge-C
+integrates shear force a second time to obtain SWBM at each of 20 hull stations
+and reports the maximum (the larger of hog and sag) in <code>AnalysisResult.max_bending_moment</code>.</p>
+<p><strong>SWSF (still-water shear force)</strong>
+The longitudinal shear force at a hull cross-section in calm water.  Computed by
+integrating net load (weight minus buoyancy) from AP to FP.
+<code>AnalysisResult.max_shear_force</code> holds the peak SWSF value (tonnes).</p>
+<hr />
+<p><strong>TCG (transverse centre of gravity)</strong>
+The lateral offset of the ship's combined centre of gravity from the centreline,
+in metres.  <code>TCG = avg_y - B/2</code>.  A non-zero TCG causes a heeling moment;
+CargoForge-C computes steady-state heel as <code>atan(TCG / GM_corrected)</code>.</p>
+<p><strong>Tokeniser</strong>
+Code that splits an input string into a sequence of tokens (meaningful substrings).
+CargoForge-C's cargo manifest parser splits lines on whitespace using <code>sscanf</code> to
+extract the four mandatory fields; <code>parse_dg_field</code> uses <code>strtok_r</code> to split the
+DG grammar on <code>':'</code>.  Lesson 27 covers tokenising strategies.</p>
+<p><strong>TPC (tonnes per centimetre)</strong>
+The mass that must be added to or removed from a ship to change its mean draft by
+one centimetre.  Read from the hydrostatic table (<code>HydroEntry.tpc</code>) at the
+interpolated draft.  Used indirectly in CargoForge-C for trim calculations via MTC.</p>
+<p><strong>Trim</strong>
+The difference in draft between the stern and the bow; positive trim (trim by
+stern) means the stern is deeper.  CargoForge-C computes trim as
+<code>LCG × L / GM_L</code> where <code>GM_L</code> is the longitudinal metacentric height derived
+from MTC.  <code>AnalysisResult.trim</code> is in metres by stern.</p>
+<hr />
+<p><strong>UBSan (UndefinedBehaviorSanitizer)</strong>
+A compiler runtime that traps C undefined-behaviour violations — signed integer
+overflow, null-pointer dereference, misaligned access, out-of-bounds array
+indexing (where detectable at compile time) — at the exact moment they occur.
+Enabled with <code>-fsanitize=undefined</code>.  CargoForge-C runs UBSan alongside ASan in
+<code>make test-asan</code> and in <a href="https://github.com/alikatgh/CargoForge-C/blob/main/scripts/fuzz.sh"><code>scripts/fuzz.sh</code></a>.</p>
+<p><strong>UN number</strong>
+A four-digit United Nations number uniquely identifying a dangerous substance or
+article under the IMDG Code (e.g. <code>UN1203</code> for petrol/gasoline).  Stored in
+<code>DGInfo.un_number</code> as a string; CargoForge-C stores it verbatim without
+validating the number against any lookup table.</p>
+<p><strong>Undefined behaviour (UB)</strong>
+Any program action that the C standard does not define — signed overflow,
+use-after-free, reading uninitialised memory, null dereference, out-of-bounds
+access.  The compiler is free to assume UB never happens and may optimise in ways
+that produce surprising results or security vulnerabilities.  CargoForge-C's
+sanitizer suite detects UB at runtime during testing.</p>
+<p><strong>Use-after-free</strong>
+Accessing memory (on the stack or heap) after its lifetime has ended.  On the
+heap this is <em>heap-use-after-free</em>; on the stack it is <em>stack-use-after-return</em>
+(returning a pointer to a local variable).  Both are undefined behaviour.
+See <em>heap-use-after-free</em> for the specific bug found and fixed in CargoForge-C.</p>
+<hr />
+<p><strong>Valgrind</strong>
+A dynamic binary instrumentation tool that detects memory errors (leaks,
+use-after-free, invalid reads/writes) without recompilation.  <code>make test-valgrind</code>
+runs each CargoForge-C test binary and an integration run through Valgrind with
+<code>--leak-check=full --error-exitcode=1</code>.  Valgrind is slower than ASan but does
+not require recompilation of the target binary.</p>
+<hr />
+<p><strong>Wall-sided formula</strong>
+An approximation for the righting lever GZ valid for ships with vertical sides
+at the waterplane: <code>GZ(θ) = sin(θ) × (GM + BM × tan²(θ) / 2)</code>.  It improves on
+the small-angle approximation (<code>GZ ≈ GM × sin(θ)</code>) for angles up to roughly 30°.
+<code>gz_at_angle</code> in <code>analysis.c</code> implements this formula; <code>integrate_gz</code> uses it
+over 100 trapezoidal steps to compute righting-lever areas.</p>
+<p><strong>Waterplane area coefficient (Cw)</strong>
+The ratio of the actual waterplane area to the circumscribed rectangle (L × B).
+CargoForge-C uses <code>WATERPLANE_COEFF = 0.85</code> in the box-hull BM formula.  From
+the hydrostatic table, waterplane area is available directly in <code>HydroEntry.waterplane_area</code>.</p>
+<hr />
+<p><em>End of glossary. For the full lesson sequence, see <a href="../">index.md</a>.</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../lab-12-capstone/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Lab 12 — A Realistic Voyage">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Lab 12 — A Realistic Voyage
+              </div>
+            </div>
+          </a>
+        
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.top", "navigation.tracking", "navigation.footer", "toc.follow", "content.code.copy", "search.suggest", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../assets/sidebar-toggle.js"></script>
+      
+        <script src="../assets/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+        <script src="../assets/terms-data.js"></script>
+      
+        <script src="../assets/terms-popup.js"></script>
+      
+        <script src="../assets/widgets/_core.js"></script>
+      
+        <script src="../assets/widgets/cg-balance-beam.js"></script>
+      
+        <script src="../assets/widgets/gm-stability-explorer.js"></script>
+      
+        <script src="../assets/widgets/free-surface-explorer.js"></script>
+      
+        <script src="../assets/widgets/hydro-interpolation-explorer.js"></script>
+      
+        <script src="../assets/widgets/ffd-stepper.js"></script>
+      
+        <script src="../assets/widgets/malloc-lifecycle-stepper.js"></script>
+      
+        <script src="../assets/widgets/tokenizer-playground.js"></script>
+      
+        <script src="../assets/widgets/asan-toggle-demo.js"></script>
+      
+    
+  </body>
+</html>
