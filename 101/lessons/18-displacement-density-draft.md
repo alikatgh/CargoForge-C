@@ -314,4 +314,12 @@ over the load at each of 20 hull stations spaced along the full length.
   every downstream stability calculation.
 - An overweight loading plan is caught before any physics: `r.gm = NAN` signals rejection.
 
+## Check yourself
+
+??? question "Why does the same ship sit deeper in a fresh-water river than out at sea?"
+    Fresh water is less dense than seawater, so a larger volume must be displaced to balance the same weight — which is exactly why load lines are marked separately for salt water and fresh water.
+
+??? question "Does perform_analysis compute weight from draft, or draft from weight — and why that direction?"
+    Draft from weight. In practice you know the cargo you're loading before you know how deep the ship will sit; that is the direction `hydro_draft_from_displacement` actually runs in.
+
 *Next: [The box-hull model](19-the-box-hull-model.md).*

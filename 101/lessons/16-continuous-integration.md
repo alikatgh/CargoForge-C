@@ -233,4 +233,12 @@ would make the CI gate equivalent to the local sanitizer workflow. The compile t
 - The Makefile's `test-asan` target — not yet wired into CI — would add AddressSanitizer coverage and would have caught the `parse_cargo_list` heap-use-after-free automatically.
 - Expanding CI to run `make test` or `make test-asan` requires adding a single step to the workflow YAML.
 
+## Check yourself
+
+??? question "Why does CI run on a fresh ubuntu-latest VM instead of the developer's own machine?"
+    So "works on my machine" is never a valid excuse. The VM carries none of a developer's local environment quirks or leftover state — if the code fails there, the bug is real, not an artifact of one machine's setup.
+
+??? question "If make test-asan had been wired into CI from day one, what would have happened to the real UAF bug?"
+    The first push that exercised the bad cargo-parse error path would have made the sanitizer abort with the exact offending line, failing the build immediately — the bug would never have reached `main`, let alone shipped.
+
 *Next: [Lab 4 - Run and extend the tests](lab-04-build-test.md).*

@@ -288,4 +288,12 @@ value chosen to warn operators well before the IMO hard floor of 0.15 m.
 - The corrected GM (`gm_corrected = gm - free_surface_correction`) is used for
   all IMO checks and downstream calculations; KG is its primary driver.
 
+## Check yourself
+
+??? question "Why is a cargo item's vertical moment arm pos_z + dimensions[2]/2, not just pos_z?"
+    A box's centre of gravity sits at its geometric middle, not its bottom face. The bottom is at `pos_z`; the centre — where the weight effectively acts — is half a height higher.
+
+??? question "If you stack an identical container directly on top of another, does its vertical moment double?"
+    More than double. The upper container's centre of gravity roughly triples in height relative to the keel (from 1.3 m to 3.9 m in the worked example), so its moment contribution triples too — which is exactly why high stowage erodes GM so quickly.
+
 *Next: [The center of buoyancy and the metacenter](22-buoyancy-and-the-metacenter.md).*

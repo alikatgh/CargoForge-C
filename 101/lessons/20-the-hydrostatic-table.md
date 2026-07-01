@@ -264,4 +264,12 @@ The tank configuration key (`tank_config`) works identically: one key in the con
 - When a table is loaded, every approximate box-hull constant (0.75, 0.53, 0.85) is replaced by real data read from the table, and `AnalysisResult.hydro_table_used` is set to 1.
 - Clamping at table boundaries prevents extrapolation; an overweight ship is caught earlier by the weight limit check.
 
+## Check yourself
+
+??? question "Why must a hydrostatic table's rows be in strictly ascending order for interpolation to work?"
+    The lookup finds the bracketing rows by assuming the table is monotonic. A reversed or duplicated row would make it return the wrong bracket, silently producing a wrong interpolated value instead of a clear error — which is exactly why parse_hydro_table rejects an out-of-order table.
+
+??? question "A ship displaces 8400 t, and the table has rows at 8000 t (draft 6.0 m) and 11000 t (draft 8.0 m). Roughly what draft does linear interpolation give?"
+    About 6.3 m — the target sits (8400-8000)/(11000-8000) ≈ 0.133 of the way from the first row to the second, so draft ≈ 6.0 + 0.133 x 2.0.
+
 *Next: [Lab 5 — Compute a Draft by Hand](lab-05-flotation.md).*

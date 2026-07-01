@@ -309,4 +309,12 @@ This rebuilds every source file with `-fsanitize=address,undefined` and re-runs 
 - Regression tests pin down *invariants*, not just return values: the UAF test asserts `s.cargo == NULL && s.cargo_count == 0` because that intermediate state is what prevents the later crash.
 - `make test` checks logic; `make test-asan` checks memory safety. Both must pass before a change is considered correct.
 
+## Check yourself
+
+??? question "What does assert(condition) actually do when the condition turns out to be false?"
+    It aborts the program immediately and prints the source file name and line number of the failed assertion. That abort-with-location is the entire test mechanism — no framework required.
+
+??? question "Why does test_hydrostatics.c compare floats with a tolerance (fabsf(a - b) < 0.01f) instead of ==?"
+    Floating-point arithmetic accumulates tiny rounding differences even when a calculation is correct. Exact equality would fail a genuinely right answer, so "close enough" — one centimetre here — is the correct comparison for physical quantities like draft or KB.
+
 *Next: [Continuous integration](16-continuous-integration.md).*

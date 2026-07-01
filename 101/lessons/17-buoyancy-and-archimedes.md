@@ -227,4 +227,12 @@ The CSV format expected by `parse_hydro_table` in [`src/hydrostatics.c`](https:/
 - All three feed into the fundamental stability equation $GM = KB + BM - KG$, computed in `perform_analysis` in [`src/analysis.c`](https://github.com/alikatgh/CargoForge-C/blob/main/src/analysis.c).
 - IMO requires $GM \geq 0.15\ \text{m}$; CargoForge-C enforces this as part of its six-criterion intact stability check.
 
+## Check yourself
+
+??? question "A solid steel cube sinks, but a steel ship floats. What's actually different?"
+    Not the material — the shape. A solid cube displaces only its own small volume of water and loses the buoyancy tug-of-war. Spread that same steel into a hollow hull and it shoves aside far more water before it's even half submerged, generating enough upward force to balance its weight.
+
+??? question "In one sentence, what determines the draft a ship actually settles at?"
+    The depth at which the weight of the water it has displaced exactly equals the ship's own total weight — the point where the tug-of-war between gravity and buoyancy is a draw.
+
 *Next: [Displacement, density, and draft](18-displacement-density-draft.md).*

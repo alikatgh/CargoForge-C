@@ -245,4 +245,12 @@ That is a very large GM — the ship is very stiff. A 22 m beam drives that resu
 - GM = KB + BM − KG; all downstream stability criteria (GZ curve, IMO checks, heel) use the GM computed here after free-surface correction.
 - The box-hull model is reliable for full-form general cargo ships at planning stage; for regulatory submissions or unusual hull forms, always supply a real hydrostatic table.
 
+## Check yourself
+
+??? question "Why divide displaced volume by (L x B x Cb) instead of just (L x B)?"
+    A real hull tapers at the bow and stern, so it fills only about 75% (Cb = 0.75) of its bounding rectangular box. Dividing by that smaller effective volume gives a deeper, more realistic draft than assuming a perfect rectangle would.
+
+??? question "Why does doubling a ship's beam roughly quadruple BM in the box-hull formula?"
+    BM = I / V, and I = L x B³ / 12 x Cw — beam is *cubed* in the waterplane inertia term. Doubling B multiplies that term by 8; after dividing by the displaced volume (which only grows linearly with beam), BM still ends up roughly four times larger.
+
 *Next: [The hydrostatic table](20-the-hydrostatic-table.md).*
