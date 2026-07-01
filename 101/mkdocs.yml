@@ -35,10 +35,13 @@ theme:
 extra_css:
   - assets/extra.css
   - assets/widgets/_core.css
+  - assets/terms-popup.css
 extra_javascript:
   - assets/sidebar-toggle.js
   - assets/mathjax.js
   - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+  - assets/terms-data.js
+  - assets/terms-popup.js
   - assets/widgets/_core.js
   - assets/widgets/cg-balance-beam.js
   - assets/widgets/gm-stability-explorer.js
