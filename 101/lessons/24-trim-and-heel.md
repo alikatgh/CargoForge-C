@@ -239,4 +239,12 @@ In JSON mode ([`src/json_output.c`](https://github.com/alikatgh/CargoForge-C/blo
 - The bin-packer places cargo without minimising trim or heel; `perform_analysis` reports the outcome afterward.
 - Guards (`gm_l > 0.01f`, `gm_effective > 0.01f`) prevent division by near-zero when the ship is tender.
 
+## Check yourself
+
+??? question "What's the physical difference between trim and heel?"
+    Trim is the fore-aft tilt — a difference between bow and stern draft, caused by cargo placed forward or aft of centre. Heel is the side-to-side tilt — port vs. starboard — caused by cargo placed off the centreline.
+
+??? question "Why do the trim and heel formulas need a guard against GM being near zero?"
+    Both formulas divide by a metacentric-height-related quantity. If GM (or GM_L) is close to zero, that division blows up toward a huge or nonsensical value — the guard catches the tender-ship edge case before the arithmetic misbehaves.
+
 *Next: [Free surface and the IMO criteria](25-free-surface-and-imo-criteria.md).*

@@ -266,4 +266,12 @@ Hydrostatics: Box-hull approximation
 - When a hydrostatic table is loaded, `hydrostatics.c` performs a two-step lookup — inverse interpolation to find draft from displacement, then forward interpolation to read KB and BM at that draft.
 - The box-hull fallback uses fixed coefficients (`KB_FACTOR = 0.53`, `WATERPLANE_COEFF = 0.85`) and is appropriate for design exploration, not final certification.
 
+## Check yourself
+
+??? question "Why does the centre of buoyancy B move when a ship heels, but the centre of gravity G does not?"
+    B is the centroid of the underwater hull shape, which genuinely changes as more hull submerges on the low side and less on the high side. G is the centroid of the ship's fixed weight distribution — tilting the hull doesn't move any weight, so G stays put.
+
+??? question "What's special about the metacentre M for small heel angles?"
+    It stays nearly fixed in place even as B swings around beneath it, so the heeling hull behaves like a pendulum hung from a stationary pivot at M. That stability of M is exactly what makes GM a dependable safety margin.
+
 *Next: [GM: why ships self-right](23-gm-why-ships-self-right.md).*

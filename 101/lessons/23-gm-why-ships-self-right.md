@@ -298,4 +298,12 @@ Stiffness is often a bigger practical concern for cargo operators than tendernes
 - The GZ curve extends stability assessment beyond small angles using the wall-sided formula; `gz_at_angle` implements it in four lines of C.
 - IMO MSC.267/85 sets six thresholds; `imo_compliant = 1` only when all six pass simultaneously.
 
+## Check yourself
+
+??? question "If GM is exactly zero, is the ship already unstable?"
+    It's right on the boundary — no restoring force develops at all, so any small disturbance can tip it further with nothing pushing back. Strictly negative GM is where it actively capsizes without help.
+
+??? question "Loading cargo higher raises KG. What happens to GM, and by how much?"
+    GM shrinks one-for-one with KG — every extra metre KG rises subtracts a metre from GM = KB + BM - KG, since KB and BM are hull-geometry properties that don't change just because cargo moved higher.
+
 *Next: [Trim and heel](24-trim-and-heel.md).*

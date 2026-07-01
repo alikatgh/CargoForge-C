@@ -329,4 +329,12 @@ After both files parse successfully, the `Ship` struct holds:
 - Parse errors clean up completely: freed arrays are NULLed immediately to prevent
   heap-use-after-free in `ship_cleanup`.
 
+## Check yourself
+
+??? question "Why does CargoForge-C use two different text formats — key=value for the ship config and whitespace columns for the manifest — instead of one format for both?"
+    The ship config is a small, fixed set of named properties, so an order-independent, self-describing `key=value` format fits well. The manifest is a list that can be any length, so compact whitespace-delimited rows scale better to hundreds of items.
+
+??? question "What happens if a manifest line has a typo in its weight field?"
+    `parse_cargo_list` rejects the entire file and reports a line number, rather than silently guessing a value. The formats are strict precisely so a typo can't quietly turn into wrong physics.
+
 *Next: [Tokenizing and parsing in C](27-tokenizing-and-parsing-in-c.md).*

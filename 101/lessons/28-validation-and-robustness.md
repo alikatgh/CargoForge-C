@@ -252,4 +252,12 @@ The heap-use-after-free in the original `parse_cargo_list` was found exactly thi
 - Setting a freed pointer to NULL immediately after `free` is not a style choice — it is the only reliable way to prevent a use-after-free when the pointer will be read again by any other code path.
 - The fuzzer encodes the core contract as a machine-checked test: clean rejection of bad input is required; crashing is a bug.
 
+## Check yourself
+
+??? question "What four checks does safe_atof perform before it trusts a numeric field?"
+    Overflow, at least one digit actually present, no trailing garbage after the number, and the value falling within that field's valid range. Failing any one of the four returns NAN.
+
+??? question "Why does parse_cargo_list count lines first and malloc once, instead of growing the cargo array as it parses?"
+    With a single allocation, every error path only ever has one array to free. A grow-as-you-go approach would need to track and correctly free whatever partial state existed at every possible failure point — multiplying the places a cleanup bug could hide.
+
 *Next: [Dangerous-goods (IMDG) parsing](29-dangerous-goods-imdg-parsing.md).*

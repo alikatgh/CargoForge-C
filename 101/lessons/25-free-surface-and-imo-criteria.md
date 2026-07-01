@@ -265,4 +265,12 @@ If no tank CSV is loaded (`ship->tanks == NULL`), `calculate_virtual_kg_rise` re
 - Placement constraints in `constraints.c` (deck weight ratio, stacking pressure, point load) act as a first line of defence, keeping KG low before the stability solver runs.
 - If no tank file is loaded, the free-surface correction is zero; the field is silently skipped, not an error.
 
+## Check yourself
+
+??? question "Why is a half-full tank more dangerous than one that's completely full or completely empty?"
+    A full or empty tank's liquid can't shift, so it acts like ordinary fixed weight. A partly-filled tank has a free surface that slides toward the low side on every roll — acting exactly as if the ship's centre of gravity had been raised.
+
+??? question "Broadly, what are IMO's six intact-stability criteria actually checking?"
+    Two things: a minimum *initial* stability margin (GM, the righting arm at 30°, and the angle of maximum righting arm), and enough *stored righting energy* across a range of heel angles (the areas under the GZ curve from 0–30°, 0–40°, and 30–40°).
+
 *Next: [Lab 6 — Compute GM, then break it](lab-06-stability.md).*

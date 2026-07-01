@@ -373,4 +373,12 @@ data.
   returning — leaving a stale non-NULL pointer is the root cause of the heap-use-after-free
   bug the fuzzer caught.
 
+## Check yourself
+
+??? question "Why does parse_cargo_list use two separate saveptr variables with strtok_r instead of one?"
+    One `saveptr` tracks the outer loop splitting the line into fields (on space/tab); a second, independent `saveptr` tracks the inner loop splitting the dimensions field (on 'x'). Sharing a single `saveptr` between both loops would let one silently corrupt the other's position.
+
+??? question "What does safe_atof return on a bad numeric field, and how does the caller detect it?"
+    It returns `NAN`. Callers detect it with `isnan(value)`, because `NAN` famously fails even a comparison against itself (`NAN != NAN` is true), so a plain `==` check can't be used to spot it.
+
 *Next: [Validation and robustness](28-validation-and-robustness.md).*
