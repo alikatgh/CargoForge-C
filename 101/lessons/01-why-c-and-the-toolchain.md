@@ -1,6 +1,6 @@
 # Why C, and the toolchain
 
-CargoForge-C is described in its own README as "a pure C99 maritime cargo loading optimizer... zero external dependencies." Understanding why the project was written in C — and how C source code becomes a running program — is the foundation for everything that follows. This lesson maps the compile-assemble-link-run pipeline onto the files you can actually see in the repository.
+CargoForge-C is described in its own README — the plain-text introduction file almost every coding project ships with, usually the first thing you'd open — as "a pure C99 maritime cargo loading optimizer... zero external dependencies." Understanding why the project was written in C, and how C source code (the text a person writes) becomes a running program (something your computer can actually carry out), is the foundation for everything that follows. This lesson maps the compile-assemble-link-run pipeline onto the files you can actually see in the repository — "repository" (or "repo") is just the name for the whole folder of code plus its saved history, tracked by a tool called git, which Lesson 4 covers properly.
 
 ## The mental model 🧠
 
@@ -35,8 +35,12 @@ Choosing C is choosing to work one floor above the bare machine — no garbage c
 
 ## What this actually means (plain English)
 
-No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
+No jargon — here's what the ideas in this lesson *actually* mean, and why they matter. If you've never programmed before, start with these four — everything else in the lesson leans on them.
 
+- **Source code** = "the text a person writes, in a language like C, before any computer can run it" — every `.c` file in this project is source code; on its own it does nothing at all, the same way a recipe cooks nothing by itself until someone follows it.
+- **Program / binary / executable** (this course uses the three almost interchangeably) = "the finished, runnable thing your computer can actually carry out" — it's the cooked meal, not the recipe. In this project that finished thing is a single file called `cargoforge`.
+- **Terminal / command line** = "a text-only way to tell your computer what to do — type a line, press Enter, read the reply — instead of clicking icons" — every `./cargoforge ...` or `make` command in this lesson is typed into one. Lesson 4 walks through opening one for the first time, so don't worry yet if you've never used one.
+- **Library** = "a bundle of ready-made code someone else already wrote, that your program can borrow instead of rewriting from scratch" — CargoForge-C borrows from exactly one, the C math library (`libm`), for routines like `sin()` and `sqrt()`.
 - **Compiled language** = "code you write gets translated into machine instructions before it ever runs" — unlike Python or JavaScript, there is no interpreter sitting between CargoForge-C and the CPU at runtime; the OS loads the `cargoforge` binary directly and runs it, which is why hydrostatic loops and GZ integrations can execute thousands of times per second without slowing down.
 - **Object file (`.o`)** = "a half-finished puzzle piece of machine code" — when `cc -c src/analysis.c` runs, it turns that one file into `build/analysis.o`, which contains the machine instructions for functions like `perform_analysis` but leaves a blank where any call to a function in another file (say, `parse_cargo_list` in `parser.c`) will eventually go.
 - **Linking** = "snapping all the puzzle pieces together into one runnable program" — the linker takes every `.o` in `build/`, resolves the blanks by matching function names to their addresses, appends `-lm` (the math library needed for `sin`, `atan`, `sqrt` in `analysis.c`), and produces the single `cargoforge` executable.
@@ -54,7 +58,7 @@ Ship-stability software has constraints that rule out many popular languages:
 
 **It runs everywhere.** A vessel's onboard computer might be an embedded Linux box from 2010, a standard shore-side PC, or a web browser used by a port agent. C compiles to native machine code on all of them. CargoForge-C takes this literally: the same source tree builds a native CLI binary *and* a WebAssembly module that runs in a browser.
 
-**It has no runtime overhead.** Languages like Python or Java carry a runtime interpreter or virtual machine. C does not. The operating system loads the binary directly. For a tool performing thousands of floating-point calculations per second (hydrostatic interpolation, GZ curve integration, bin-packing), that matters.
+**It has no runtime overhead.** Languages like Python or Java carry a runtime interpreter or virtual machine — a program-within-a-program that translates your code into machine instructions on the fly, every single time it runs. C skips that middleman entirely: the operating system loads the binary directly and runs it as-is. For a tool performing thousands of floating-point calculations per second (hydrostatic interpolation, GZ curve integration, bin-packing), skipping that translation step matters.
 
 **It has no mandatory dependencies.** The README states "zero external dependencies." The only library CargoForge-C links is the standard C math library (`-lm`), which ships with every C toolchain. You can hand the source to any C compiler, anywhere, and build it.
 
@@ -71,19 +75,19 @@ Writing C is only the first step. Here is what happens between a `.c` file and a
 
 ### 1. Preprocessing
 
-Before any real compilation, the C preprocessor (`cpp`) reads your source and expands macros and `#include` directives. When you write:
+Before any real compilation, the C preprocessor (`cpp`) reads your source and expands macros (named find-and-replace rules, most commonly written as `#define`) and `#include` directives. When you write:
 
 ```c
 #include "cargoforge.h"
 ```
 
-the preprocessor literally pastes the contents of `cargoforge.h` into the `.c` file. `#define` constants such as `MAX_FREE_RECTS` in `cargoforge.h` are replaced with their literal values throughout the file. The output is a single expanded translation unit of pure C text — no macros remain.
+the preprocessor literally pastes the contents of `cargoforge.h` into the `.c` file. `#define` constants such as `MAX_FREE_RECTS` in `cargoforge.h` are replaced with their literal values throughout the file. The output is a single expanded **translation unit** — the formal name for "one fully assembled file, ready for the compiler" — of pure C text; no macros remain.
 
 ### 2. Compilation (and assembly)
 
 The C compiler (`gcc` or `clang`) translates the preprocessed C source into machine instructions. Internally this goes through an assembly stage, but you almost never see the intermediate assembly; the compiler emits an **object file** (`.o`) directly.
 
-An object file contains machine code, but it is not yet runnable. It has unresolved symbols — calls to functions defined in other `.c` files. It is a puzzle piece, not a complete picture.
+An object file contains machine code, but it is not yet runnable. It has unresolved symbols ("symbol" here just means a name — usually a function's — that the linker still needs to look up) — calls to functions defined in other `.c` files. It is a puzzle piece, not a complete picture.
 
 The Makefile captures this step in one rule (from `Makefile:54`):
 
@@ -94,7 +98,7 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c $(HDRS)
 
 - `$(CC)` is `gcc` (defined at line 2).
 - `-c` means "compile only — do not link." This produces an object file.
-- `-fPIC` means "position-independent code," needed so the same object file can be used in both the static library and the shared library.
+- `-fPIC` means "position-independent code," needed so the same object file can be used in both the static library and the shared library — a **static library** gets copied whole into your program at build time; a **shared library** instead stays as its own separate file that multiple programs can reuse at once. Lesson 43 covers this distinction properly.
 - `$<` is the source file; `$@` is the output object file.
 
 Every `.c` file in `src/` produces one `.o` file in `build/`. Run `make` and you will see lines like:
@@ -122,7 +126,7 @@ $(TARGET): $(ALL_OBJS)
 ./cargoforge optimize examples/sample_ship.cfg examples/sample_cargo.txt
 ```
 
-The operating system loads the binary into memory, sets up a stack and a heap, and jumps to `main()`. In CargoForge-C, `main.c` is two lines of substance: `init_cli_context` and `parse_cli_args` → `dispatch_subcommand`. Everything else flows from there.
+The operating system loads the binary into memory, sets up a stack and a heap (two different regions of memory the program will use — Lesson 10 explains exactly what each is for; for now just know the OS is preparing a private workspace before your code runs a single line), and jumps to `main()` — every C program's one official starting point, the first function that actually executes. In CargoForge-C, `main.c` is two lines of substance: `init_cli_context` and `parse_cli_args` → `dispatch_subcommand`. Everything else flows from there.
 
 ---
 
@@ -136,11 +140,11 @@ CFLAGS = -O3 -Wall -Wextra -std=c99 -D_POSIX_C_SOURCE=200809L -Iinclude
 
 | Flag | Meaning |
 |---|---|
-| `-O3` | Aggressive optimization. The compiler may reorder instructions, inline functions, and unroll loops. CargoForge-C runs at O3 in production — speed matters for the GZ integration loop. |
-| `-Wall -Wextra` | Enable nearly all compiler warnings. A warning in C often points to a real bug. |
-| `-std=c99` | Enforce the C99 language standard. Code using C11 or GNU extensions will be rejected. |
-| `-D_POSIX_C_SOURCE=200809L` | Expose POSIX.1-2008 extensions in the system headers (`mkstemp`, `strtok_r`, `open_memstream`). Without this define, these functions are hidden. |
-| `-Iinclude` | Add `include/` to the header search path, so `#include "cargoforge.h"` resolves without a full path. |
+| `-O3` | **In plain terms: "make it fast, even if the build itself takes longer."** Aggressive optimization — the compiler may reorder instructions, inline functions (paste a function's own body directly into its caller instead of jumping to it), and unroll loops (repeat a loop's body directly instead of looping), all to make the finished program run quicker. CargoForge-C runs at `-O3` in production because speed matters for the GZ integration loop, which repeats thousands of times per calculation. |
+| `-Wall -Wextra` | **In plain terms: "warn me about anything that looks suspicious."** This turns on nearly all of the compiler's warnings. A warning doesn't stop the build, but in C it very often points at a real bug — like using a variable before it's been given a value. |
+| `-std=c99` | **In plain terms: "only accept the 1999 rulebook for C."** Code written using a newer standard (C11) or a specific compiler's own extra, non-standard features (GNU extensions) gets rejected, which keeps the code portable to any C99-compliant compiler. |
+| `-D_POSIX_C_SOURCE=200809L` | **In plain terms: "unlock some extra operating-system-level functions."** POSIX is a standard that most Unix-like systems (Linux, macOS) follow; this flag tells the system headers to reveal a handful of POSIX-specific functions this project needs (`mkstemp`, `strtok_r`, `open_memstream`) that are hidden by default. |
+| `-Iinclude` | **In plain terms: "look in this folder first whenever you see `#include`."** It adds the `include/` folder to the compiler's search path, so a line like `#include "cargoforge.h"` finds the file without needing its full path spelled out. |
 
 When debugging, the build can switch to `-fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer -g` (from `Makefile:94`). This replaces O3 with debug info and injects runtime checks that catch memory errors and undefined behaviour — the same tooling that found the heap-use-after-free bug in `parse_cargo_list`.
 
@@ -181,6 +185,9 @@ The eight exported functions (`cargoforge_open`, `cargoforge_close`, `cargoforge
 ---
 
 ## Your First Build
+
+!!! tip "New to the terminal?"
+    Every command below is typed into a terminal — a text-only window for controlling your computer, instead of clicking icons. Type the line, press Enter, and wait for it to finish before typing the next one. Lesson 4 covers terminals properly, including what to do if a command doesn't work; for now, just follow along.
 
 Clone the repository and run:
 
