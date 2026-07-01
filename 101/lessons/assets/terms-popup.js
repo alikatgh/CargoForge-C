@@ -104,6 +104,26 @@
     });
   }
 
+  function renderRichText(container, text) {
+    container.textContent = "";
+    var parts = text.split("`");
+    if (parts.length % 2 === 0) {
+      // odd number of backticks (unmatched) — bail out to plain text
+      container.textContent = text;
+      return;
+    }
+    for (var i = 0; i < parts.length; i++) {
+      if (parts[i] === "") continue;
+      if (i % 2 === 1) {
+        var code = document.createElement("code");
+        code.textContent = parts[i];
+        container.appendChild(code);
+      } else {
+        container.appendChild(document.createTextNode(parts[i]));
+      }
+    }
+  }
+
   function setupPopover() {
     var pop = document.createElement("div");
     pop.className = "glossary-popover";
@@ -120,12 +140,12 @@
     var closeBtn = pop.querySelector(".glossary-popover__close");
 
     function open(btn, entry) {
-      labelEl.textContent = entry.labels[0];
-      bodyEl.textContent = entry.body;
+      renderRichText(labelEl, entry.labels[0]);
+      renderRichText(bodyEl, entry.body);
       pop.hidden = false;
 
       var r = btn.getBoundingClientRect();
-      var popWidth = 320;
+      var popWidth = 300;
       var left = Math.min(Math.max(8, r.left), window.innerWidth - popWidth - 8);
       var top = r.bottom + 8;
       if (top + 160 > window.innerHeight) top = Math.max(8, r.top - 168);
