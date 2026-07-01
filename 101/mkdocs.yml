@@ -34,10 +34,13 @@ theme:
 
 extra_css:
   - assets/extra.css
+  - assets/widgets/_core.css
 extra_javascript:
   - assets/sidebar-toggle.js
   - assets/mathjax.js
   - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+  - assets/widgets/_core.js
+  - assets/widgets/cg-balance-beam.js
 
 markdown_extensions:
   - admonition

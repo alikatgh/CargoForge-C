@@ -29,6 +29,8 @@ A ship's CG is that same balance point for thousands of tonnes. CargoForge-C fin
 <text x="300" y="208" fill="currentColor" font-size="12.5" text-anchor="middle" opacity="0.75">CG = Σ(weightᵢ × positionᵢ) ⁄ Σ weightᵢ</text>
 </svg>
 
+<div class="lesson-widget" data-widget="cg-balance-beam"></div>
+
 ## What this actually means (plain English)
 
 No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.
