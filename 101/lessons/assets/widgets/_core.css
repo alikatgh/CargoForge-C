@@ -68,6 +68,20 @@
   color: #d05663;
 }
 
+.cf-widget__text--warn {
+  color: #d05663;
+}
+
+.cf-widget__field {
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 6px;
+  padding: 0.4rem 0.6rem;
+}
+
+.cf-widget__field--invalid {
+  border-color: #d05663;
+}
+
 .cf-widget__button {
   font: inherit;
   font-size: 0.88em;

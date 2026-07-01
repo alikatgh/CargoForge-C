@@ -82,6 +82,7 @@
       var weights = [];
       for (var i = 0; i < sliders.length; i++) {
         weights[i] = parseFloat(sliders[i].value);
+        if (isNaN(weights[i])) weights[i] = 0;
         outputs[i].textContent = weights[i].toFixed(1) + " t";
         var h = Math.max(4, weights[i] * 16);
         blocks[i].setAttribute("y", 118 - h);

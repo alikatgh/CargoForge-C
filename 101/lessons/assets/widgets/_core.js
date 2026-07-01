@@ -9,6 +9,9 @@
 
   window.CFWidgets = {
     register: function (name, initFn) {
+      if (registry[name]) {
+        console.warn('[cf-widgets] "' + name + '" is already registered — overwriting.');
+      }
       registry[name] = initFn;
     },
   };
@@ -25,7 +28,11 @@
         continue;
       }
       el.dataset.cfMounted = "true";
-      initFn(el);
+      try {
+        initFn(el);
+      } catch (e) {
+        console.error('[cf-widgets] widget "' + name + '" failed to mount:', e);
+      }
     }
   }
 

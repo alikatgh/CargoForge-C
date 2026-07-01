@@ -37,9 +37,9 @@
 
     function box(label, value, ok) {
       return (
-        '<div class="cf-widget__control" style="border:1px solid ' +
-        (ok === false ? "#D05663" : "var(--md-default-fg-color--lightest)") +
-        ';border-radius:6px;padding:0.4rem 0.6rem">' +
+        '<div class="cf-widget__control cf-widget__field' +
+        (ok === false ? " cf-widget__field--invalid" : "") +
+        '">' +
         '<span style="opacity:0.6;font-size:0.85em">' +
         label +
         "</span>" +

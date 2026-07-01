@@ -10,10 +10,7 @@
 
   var MAX_PER_TERM = 2;
   var SKIP_TAGS = { CODE: 1, PRE: 1, A: 1, H1: 1, H2: 1, H3: 1, H4: 1, H5: 1, H6: 1 };
-
-  function escapeRegExp(s) {
-    return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  }
+  var SVG_NS = "http://www.w3.org/2000/svg";
 
   function buildMatchList() {
     var list = [];
@@ -32,6 +29,7 @@
   function isInsideSkippedTag(node) {
     var el = node.parentElement;
     while (el) {
+      if (el.namespaceURI === SVG_NS) return true; // never linkify inside inline SVG (title/desc/text/tspan/...)
       if (SKIP_TAGS[el.tagName]) return true;
       if (el.classList && el.classList.contains("glossary-term")) return true;
       el = el.parentElement;
@@ -59,6 +57,12 @@
       var lastIndex = 0;
 
       for (var pos = 0; pos < text.length; ) {
+        var before = pos > 0 ? text[pos - 1] : " ";
+        if (/[A-Za-z0-9_]/.test(before)) {
+          pos++;
+          continue; // not a word-start position — skip the whole label scan
+        }
+
         var matched = null;
         for (var m = 0; m < matchList.length; m++) {
           var label = matchList[m].label;
@@ -67,9 +71,8 @@
           )
             continue;
           if (text.substr(pos, label.length) !== label) continue;
-          var before = pos > 0 ? text[pos - 1] : " ";
           var after = pos + label.length < text.length ? text[pos + label.length] : " ";
-          if (/[A-Za-z0-9_]/.test(before) || /[A-Za-z0-9_]/.test(after)) continue;
+          if (/[A-Za-z0-9_]/.test(after)) continue;
           matched = matchList[m];
           break;
         }

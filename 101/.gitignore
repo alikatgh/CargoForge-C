@@ -1,3 +1,4 @@
 # MkDocs build output and local virtualenv
 site/
 .venv/
+scripts/__pycache__/

@@ -37,7 +37,7 @@
     simBtn.addEventListener("click", function () {
       if (sanitizerOn) {
         output.innerHTML =
-          '<span style="color:#D05663">==12345==ERROR: AddressSanitizer: heap-use-after-free on address ' +
+          '<span class="cf-widget__text--warn">==12345==ERROR: AddressSanitizer: heap-use-after-free on address ' +
           randomGarbageHex() +
           "\n" +
           "READ of size 8 at " +

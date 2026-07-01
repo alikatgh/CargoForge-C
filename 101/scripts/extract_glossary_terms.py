@@ -59,11 +59,14 @@ def main():
 
         head, rest = m.group(1).strip(), m.group(2).strip()
 
+        if " — see also" in head:
+            # Appendix note on a term that already has its own full entry above —
+            # always skip, regardless of parse order (no known_slugs dependency).
+            i += 1
+            continue
+
         if " — see" in head:
             base_term = head.split(" — see")[0].strip()
-            if slug(base_term) in known_slugs:
-                i += 1
-                continue
             target = re.sub(r"^\*|\*\.?$|\.$", "", rest).strip("* .")
             entries.append({"labels": [base_term], "body": "See " + target + "."})
             known_slugs.add(slug(base_term))

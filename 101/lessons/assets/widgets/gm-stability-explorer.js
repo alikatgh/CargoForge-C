@@ -104,7 +104,9 @@
       gmValue.textContent = gm.toFixed(2) + " m";
       gz30value.textContent = gz30.toFixed(2) + " m";
 
-      var unsafe = gm <= 0 || gz30 < 0.2;
+      // Compare the same rounded value that's displayed, so a GZ@30 that
+      // reads "0.20 m" is never classified as unsafe by float noise alone.
+      var unsafe = gm <= 0 || parseFloat(gz30.toFixed(2)) < 0.2;
       readout.classList.toggle("cf-widget__readout--warn", unsafe);
       curve.setAttribute("stroke", gm <= 0 ? "#D05663" : "#12A594");
     }

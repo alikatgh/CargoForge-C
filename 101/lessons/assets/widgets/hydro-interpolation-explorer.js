@@ -83,7 +83,8 @@
       var i = bracket(v);
       var lo = TABLE[i],
         hi = TABLE[i + 1];
-      var t = (v - lo.displ) / (hi.displ - lo.displ);
+      var denom = hi.displ - lo.displ;
+      var t = denom !== 0 ? (v - lo.displ) / denom : 0;
       var draft = lerp(lo.draft, hi.draft, t);
 
       for (var r = 0; r < rows.length; r++) {
