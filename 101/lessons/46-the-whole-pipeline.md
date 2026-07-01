@@ -157,7 +157,7 @@ c->pos_z = -1.0f;
 If the optional DG field is present, `parse_dg_field` parses the grammar `DG:class.division:UNnumber:stowage:EmS` and returns a heap-allocated `DGInfo` struct assigned to `c->dg`. Non-DG cargo leaves `c->dg = NULL`.
 
 !!! note "The dangling-pointer fix"
-    If weight or dimension parsing fails mid-list, the error path must free the partially-built `ship->cargo` array. The current code immediately sets `ship->cargo = NULL` and `ship->cargo_count = 0` after calling `free`. Without that NULL-out, `ship_cleanup` would later iterate the stale count and dereference freed memory — the heap-use-after-free bug described in the digest (section 7). The comment in the source says: `// avoid a dangling pointer -> use-after-free/double-free in ship_cleanup`.
+    If weight or dimension parsing fails mid-list, the error path must free the partially-built `ship->cargo` array. The current code immediately sets `ship->cargo = NULL` and `ship->cargo_count = 0` after calling `free`. Without that NULL-out, `ship_cleanup` would later iterate the stale count and dereference freed memory — the heap-use-after-free bug described in [Lesson 13](13-memory-bugs.md). The comment in the source says: `// avoid a dangling pointer -> use-after-free/double-free in ship_cleanup`.
 
 ---
 

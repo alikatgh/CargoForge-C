@@ -53,7 +53,7 @@ The contract is: **a test binary must exit 0 on success and non-zero on failure.
 
 ## The two test files
 
-CargoForge-C ships 8 test binaries (see §6.2 of the project digest). Two of them are studied here:
+CargoForge-C ships 8 test binaries in total. Two of them are studied here:
 
 | Binary | Source | What it covers |
 |---|---|---|

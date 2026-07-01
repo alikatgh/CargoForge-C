@@ -153,7 +153,7 @@ r.gm = r.kb + r.bm - r.kg;
 KG (the vertical centre of gravity) is computed earlier in the same function from the actual cargo positions — that part does not change between the box-hull and table-based paths. What changes is where KB and BM come from.
 
 !!! note
-    A free-surface correction is applied after this line. See the digest section on tanks for details. All stability criteria use `gm_corrected`, not `gm`.
+    A free-surface correction is applied after this line. See [Lesson 36](36-tanks-and-free-surface.md) for details. All stability criteria use `gm_corrected`, not `gm`.
 
 ---
 

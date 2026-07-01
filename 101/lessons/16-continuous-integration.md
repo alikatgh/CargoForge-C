@@ -167,7 +167,7 @@ This invokes the compiled binary against the bundled example files. It exercises
 If any of those modules crash, return an error exit code, or trigger a sanitizer fault (when running under ASan), this step fails.
 
 !!! note
-    The digest describes a more comprehensive test suite with 8 dedicated test binaries (`test_parser`, `test_analysis`, `test_constraints`, etc.). Those are run locally via `make test` or `make test-asan`. The CI workflow currently runs only the integration smoke test. Expanding the workflow to include `make test` would be a straightforward addition — replace `./cargoforge examples/...` with `make test`.
+    [Lesson 15](15-unit-testing-in-c.md) describes a more comprehensive test suite with 8 dedicated test binaries (`test_parser`, `test_analysis`, `test_constraints`, etc.). Those are run locally via `make test` or `make test-asan`. The CI workflow currently runs only the integration smoke test. Expanding the workflow to include `make test` would be a straightforward addition — replace `./cargoforge examples/...` with `make test`.
 
 ---
 
@@ -179,7 +179,7 @@ $$GM_{corrected} = KB + BM - KG - FSC$$
 
 A one-character typo in the accumulation loop — say, `+=` changed to `-=` — would produce a plausible-looking number for most inputs. Manual review might not catch it. A CI run that includes a regression test with a known-correct answer catches it instantly.
 
-The fuzzer ([`scripts/fuzz.sh`](https://github.com/alikatgh/CargoForge-C/blob/main/scripts/fuzz.sh)) documents exactly this class of risk. It feeds adversarial inputs — negative weights, overflow values, malformed DG strings — and checks that the binary never crashes (exit code ≥ 128). The heap-use-after-free bug described in the digest was found precisely this way: `parse_cargo_list` freed `ship->cargo` on an error path but left `ship->cargo_count` non-zero, so `ship_cleanup` later walked off freed memory. AddressSanitizer, running inside the fuzzer, produced exit code 134 (SIGABRT), and the fuzzer flagged it as a fail. The fix — setting both `ship->cargo = NULL` and `ship->cargo_count = 0` immediately after the free — was validated by re-running the same adversarial inputs until they all passed cleanly.
+The fuzzer ([`scripts/fuzz.sh`](https://github.com/alikatgh/CargoForge-C/blob/main/scripts/fuzz.sh)) documents exactly this class of risk. It feeds adversarial inputs — negative weights, overflow values, malformed DG strings — and checks that the binary never crashes (exit code ≥ 128). The heap-use-after-free bug described in [Lesson 13](13-memory-bugs.md) was found precisely this way: `parse_cargo_list` freed `ship->cargo` on an error path but left `ship->cargo_count` non-zero, so `ship_cleanup` later walked off freed memory. AddressSanitizer, running inside the fuzzer, produced exit code 134 (SIGABRT), and the fuzzer flagged it as a fail. The fix — setting both `ship->cargo = NULL` and `ship->cargo_count = 0` immediately after the free — was validated by re-running the same adversarial inputs until they all passed cleanly.
 
 Running that kind of gate automatically on every push means regressions are caught at the commit that introduced them, not discovered weeks later by a different developer.
 
@@ -206,7 +206,7 @@ The current `.github/workflows/c-build.yml` covers the compile + smoke-test gate
 | Makefile target | What it adds |
 |-----------------|-------------|
 | `make test` | Runs all 8 unit-level test binaries |
-| `make test-asan` | Rebuilds with `-fsanitize=address,undefined` and runs the full suite — catches the class of bug described in §7 of the digest |
+| `make test-asan` | Rebuilds with `-fsanitize=address,undefined` and runs the full suite — catches the class of bug described in [Lesson 13](13-memory-bugs.md) |
 | `make test-valgrind` | Runs each test binary under Valgrind for leak and memory-error detection |
 | `make validate` | Builds and runs the DNV-SE-0475 benchmark validation |
 

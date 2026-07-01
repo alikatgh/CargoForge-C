@@ -327,7 +327,7 @@ Each binary covers one module:
 | `test_imdg` | `imdg.c` — segregation matrix |
 | `test_library` | `libcargoforge.a` — full public API |
 
-Notice that `test_parser` deliberately feeds `bad_ship.cfg` to `parse_ship_config` and verifies rejection. It also tests that a cargo parse error leaves no dangling pointer — that was the real heap-use-after-free bug documented in the digest.
+Notice that `test_parser` deliberately feeds `bad_ship.cfg` to `parse_ship_config` and verifies rejection. It also tests that a cargo parse error leaves no dangling pointer — that was the real heap-use-after-free bug documented in [Lesson 13](13-memory-bugs.md).
 
 ---
 

@@ -95,7 +95,7 @@ dangerous good adds an optional fifth field using the grammar:
 DG:<class>[.<division>]:<UNnumber>:<stowage>:<EmS>
 ```
 
-A concrete example from the digest:
+A concrete example:
 
 ```
 FlammableLiquid   25   6x2.5x2.6   hazardous   DG:3.1:UN1203:A:F-E,S-D

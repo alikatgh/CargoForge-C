@@ -206,7 +206,7 @@ test-asan: clean all test
 	@echo "=== Memory safety tests (ASAN/UBSAN) passed ==="
 ```
 
-The `+=` operator appends to the existing variable rather than replacing it. This is a **target-specific variable**: the new value applies only when building via the `test-asan` target. The heap-use-after-free bug described in the digest (Section 7) was found precisely via this target — the sanitizer turned a stale pointer read into an immediate `SIGABRT`.
+The `+=` operator appends to the existing variable rather than replacing it. This is a **target-specific variable**: the new value applies only when building via the `test-asan` target. The heap-use-after-free bug described in [Lesson 13](13-memory-bugs.md) was found precisely via this target — the sanitizer turned a stale pointer read into an immediate `SIGABRT`.
 
 `fuzz` is simpler: it delegates entirely to a shell script:
 

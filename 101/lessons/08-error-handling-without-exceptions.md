@@ -1,6 +1,8 @@
 # Error handling without exceptions
 
-C gives you no `try`/`catch`, no stack unwinding, no runtime that catches a bad
+C gives you no `try`/`catch`, no stack unwinding (in languages that have it,
+this is the automatic process of jumping back out through every function
+call until something agrees to handle the error), no runtime that catches a bad
 value and routes it somewhere safe. Every error must be detected, reported, and
 propagated by hand. CargoForge-C handles this through four interlocking
 mechanisms: integer return codes, `errno`, `NaN` as a floating-point sentinel,
@@ -179,7 +181,10 @@ Any of these conditions causes `safe_atof` to print an error and return `NAN`.
 
 ## NaN as a floating-point sentinel
 
-`NAN` — "Not a Number" — is a special IEEE 754 floating-point value. It
+`NAN` — "Not a Number" — is a special IEEE 754 floating-point value. (IEEE 754
+is the industry-standard rulebook that defines how every `float` and `double`
+is laid out in memory and how arithmetic on them behaves — it is why floating-
+point numbers work the same way on essentially every computer.) `NAN`
 propagates through arithmetic (any arithmetic on `NAN` yields `NAN`) and can be
 tested with `isnan()`. This makes it an effective sentinel for "this value is
 not valid."

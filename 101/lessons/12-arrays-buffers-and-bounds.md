@@ -241,7 +241,11 @@ Three things to notice:
 
 1. **Doubling** is not arbitrary — amortised analysis shows that doubling
    capacity on each resize keeps the average cost of inserting one element
-   at $O(1)$ even though individual resizes cost $O(n)$.
+   at $O(1)$ even though individual resizes cost $O(n)$. (In plain terms:
+   $O(1)$ means "roughly constant time no matter how big the array gets," and
+   $O(n)$ means "time proportional to the array's size" — doubling means the
+   occasional expensive resize is rare enough that it barely affects the
+   average cost per line read.)
 2. **`realloc` returns a new pointer.** The original `lines` pointer may be
    invalid after the call. The code assigns to `new_lines` first and checks
    for NULL before touching `lines` — if it assigned directly to `lines` and

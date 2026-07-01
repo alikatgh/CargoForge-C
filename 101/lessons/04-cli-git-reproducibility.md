@@ -196,7 +196,7 @@ git push            # send commits to the remote repository (GitHub)
 
 ### Why commit messages matter
 
-A commit message is a permanent record of *why* a change was made. The fix described in the digest — nulling out `ship->cargo` after freeing it to prevent a heap-use-after-free — belongs in a commit message, not just a code comment. Future developers (including your future self) will read it and understand the intent without reconstructing it from the diff.
+A commit message is a permanent record of *why* a change was made. The fix covered in [Lesson 13](13-memory-bugs.md) — nulling out `ship->cargo` after freeing it to prevent a heap-use-after-free — belongs in a commit message, not just a code comment. Future developers (including your future self) will read it and understand the intent without reconstructing it from the diff.
 
 A common convention: start with a short prefix that classifies the change. For example:
 - `fix:` — a bug fix

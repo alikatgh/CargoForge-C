@@ -123,7 +123,7 @@ if (isnan(weight_t)) {
 }
 ```
 
-The comment is instructive: this NULL-assignment was added to fix a real heap-use-after-free (described in the digest, section 7). The compiler does not catch use-after-free — that requires a sanitizer or a static analyzer with interprocedural reach. But the compiler *would* warn if `ship->cargo` were read without a preceding NULL check, because `-Wmaybe-uninitialized` tracks uninitialized paths.
+The comment is instructive: this NULL-assignment was added to fix a real heap-use-after-free (described in [Lesson 13](13-memory-bugs.md)). The compiler does not catch use-after-free — that requires a sanitizer or a static analyzer with interprocedural reach. But the compiler *would* warn if `ship->cargo` were read without a preceding NULL check, because `-Wmaybe-uninitialized` tracks uninitialized paths.
 
 ---
 

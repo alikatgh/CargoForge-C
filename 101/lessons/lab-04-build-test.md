@@ -198,7 +198,7 @@ the same test output as before, followed by:
 
 If any test triggered a memory error, ASan would print a detailed report — the
 kind that led to finding and fixing the heap-use-after-free in
-`parse_cargo_list` described in the digest.
+`parse_cargo_list` described in [Lesson 13](13-memory-bugs.md).
 
 !!! note "Why ASan is not the default"
     Sanitized binaries run roughly 2× slower and use more memory. The default

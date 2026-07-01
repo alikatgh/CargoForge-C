@@ -79,7 +79,7 @@ The `Cargo` struct (defined in `cargoforge.h`) uses fixed-size arrays for the tw
 | `id` | `char[32]` | 31 |
 | `type` | `char[16]` | 15 |
 
-The sizes are chosen to be generous for realistic data (`"HeavyMachinery"` is 14 characters; `"hazardous"` is 9) while keeping the struct small enough to fit in a cache line alongside the float fields. Heap allocation would be wasteful for strings this short and would add a pointer-lifetime problem for every copy of the struct.
+The sizes are chosen to be generous for realistic data (`"HeavyMachinery"` is 14 characters; `"hazardous"` is 9) while keeping the struct small enough to fit in a cache line (a small, extremely fast chunk of memory the CPU pulls in all at once — a smaller struct means fewer of these fetches to read the whole thing) alongside the float fields. Heap allocation would be wasteful for strings this short and would add a pointer-lifetime problem for every copy of the struct.
 
 ---
 
@@ -190,7 +190,9 @@ static DGInfo *parse_dg_field(const char *field) {
     ...
 ```
 
-Several design decisions are packed into those eight lines:
+Several design decisions are packed into those eight lines (including `calloc`,
+which allocates memory on the heap *and* zeroes it in one step — Lesson 11
+covers heap allocation properly):
 
 1. **`strncmp(field, "DG:", 3)`** — checks the three-character prefix without requiring the whole string to match. If the prefix is absent the function returns `NULL` immediately, so a non-DG manifest field causes no allocation.
 

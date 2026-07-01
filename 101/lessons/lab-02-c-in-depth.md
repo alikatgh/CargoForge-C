@@ -31,7 +31,7 @@ around line 39 (`Cargo`) and line 53 (`Ship`).
 | Question | Where to look |
 |---|---|
 | What C type stores the cargo ID? How many characters maximum? | `Cargo.id` field |
-| Weight is stored as `float` — in what unit? | Digest §1.1 (the parser converts tonnes × 1000) |
+| Weight is stored as `float` — in what unit? | [Lesson 27](27-tokenizing-and-parsing-in-c.md) (the parser converts tonnes × 1000) |
 | What does `pos_x = -1.0` mean for a cargo item? | Comment above the `Cargo` typedef |
 | What is the type of `Ship.cargo`? Is it a single item or multiple? | `Cargo *cargo` — a pointer to an array |
 | What three optional sub-structs can be NULL on a `Ship`? | The "Optional data" block in the struct |
