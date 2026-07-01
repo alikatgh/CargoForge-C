@@ -345,4 +345,12 @@ must clear the IMO minimum of 0.15 m.
 - Both functions clamp at table boundaries rather than extrapolating; values outside the
   table range return the nearest endpoint.
 
+## Check yourself
+
+??? question "Why does the analysis usually run the hydrostatic lookup in reverse — displacement to draft — instead of draft to displacement?"
+    In practice you know the total weight you're loading before you know how deep the ship will sit. `hydro_draft_from_displacement` is built for exactly that direction, which is the one the real analysis needs.
+
+??? question "What happens if a target displacement falls entirely outside the table's range?"
+    The lookup clamps to the nearest endpoint rather than extrapolating beyond measured data — an honest admission that the table simply doesn't cover that condition, rather than guessing at a value with no basis.
+
 *Next: [Tanks and free surface](36-tanks-and-free-surface.md).*

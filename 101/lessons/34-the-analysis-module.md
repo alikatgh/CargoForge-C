@@ -374,4 +374,12 @@ parse_ship_config()        parse_cargo_list()
 - Six IMO criteria from MSC.267(85) are checked together; all must pass for `imo_compliant = 1`.
 - Longitudinal strength is opt-in: only evaluated when `ship->strength_limits` is non-NULL.
 
+## Check yourself
+
+??? question "Why does calling perform_analysis a pure function matter, beyond just being a nice property?"
+    It reads the Ship struct and changes nothing, so the same ship always produces the same AnalysisResult. That repeatability is exactly what makes it possible to write reliable, deterministic unit tests against it.
+
+??? question "What happens to a cargo item marked pos_x < 0 when perform_analysis runs?"
+    It is silently skipped in the moment-accumulation loop — contributing nothing to weight, KG, trim, or heel — so an item that never got placed can't corrupt the stability numbers for the items that did.
+
 *Next: [Hydrostatic interpolation](35-hydrostatic-interpolation.md).*

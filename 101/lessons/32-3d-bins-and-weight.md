@@ -346,4 +346,12 @@ coordinates written onto each `Cargo` struct persist into analysis.
 - The `pos_x/y/z` coordinates written by the placer feed directly into KG, trim,
   heel, and longitudinal-strength calculations in `analysis.c`.
 
+## Check yourself
+
+??? question "Why does a hold need to track both free 3D space and a running weight total, instead of just one?"
+    A spot can be geometrically empty and still forbidden — if the bin is already at its weight cap, or if adding weight there would push stability past a safe limit. "Does it fit?" is really three separate questions (room, structural capacity, stability), not one.
+
+??? question "What does split_space_3d do right after a box is placed?"
+    It cuts the free space around the newly placed box into up to three new rectangular free spaces — a right-remainder, a back-remainder, and a top-remainder — so later items still have somewhere to land.
+
 *Next: [Constraints: segregation and stackability](33-constraints-segregation-stackability.md).*

@@ -345,4 +345,12 @@ reconfigure the stow.
 - Stacking pressure uses AABB overlap fractions so partial overlaps are counted proportionally,
   not as all-or-nothing.
 
+## Check yourself
+
+??? question "Why are placement constraints checked at placement time, rather than after the whole stow is computed?"
+    Checking each candidate spot as it's tried lets the placer reject a bad one immediately and search elsewhere. Checking only at the end would mean discovering the whole stow is unsafe with no easy way to know which single placement caused it.
+
+??? question "Name one reason a geometrically valid, weight-legal spot could still be rejected."
+    Segregation — an incompatible dangerous-goods item too close by — or a stackability rule (fragile or reefer cargo can't take weight on top, or can't serve as a base for a stack), or excess stacking pressure on whatever sits beneath it.
+
 *Next: [Lab 8 - Place cargo and trigger a violation](lab-08-placement.md).*

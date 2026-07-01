@@ -258,4 +258,12 @@ After every successful placement, `split_space_3d` subdivides the occupied space
 - Items that cannot be placed receive `pos_x = -1.0f` as a sentinel and are excluded from stability analysis.
 - The placement loop calls `split_space_3d` after each success, subdividing the used space into up to three new free rectangles for future items.
 
+## Check yourself
+
+??? question "Why does First-Fit Decreasing sort cargo largest-first before placing anything?"
+    Large items are the hardest to fit and would get squeezed out if smaller items claimed the good spots first. Placing the big items first and letting small ones fill the leftover gaps produces a noticeably tighter overall pack.
+
+??? question "Once a spot is found, why does the placer pick the tightest-fitting valid space instead of just the first legal one?"
+    Among all the spots that pass the geometry, weight, and constraint checks, the one that wastes the least room leaves larger, more useful gaps behind for later items — a Best-Fit refinement layered on top of plain First-Fit.
+
 *Next: [3D bins and weight limits](32-3d-bins-and-weight.md).*

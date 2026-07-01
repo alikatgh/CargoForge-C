@@ -402,4 +402,12 @@ each axis, then takes the Euclidean magnitude). Violations are collected in
 - Items without a DG field have `cargo.dg = NULL` and are handled by the
   simpler legacy hazmat distance rule, not the full IMDG matrix.
 
+## Check yourself
+
+??? question "Why does ordinary, non-hazardous cargo pay zero memory cost for dangerous-goods fields it doesn't need?"
+    A Cargo item's `dg` pointer is simply `NULL` for ordinary cargo. A `DGInfo` struct is only heap-allocated when the manifest line actually carries a `DG:` tag, so plain cargo never pays for fields it will never use.
+
+??? question "What does the IMDG segregation matrix actually decide?"
+    The minimum required physical distance — or outright incompatibility — between two different hazard classes, so that, say, an oxidiser and a flammable liquid aren't stowed close enough together to interact dangerously.
+
 *Next: [Lab 7 — Break the parser (safely)](lab-07-parsing.md).*

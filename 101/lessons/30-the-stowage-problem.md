@@ -299,4 +299,12 @@ The trade-off is that the heuristic can fail to find a valid arrangement even wh
 - **Constraint checking** (`check_cargo_constraints`) gates every candidate placement: point load, IMDG segregation, stacking pressure, and deck limits are enforced before a space is accepted.
 - Items that cannot be placed are marked with `pos_x = -1.0f` and excluded from stability calculations.
 
+## Check yourself
+
+??? question "Why is 3D bin packing called NP-hard, in plain terms?"
+    The number of possible arrangements — across bins, orientations, and positions — grows so explosively with the item count that no known method can search them all in a reasonable time. Brute force becomes impossible long before you reach a few dozen items.
+
+??? question "If CargoForge-C can't guarantee the mathematically optimal stow, what does it guarantee instead?"
+    A fast, safe, valid stow — produced by a greedy heuristic in milliseconds — rather than an exhaustive search for a perfect arrangement that would take longer than the age of the universe on a real manifest.
+
 *Next: [First-Fit-Decreasing](31-first-fit-decreasing.md).*
