@@ -257,4 +257,12 @@ The `= {0}` initialiser zero-fills the entire 256-byte array at declaration. Thi
 - Always copy a `const char *` to a local buffer before passing it to `strtok_r` — the function writes `'\0'` bytes into the buffer, and writing to a `const` or read-only string is undefined behaviour.
 - Zero-initialising a char array with `= {0}` gives a free empty-string sentinel without a separate boolean flag.
 
+## Check yourself
+
+??? question "If strncpy's source string fills the destination buffer exactly to its size, does it still write the NUL terminator?"
+    No — strncpy only pads with NUL bytes if the source is shorter than the destination; if it fills the buffer exactly, no terminator is written. That is why parse_cargo_list always follows strncpy with an explicit `buf[sizeof(buf)-1] = '\0'`.
+
+??? question "Why does parse_dg_field copy the DG field into a local buffer before calling strtok_r on it?"
+    strtok_r writes NUL bytes into the string it tokenises as it works. Mutating a `const char *` — such as a pointer straight into the original input line — would be undefined behaviour, so the field is copied into its own mutable scratch buffer first.
+
 *Next: [Error handling without exceptions](08-error-handling-without-exceptions.md).*

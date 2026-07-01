@@ -275,4 +275,12 @@ When `perform_analysis` in [`src/analysis.c`](https://github.com/alikatgh/CargoF
 - `static` on a file-scope function restricts its visibility to that `.c` file, preventing linker conflicts and hiding implementation details.
 - The `src/`+`include/` layout lets each `.c` file compile independently; the linker resolves cross-file references at the end.
 
+## Check yourself
+
+??? question "What does #include \"cargoforge.h\" actually do, mechanically?"
+    The preprocessor pastes the entire contents of that file in at that exact point, before the compiler ever sees the result — a literal copy-paste operation, not a special import or module mechanism.
+
+??? question "Why does every header need an include guard?"
+    Without one, if two different .c files transitively include the same header twice (directly or through another header), the compiler sees the same struct/typedef defined a second time and errors out on the redefinition.
+
 *Next: [Strings and char arrays](07-strings-and-char-arrays.md).*

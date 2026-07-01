@@ -294,4 +294,12 @@ Here is what happens from a code change to a merged PR:
 - The GitHub Actions workflow in `.github/workflows/c-build.yml` re-runs `make` and a smoke test on a clean Ubuntu VM on every push and PR, catching regressions before they reach `main`.
 - CI is only as thorough as its step list — `make test`, `make test-asan`, and `make validate` are available but must be added explicitly to gain their protection in CI.
 
+## Check yourself
+
+??? question "Why does pinning `-std=c99 -D_POSIX_C_SOURCE=200809L` matter for reproducibility, specifically?"
+    It locks the exact C dialect and POSIX feature level the code assumes. Any machine with a conforming C99 compiler and POSIX.1-2008 library then produces the same behaviour from the same source — a stability calculation gives the same answer on a port authority's server as on your laptop.
+
+??? question "What does a Makefile pattern rule buy you over writing one compile recipe per source file?"
+    One rule like `$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c $(HDRS)` covers every current and future source file with a single wildcard recipe — add a fifteenth `.c` file tomorrow and it is built with zero new Makefile code.
+
 *Next: [Lab 1 — Build and Run It](lab-01-foundations.md).*

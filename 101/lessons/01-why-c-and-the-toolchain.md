@@ -215,4 +215,15 @@ Eight test binaries are compiled and run. Each is linked against only the object
 - The engine (`LIB_SRCS`) and the CLI (`CLI_SRCS`) are deliberately separate: the same engine object files power the CLI, the static library, the shared library, and the WASM build.
 - `make`, `make test`, and `make test-asan` are the three commands you will use most during development.
 
+## Check yourself
+
+??? question "Why C99 instead of a newer C standard, or a different language entirely?"
+    CargoForge-C needs zero runtime dependencies and must run natively on constrained hardware and compile to WebAssembly. C99 gives structs, `//` comments, and designated initialisers without pulling in a heavier language runtime or garbage collector.
+
+??? question "What's the actual difference between what `-c` does and what the linker does?"
+    `-c` stops the compiler after producing one `.o` object file — a translation with holes wherever it calls a function defined elsewhere. The linker resolves those holes by combining every `.o` file (plus `libm`) into one executable; only then does a function call actually have an address.
+
+??? question "Why does the Makefile keep `LIB_SRCS` and `CLI_SRCS` as separate lists instead of one big list of everything?"
+    So the same engine object files can be reused by the CLI, the static library, the shared library, and the WASM build without duplicating the physics code four times.
+
 *Next: [Your first C program](02-your-first-c-program.md).*

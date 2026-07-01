@@ -327,4 +327,12 @@ as it grows.
 - Free every resource before every `return`, not just the last one — both exit
   paths in `main` call `free_cli_context`.
 
+## Check yourself
+
+??? question "What two things does the operating system hand to main() when a program starts, and what does main() hand back?"
+    It hands in `argc` (a count of the words typed) and `argv` (the words themselves, as an array of strings); `main` hands back a single integer exit code — 0 for success, anything else for failure.
+
+??? question "Why is src/main.c deliberately small, mostly just reading argv[1] and dispatching?"
+    main is a receptionist, not a worker — it routes to the right subcommand function and lets the real physics, parsing, and placement logic live in other files. That is what keeps it readable in one sitting.
+
 *Next: [Types, control flow, and functions](03-types-control-flow-functions.md).*

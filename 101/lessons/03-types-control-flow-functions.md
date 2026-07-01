@@ -281,4 +281,15 @@ Inside `gz_at_angle`, the parameter named `gm` is a separate local variable that
 - Arguments are passed **by value** — functions receive copies. To write back to the caller, pass a pointer (covered in a later lesson).
 - `gz_at_angle` in `analysis.c` is a clean example: pure function, no side-effects, three floats in, one float out, directly encoding the wall-sided stability formula.
 
+## Check yourself
+
+??? question "Why float instead of double for weights, dimensions, and hydrostatic values?"
+    Real sea-going instruments — draught gauges, load cells — don't resolve beyond a few centimetres or half a tonne. float's ~6-7 digit precision already matches the sensor, and the smaller size keeps the Ship and Cargo structs compact and cache-friendly.
+
+??? question "Why does perform_analysis call memset(&r, 0, sizeof(r)) before computing anything?"
+    C does not automatically zero local variables. Reading an uninitialised field would be undefined behaviour, so the AnalysisResult is explicitly zeroed first, before any accumulation begins.
+
+??? question "What does marking a function static inside a .c file actually restrict?"
+    It confines that function to its own compilation unit — no other .c file can call it, even if they know its name. That is how helpers like gz_at_angle stay private implementation details instead of part of the program's public surface.
+
 *Next: [CLI, git, and reproducible builds](04-cli-git-reproducibility.md).*

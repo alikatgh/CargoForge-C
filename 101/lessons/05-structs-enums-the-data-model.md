@@ -260,4 +260,12 @@ Ship
 - `OutputFormat` is a typical C enum: a named integer type the compiler can check in `switch` statements, used here to dispatch among five output renderers.
 - All heap memory owned by `Ship` is released by a single `ship_cleanup` call; freeing the parts individually would leak or double-free.
 
+## Check yourself
+
+??? question "Why is Ship.cargo a pointer to a separately allocated array, instead of a fixed-size array embedded directly in the struct?"
+    A pointer lets one fixed-size Ship struct carry a cargo list of any length — the struct itself stays the same few bytes whether it holds 3 items or 3,000; only the separately allocated block on the heap grows.
+
+??? question "What problem does using an enum for output format solve, that a free-text string field would not?"
+    An enum restricts the value to a fixed, named set the compiler checks — an invalid or mistyped format simply cannot be constructed, where a free-text string could hold anything and would need to be validated at every use.
+
 *Next: [The preprocessor and headers](06-the-preprocessor-and-headers.md).*
