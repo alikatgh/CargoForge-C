@@ -386,4 +386,12 @@ Any internal reorganisation that does not change the public semantics can be abs
 - `fill_result` copies internal `AnalysisResult` fields into the public `CfResult`, insulating the library ABI from engine implementation changes.
 - JSON output is lazily generated via `open_memstream` and cached inside the handle until it is invalidated by a new `optimize` or `reset` call.
 
+## Check yourself
+
+??? question "Why is CargoForge * an opaque handle instead of a struct callers can see into?"
+    Callers only ever touch it through the public API functions, so the library is free to rearrange its internal fields across versions without breaking anything that links against it — that freedom is what gives the API ABI stability.
+
+??? question "What is cargoforge_open responsible for, and what is cargoforge_close responsible for?"
+    open allocates the handle with calloc (every field starts at zero or NULL) and starts a session; close calls ship_cleanup to free every heap member the ship owns, then frees the handle itself. Skip close and everything the handle ever allocated leaks.
+
 *Next: [The JSON-RPC server](44-the-json-rpc-server.md).*

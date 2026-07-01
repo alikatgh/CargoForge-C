@@ -281,4 +281,12 @@ WASM loading — WASM instantiation is always asynchronous in browsers.
   right entry points for WASM: they accept content directly without relying on
   a filesystem.
 
+## Check yourself
+
+??? question "What property of C specifically makes 'compile once, run on a laptop, a browser, or a phone' possible?"
+    C compiles to whatever machine-code target the toolchain points at — native for a laptop, WebAssembly via Emscripten for a browser, a static library for iOS/Android. The same zero-dependency source is the input to all three toolchains; nothing about the physics code itself has to change.
+
+??? question "Beyond novelty, what's the real practical benefit of running the stability engine as WASM in a browser?"
+    The whole calculation happens on the user's own device, inside the browser's sandbox — no server round-trip, no manifest data ever leaving the user's machine, and it keeps working offline.
+
 *Next: [Lab 11 - Link the library](lab-11-shipping.md).*

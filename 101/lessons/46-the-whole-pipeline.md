@@ -328,4 +328,12 @@ main()
 - `perform_analysis` in `analysis.c` runs a single-pass accumulation then five sequential physics calculations: hydrostatics → KG → GM + FSC → trim + heel → GZ/IMO → longitudinal strength.
 - `ship_cleanup` in `analysis.c` frees all heap memory in the reverse order it was allocated, using NULL-after-free to make double-calls harmless.
 
+## Check yourself
+
+??? question "What's the one object that flows through every stage of the pipeline — parsing, placement, analysis, output — without ever being copied or rebuilt?"
+    The single Ship struct: the parser fills it from disk, the placer writes a 3D position into each cargo item, the analyser reads those positions to compute the stability numbers, and the output stage formats the result — all from that same struct.
+
+??? question "If a stow is geometrically valid but the ship is overweight, at which stage does the pipeline actually catch that, and how?"
+    In the analysis stage. perform_analysis sets r.gm = NAN when the ship is overweight, and that NAN propagates cleanly through every downstream step — the report and IMO checks — instead of the program crashing or printing a nonsense number.
+
 *Next: [Frontier: classed stability software](47-frontier-classed-software.md).*

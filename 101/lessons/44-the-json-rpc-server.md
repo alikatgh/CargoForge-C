@@ -349,4 +349,12 @@ if (body && body_len > 0)
 - Each request creates and destroys its own `CargoForge *` context via `cargoforge_open` / `cargoforge_close`, so failures are isolated and no global state is shared between requests.
 - Signal handling (`SIGINT`/`SIGTERM`) and `SIGPIPE` suppression are essential for graceful shutdown in a socket server.
 
+## Check yourself
+
+??? question "Why does the server open and close a fresh CargoForge handle for every single request, instead of reusing one handle across requests?"
+    So a crash or a malformed manifest in one request can't corrupt or leak into the next request's state — each call gets its own clean, isolated engine instance from open to close.
+
+??? question "Why does cargoforge serve export only one function, cargoforge_serve(port, verbose), from its header?"
+    Everything else — socket setup, HTTP parsing, method dispatch — is an internal implementation detail. Hiding it all behind one function keeps the public surface minimal and free to change later without breaking callers.
+
 *Next: [WASM and on-device](45-wasm-and-on-device.md).*

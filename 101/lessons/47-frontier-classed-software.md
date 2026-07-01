@@ -192,4 +192,12 @@ If the physics and the C code in this course have sparked genuine interest in na
 - Class-society approval (e.g. DNV-SE-0475) requires validated benchmark runs, a full technical manual, and > 95% test coverage — the ROADMAP.md describes this as the critical gate for operational use.
 - The open-source C architecture is a competitive advantage for approval: reviewers can audit the source directly, unlike closed competitors.
 
+## Check yourself
+
+??? question "Is CargoForge-C's physics wrong, or just simplified, compared to a classed loading computer like NAPA or GHS?"
+    Simplified, not wrong. The wall-sided GZ formula, the box-hull constants, and linear interpolation are all documented, defensible approximations — a classed system replaces them with model-tested hull data and higher-order interpolation, which is a precision upgrade, not a bug fix.
+
+??? question "Besides better physics, what else does crossing from 'open-source teaching tool' to 'class-approved loading computer' actually require?"
+    Type approval itself — a classification society's certificate, which is as much about process, audit trails, and independent verification as it is about the arithmetic being correct.
+
 *Next: [Lab 12 — A Realistic Voyage](lab-12-capstone.md).*
