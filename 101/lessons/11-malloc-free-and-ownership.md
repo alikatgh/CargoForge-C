@@ -349,4 +349,12 @@ No allocation is freed twice; no allocation is forgotten.
   blocks free the DG pointers, free the cargo array, and zero both the pointer
   and the count before returning -1.
 
+## Check yourself
+
+??? question "In the real bug, free(ship->cargo) was called correctly. So what was still wrong afterward?"
+    The pointer itself still held the old, now-invalid address — a dangling pointer — and `cargo_count` was left non-zero. `ship_cleanup`'s cleanup loop had no way to know the memory it was about to walk had already been returned to the allocator.
+
+??? question "The fix sets both ship->cargo = NULL and ship->cargo_count = 0. Why both — wouldn't just one be enough?"
+    Nulling the pointer alone would still leave a stale count that some other loop might use to index into NULL. Zeroing the count alone would still leave a dangling pointer that other code could dereference directly. Only together do they make the freed state fully inert.
+
 *Next: [Arrays, buffers, and bounds](12-arrays-buffers-and-bounds.md).*

@@ -341,4 +341,12 @@ When an error path owns the free, it must also zero all state that any future co
 - The **real bug** in `parse_cargo_list` was a freed `ship->cargo` pointer left non-null, with a non-zero `cargo_count`, so `ship_cleanup` walked into freed memory. Two lines fixed it: `ship->cargo = NULL; ship->cargo_count = 0;`.
 - **AddressSanitizer + fuzzing** is what actually found it: `make test-asan` and [`scripts/fuzz.sh`](https://github.com/alikatgh/CargoForge-C/blob/main/scripts/fuzz.sh) together force error paths that normal tests never exercise.
 
+## Check yourself
+
+??? question "Use-after-free, double-free, and a memory leak all share what underlying mistake?"
+    All three come from a gap between what you *think* you own and what you *actually* own — reading or freeing memory you no longer have a valid claim to, or never returning memory you're finished with.
+
+??? question "Why didn't CargoForge-C's ordinary unit tests catch the real heap-use-after-free before the fuzzer did?"
+    The bug only triggered on one specific error path — a manifest line with a bad weight field — that the hand-written tests didn't happen to exercise. The fuzzer's random adversarial inputs eventually hit exactly that path, and AddressSanitizer turned the resulting corruption into a loud, immediate report.
+
 *Next: [Lab 3 — Reproduce the Use-After-Free](lab-03-memory.md).*

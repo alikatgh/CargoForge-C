@@ -308,4 +308,12 @@ being visible to a human watching the terminal.
   shell scripts and CI pipelines branch on the precise failure mode.
 - Warnings go to `stderr` so structured output on `stdout` stays parseable.
 
+## Check yourself
+
+??? question "C has no try/catch — what three mechanisms does CargoForge-C actually use to signal an error?"
+    Integer return codes (0 success, -1 failure), `errno` for system-call-level failures, and `NaN` as a floating-point sentinel for a physics result that doesn't exist. Every caller must actively check the result and decide whether to propagate it.
+
+??? question "What was the actual gap that let the real heap-use-after-free bug through?"
+    An error path in `parse_cargo_list` freed `ship->cargo` but didn't finish the job of leaving the ship in a safe state — the pointer stayed non-NULL and the count stayed non-zero — so a later, unrelated call to `ship_cleanup` walked memory that had already been reclaimed.
+
 *Next: [Lab 2 — Read the Data Model](lab-02-c-in-depth.md).*

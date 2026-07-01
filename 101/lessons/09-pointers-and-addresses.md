@@ -280,4 +280,12 @@ a `heap-use-after-free`.
 - Pointer fields like `ship->hydro` may be `NULL`; always guard with `if (ptr)` before using `->`.
 - After `free(ptr)`, set `ptr = NULL` immediately; a dangling pointer is one of C's most common crashes.
 
+## Check yourself
+
+??? question "What's the difference between what &ship does and what *p does?"
+    `&ship` reads off the address of `ship` — turning a value into a pointer. `*p` follows the address stored in `p` back to the actual `Ship` — turning a pointer into the value it points at. They're inverses of each other.
+
+??? question "Why does CargoForge-C pass Ship *ship to functions instead of passing the whole Ship struct by value?"
+    Copying a pointer (a slip of paper with an address on it) is essentially free; copying the entire struct on every function call would be wasteful, and every function would end up working on its own separate copy instead of the one real ship.
+
 *Next: [The stack and the heap](10-the-stack-and-the-heap.md).*

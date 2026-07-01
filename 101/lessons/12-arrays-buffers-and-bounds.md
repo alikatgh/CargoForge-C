@@ -320,4 +320,12 @@ Missing either one is a bug.
 - After `free(ptr)`, immediately set `ptr = NULL` and zero any associated count
   to prevent use-after-free on subsequent cleanup passes.
 
+## Check yourself
+
+??? question "If code reads or writes one element past the end of an array, does C stop it?"
+    No — nothing stops it. C computes the element's address as a raw offset from the array's start and reads or writes whatever is there, silently corrupting a neighbouring struct field or bookkeeping data rather than raising any error.
+
+??? question "Why does CargoForge-C track cargo_count and cargo_capacity as two separate numbers instead of just one?"
+    `count` is how many slots are actually in use; `capacity` is how many the allocated block can hold. Keeping them separate lets the parser detect "we're about to exceed capacity" and grow the array *before* an out-of-bounds write can happen.
+
 *Next: [Memory bugs (the real ones)](13-memory-bugs.md).*

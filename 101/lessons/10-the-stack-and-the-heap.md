@@ -258,4 +258,12 @@ strncpy(buf, field + 3, sizeof(buf) - 1);
 - After every `free`, set the pointer to `NULL` and any associated count to `0` — this is what prevents the heap-use-after-free that the fuzzer caught in `parse_cargo_list`.
 - Use `calloc` when unset struct fields must default to zero or NULL; use `malloc` when you will write every byte before reading.
 
+## Check yourself
+
+??? question "Why can't the cargo array simply live on the stack?"
+    Its size isn't known until the manifest file has actually been read line by line. The stack needs a size fixed at compile time (or at least at function entry); the heap lets you allocate exactly the right size once you've counted the lines.
+
+??? question "Stack memory and heap memory differ mainly in who cleans them up — how?"
+    Stack memory is freed automatically the instant the function that owns it returns. Heap memory stays allocated until the code explicitly calls `free()` on it — forget that call and it's a memory leak.
+
 *Next: [malloc, free, and ownership](11-malloc-free-and-ownership.md).*

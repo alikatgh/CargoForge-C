@@ -360,4 +360,12 @@ The Makefile is the primary, self-contained build for contributors: no external 
 - `test-asan` appends `-fsanitize=address,undefined` via target-specific variables; it was this target that caught the heap-use-after-free in `parse_cargo_list`.
 - CMake generates Makefiles from a higher-level description: `add_library`, `add_executable`, and `add_test` replace hand-written recipes and remove platform-specific shell scripting.
 
+## Check yourself
+
+??? question "If you edit only analysis.c and run make, which object files actually get recompiled?"
+    Just `analysis.o`, via the pattern rule, followed by relinking the final `cargoforge` binary. The other thirteen source files' object files are untouched because their timestamps haven't changed since the last build.
+
+??? question "Is CMake a replacement for Make?"
+    No — CMake is a meta-build tool that *generates* Makefiles (or Ninja files, or IDE projects) from a higher-level, platform-neutral description. Make (or whatever CMake generated) still does the actual compiling and linking underneath.
+
 *Next: [Unit testing in C](15-unit-testing-in-c.md).*
