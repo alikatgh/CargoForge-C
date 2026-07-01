@@ -35,6 +35,8 @@ The surprise is what the penalty depends on. The free-surface moment is `ρ · l
 <text x="300" y="202" font-size="10" text-anchor="middle" fill="currentColor" opacity="0.75" font-family="var(--md-code-font,monospace)">FSM = ρ · l · b³ / 12   —   breadth cubed: halve b → penalty ~¼</text>
 </svg>
 
+<div class="lesson-widget" data-widget="free-surface-explorer"></div>
+
 ## What this actually means (plain English)
 
 No jargon — here's what the ideas in this lesson *actually* mean, and why they matter.

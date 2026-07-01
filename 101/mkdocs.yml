@@ -41,6 +41,9 @@ extra_javascript:
   - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
   - assets/widgets/_core.js
   - assets/widgets/cg-balance-beam.js
+  - assets/widgets/gm-stability-explorer.js
+  - assets/widgets/free-surface-explorer.js
+  - assets/widgets/hydro-interpolation-explorer.js
 
 markdown_extensions:
   - admonition

@@ -84,6 +84,8 @@ $$GM = KB + BM - KG = KM - KG$$
 <text x="430" y="312" fill="currentColor" font-size="11.5" opacity="0.6">GM = GZ / sin θ &gt; 0</text>
 </svg>
 
+<div class="lesson-widget" data-widget="gm-stability-explorer"></div>
+
 ---
 
 ## Why GM tells you whether the ship self-rights
