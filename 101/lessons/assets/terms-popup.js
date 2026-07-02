@@ -104,6 +104,24 @@
     });
   }
 
+  // *emphasis* only — never inside a code span, so pointer syntax like
+  // `Ship *ship` in backtick-quoted code is never mistaken for italics.
+  var EMPHASIS_RE = /\*([^*\n]+)\*/g;
+
+  function appendWithEmphasis(container, text) {
+    EMPHASIS_RE.lastIndex = 0;
+    var lastIndex = 0;
+    var m;
+    while ((m = EMPHASIS_RE.exec(text))) {
+      if (m.index > lastIndex) container.appendChild(document.createTextNode(text.slice(lastIndex, m.index)));
+      var em = document.createElement("em");
+      em.textContent = m[1];
+      container.appendChild(em);
+      lastIndex = EMPHASIS_RE.lastIndex;
+    }
+    if (lastIndex < text.length) container.appendChild(document.createTextNode(text.slice(lastIndex)));
+  }
+
   function renderRichText(container, text) {
     container.textContent = "";
     var parts = text.split("`");
@@ -119,7 +137,7 @@
         code.textContent = parts[i];
         container.appendChild(code);
       } else {
-        container.appendChild(document.createTextNode(parts[i]));
+        appendWithEmphasis(container, parts[i]);
       }
     }
   }
