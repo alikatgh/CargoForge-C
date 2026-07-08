@@ -13,6 +13,10 @@ docs/latex/
 docs/man/
 docs/xml/
 
+# Security audit reports — list OPEN unpatched findings; keep OUT of this
+# public repo. Track them privately (e.g. GitHub Security Advisory) instead.
+docs/audits/
+
 # Test executables
 tests/test_parser
 tests/test_placement_2d
