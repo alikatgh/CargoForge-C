@@ -1,5 +1,6 @@
 site_name: CargoForge-C 101
 site_description: From zero to systems & naval-architecture engineer, on a real codebase
+site_url: https://c.aulenor.com/
 docs_dir: lessons
 use_directory_urls: true
 
